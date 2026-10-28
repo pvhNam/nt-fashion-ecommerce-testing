@@ -8,19 +8,13 @@ if (activePage == null)
 
 // Xử lý Phân quyền
 User currUser = (User) session.getAttribute("user");
-Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-
-int role = 0;
-if (currUser != null) {
-	role = currUser.getIsAdmin();
-} else if (isHardcodedAdmin != null && isHardcodedAdmin) {
-	role = 1;
-}
+int role = currUser != null ? currUser.getIsAdmin() : 0;
 %>
 
 <link rel="stylesheet" href="CSS/admin/sidebar.css">
+<meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
-<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20260822.5" defer></script>
+<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261027.1" defer></script>
 
 <div class="sidebar">
 	<div class="sidebar-brand">
