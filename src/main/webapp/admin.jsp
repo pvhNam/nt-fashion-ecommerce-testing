@@ -222,6 +222,7 @@
                                 </a>
                                 <% if ("Đang xử lý".equals(st)) { %>
                                     <form action="update-order" method="post" style="margin: 0;">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                                         <input type="hidden" name="id" value="<%=o.getId()%>">
                                         <input type="hidden" name="action" value="ship">
                                         <button class="btn-icon btn-ship" title="Giao hàng">

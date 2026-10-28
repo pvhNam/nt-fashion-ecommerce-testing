@@ -43,6 +43,7 @@
                                     <p class="price-tag"><fmt:formatNumber value="${item.product.price}" pattern="#,### VNĐ"/></p>
                                     <div class="card-actions">
                                         <form action="cart" method="post" class="quantity-control" data-cart-ajax>
+                                            <input type="hidden" name="csrfToken" value="${csrfToken}">
                                             <input type="hidden" name="action" value="update_quantity" />
                                             <input type="hidden" name="pid" value="${item.product.pid}" />
                                             <input type="hidden" name="color" value="${item.color}" />
@@ -57,7 +58,14 @@
 
                                         <span class="item-total"><fmt:formatNumber value="${item.totalPrice}" pattern="#,### VNĐ"/></span>
 
-                                        <a href="cart?action=remove&pid=${item.product.pid}&amp;color=${fn:escapeXml(item.color)}&amp;size=${fn:escapeXml(item.size)}" class="btn-remove"><i class="fa-solid fa-trash-can"></i></a>
+                                        <form action="cart" method="post" class="cart-remove-form" data-cart-ajax>
+                                            <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                            <input type="hidden" name="action" value="remove" />
+                                            <input type="hidden" name="pid" value="${item.product.pid}" />
+                                            <input type="hidden" name="color" value="${fn:escapeXml(item.color)}" />
+                                            <input type="hidden" name="size" value="${fn:escapeXml(item.size)}" />
+                                            <button type="submit" class="btn-remove" title="Xóa khỏi giỏ"><i class="fa-solid fa-trash-can"></i></button>
+                                        </form>
                                     </div>
 
                                     <c:choose>
@@ -89,6 +97,7 @@
                 <div class="summary-box">
                     <h3><i class="fa-solid fa-ticket"></i> <fmt:message key="cart.voucher_title" /></h3>
                     <form action="cart" method="post" class="voucher-input-group">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="action" value="apply_voucher" />
                         <input type="text" name="voucherCode" placeholder="<fmt:message key='cart.voucher_placeholder'/>" required />
                         <button type="submit"><fmt:message key="cart.apply" /></button>
@@ -106,6 +115,7 @@
                                             <p class="v-condition">Min: <fmt:formatNumber value="${v.minOrder}" pattern="#,### VNĐ"/></p>
                                         </div>
                                         <form action="cart" method="post" style="margin:0;" data-cart-ajax>
+                                            <input type="hidden" name="csrfToken" value="${csrfToken}">
                                             <input type="hidden" name="action" value="apply_voucher" />
                                             <input type="hidden" name="voucherCode" value="${v.code}" />
                                             <button type="submit" class="btn-use-now"><fmt:message key="cart.use" /></button>
@@ -143,6 +153,7 @@
                         </c:otherwise>
                     </c:choose>
                     <form action="checkout" method="post">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <div class="summary-row">
                             <span><fmt:message key="cart.subtotal" /></span>
                             <span id="cart-subtotal"><fmt:formatNumber value="${subtotal}" pattern="#,### VNĐ"/></span>

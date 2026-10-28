@@ -100,6 +100,7 @@
 
             <% if (Order.STATUS_PROCESSING.equals(order.getStatus())) { %>
                 <form action="order-detail" method="post" onsubmit="return confirm('<fmt:message key="order.cancel_confirm" />');" style="margin: 0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="id" value="<%= order.getId() %>">
                     <input type="hidden" name="action" value="cancel">
                     <button type="submit" class="btn-cancel"><i class="fa-solid fa-xmark"></i> <fmt:message key="order.cancel_btn" /></button>

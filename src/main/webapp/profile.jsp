@@ -39,6 +39,7 @@
                 <p class="account-handle">@<c:out value="${account.username}" /></p>
                 <span class="account-member-badge"><i class="fa-solid fa-crown" aria-hidden="true"></i> ${en ? 'Member' : 'Thành viên'} · <c:out value="${membership.tierLabel}" /></span>
                 <form action="profile" method="post" enctype="multipart/form-data" class="account-avatar-form">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="action" value="upload-avatar">
                     <label for="avatar-file" class="account-file-label"><i class="fa-solid fa-camera" aria-hidden="true"></i> ${en ? 'Choose a photo' : 'Chọn ảnh mới'}</label>
                     <input id="avatar-file" type="file" name="avatarFile" accept="image/jpeg,image/png,image/webp" required aria-describedby="avatar-help">
@@ -68,6 +69,7 @@
             <section id="personal-info" class="account-card account-section">
                 <div class="account-section-heading"><span class="account-section-icon"><i class="fa-regular fa-id-card" aria-hidden="true"></i></span><div><h2><fmt:message key="profile.info_title" /></h2><p>${en ? 'Keep your contact details up to date.' : 'Cập nhật thông tin để chúng mình kết nối với bạn dễ dàng hơn.'}</p></div></div>
                 <form action="profile" method="post" class="account-form">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="action" value="update-info">
                     <div class="account-fields">
                         <div class="account-field"><label for="account-username"><fmt:message key="profile.username" /></label><input id="account-username" type="text" value="<c:out value='${account.username}' />" readonly aria-describedby="username-help"><span id="username-help" class="account-help">${en ? 'Your username cannot be changed.' : 'Tên đăng nhập không thể thay đổi.'}</span></div>
@@ -83,6 +85,7 @@
                 <c:if test="${not empty msgPass}"><div class="account-notice" role="status"><c:out value="${msgPass}" /></div></c:if>
                 <c:if test="${not empty errPass}"><div class="account-notice account-notice-error" role="alert"><c:out value="${errPass}" /></div></c:if>
                 <form action="profile#account-security" method="post" class="account-form">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="action" value="change-pass">
                     <div class="account-field"><label for="old-password"><fmt:message key="profile.old_pass" /></label><input id="old-password" type="password" name="old_pass" autocomplete="current-password" required></div>
                     <div class="account-fields">

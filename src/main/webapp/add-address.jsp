@@ -54,6 +54,7 @@
   <h2 style="text-align: center; margin-bottom: 20px;"><%= formTitle %></h2>
 
   <form action="<%= formAction %>" method="post">
+      <input type="hidden" name="csrfToken" value="${csrfToken}">
     <% if (isEditMode) { %>
       <input type="hidden" name="id" value="<%= editAddress.getId() %>">
     <% } %>

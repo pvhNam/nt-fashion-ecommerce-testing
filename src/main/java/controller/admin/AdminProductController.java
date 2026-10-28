@@ -10,7 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import util.AdminAccess;
 
 @WebServlet("/admin-products")
 public class AdminProductController extends HttpServlet {
@@ -20,35 +20,10 @@ public class AdminProductController extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        HttpSession session = request.getSession();
-
-        User currUser = (User) session.getAttribute("user");
-        Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        int role = (currUser != null) ? currUser.getIsAdmin() : ((isHardcodedAdmin != null && isHardcodedAdmin) ? 1 : 0);
-
-        if (role == 0) {
-            response.sendRedirect("login");
-            return;
-        }
 
         String type = request.getParameter("type");
         String keyword = request.getParameter("search");
         ProductDAO dao = new ProductDAO();
-
-        if ("delete".equals(type)) {
-            if (role == 2) {
-                response.sendRedirect("admin-products?msg=error_permission");
-                return;
-            }
-            try {
-                int pid = Integer.parseInt(request.getParameter("pid"));
-                dao.deleteProduct(pid);
-                response.sendRedirect("admin-products?msg=deleted");
-            } catch (Exception e) {
-                response.sendRedirect("admin-products?msg=error");
-            }
-            return;
-        }
 
         if ("add".equals(type)) {
             request.getRequestDispatcher("/admin-product-form.jsp").forward(request, response);
@@ -94,19 +69,24 @@ public class AdminProductController extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        HttpSession session = request.getSession();
-
-        User currUser = (User) session.getAttribute("user");
-        Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        int role = (currUser != null) ? currUser.getIsAdmin() : ((isHardcodedAdmin != null && isHardcodedAdmin) ? 1 : 0);
-
-        if (role == 2) {
-            response.sendRedirect("admin-products?msg=error_permission");
-            return;
-        }
 
         String action = request.getParameter("action");
         ProductDAO dao = new ProductDAO();
+
+        if ("delete".equals(action)) {
+            if (!AdminAccess.isAdmin(request)) {
+                response.sendRedirect("admin-products?msg=error_permission");
+                return;
+            }
+            try {
+                int pid = Integer.parseInt(request.getParameter("pid"));
+                dao.deleteProduct(pid);
+                response.sendRedirect("admin-products?msg=deleted");
+            } catch (Exception e) {
+                response.sendRedirect("admin-products?msg=error");
+            }
+            return;
+        }
 
         try {
             if ("import".equals(action)) {

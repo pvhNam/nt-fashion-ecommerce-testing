@@ -37,14 +37,6 @@ public class ProductReviewController extends HttpServlet {
             return;
         }
 
-        String submittedToken = request.getParameter("csrfToken");
-        String sessionToken = (String) session.getAttribute("reviewCsrfToken");
-        if (sessionToken == null || submittedToken == null || !sessionToken.equals(submittedToken)) {
-            redirectWithError(request, response, session, productId,
-                    "Phiên gửi đánh giá đã hết hạn. Vui lòng thử lại.");
-            return;
-        }
-
         Integer rating = parseInteger(request.getParameter("rating"));
         if (rating == null || rating < 1 || rating > 5) {
             redirectWithError(request, response, session, productId,

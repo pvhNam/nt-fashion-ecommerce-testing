@@ -235,6 +235,7 @@
 				onclick="closeBuyNowModal()">&times;</button>
 			<h3>Chọn kích thước và màu</h3>
 			<form id="buyNowForm" action="buy-now" method="post">
+			    <input type="hidden" name="csrfToken" value="${csrfToken}">
 				<input type="hidden" name="pid" id="modal-pid"> <input
 					type="hidden" name="action" id="modal-action" value="buy">
 				<div id="modal-options"></div>
