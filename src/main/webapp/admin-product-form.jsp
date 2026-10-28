@@ -31,6 +31,7 @@
 
     <div class="form-wrapper">
         <form action="admin-products" method="post">
+            <input type="hidden" name="csrfToken" value="${csrfToken}">
             <input type="hidden" name="action" value="<%= isEdit ? "update" : "add" %>">
             <% if(isEdit) { %><input type="hidden" name="pid" value="<%=p.getPid()%>"><% } %>
 

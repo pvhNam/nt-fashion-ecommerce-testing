@@ -28,6 +28,7 @@
             <p class="login-subtitle">Nhập email của bạn để nhận mã xác thực</p>
 
             <form action="forgotPassword" method="post" class="login-form">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 
                 <% String message = (String) request.getAttribute("message");
                    if (message != null) { %>

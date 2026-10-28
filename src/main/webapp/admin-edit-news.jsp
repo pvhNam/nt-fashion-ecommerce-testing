@@ -16,6 +16,7 @@
 	<div class="form-container">
 		<h2 style="text-align: center;">CHỈNH SỬA BÀI VIẾT</h2>
 		<form action="admin-news" method="post">
+		    <input type="hidden" name="csrfToken" value="${csrfToken}">
 			<input type="hidden" name="id" value="<%=n.getId()%>">
 
 			<div class="form-group">

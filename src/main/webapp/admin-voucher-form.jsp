@@ -39,6 +39,7 @@
 
             <div class="vf-form-card">
                 <form action="admin-vouchers" method="post">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="action" value="<%= isEdit ? "update" : "insert" %>">
                     <% if (isEdit) { %><input type="hidden" name="id" value="<%= v.getId() %>"><% } %>
 

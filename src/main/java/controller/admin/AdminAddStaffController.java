@@ -9,40 +9,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebServlet("/admin-add-staff")
 public class AdminAddStaffController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private boolean checkAdminPermission(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession();
-        User currUser = (User) session.getAttribute("user");
-        Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-
-        int role = 0;
-        if (currUser != null) {
-            role = currUser.getIsAdmin();
-        } else if (isHardcodedAdmin != null && isHardcodedAdmin) {
-            role = 1;
-        }
-
-        if (role != 1) {
-            response.sendRedirect("admin?msg=error_permission");
-            return false;
-        }
-        return true;
-    }
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!checkAdminPermission(request, response)) return;
         request.getRequestDispatcher("/admin-add-staff.jsp").forward(request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!checkAdminPermission(request, response)) return;
-
         request.setCharacterEncoding("UTF-8");
 
         String username = request.getParameter("username");

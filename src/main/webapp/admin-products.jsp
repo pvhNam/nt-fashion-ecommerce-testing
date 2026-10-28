@@ -102,11 +102,16 @@
                             <i class="fa-solid fa-pen"></i>
                         </a>
 
-                        <a href="admin-products?type=delete&pid=<%=p.getPid()%>"
-                           class="btn-icon btn-delete" style="background:#e74a3b; color:white; padding:6px 10px; border-radius:4px;"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa?')" title="Xóa">
-                            <i class="fa-solid fa-trash"></i>
-                        </a>
+                        <form action="admin-products" method="post" style="display:inline;margin:0"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                            <input type="hidden" name="csrfToken" value="${csrfToken}">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="pid" value="<%=p.getPid()%>">
+                            <button type="submit" class="btn-icon btn-delete" title="Xóa"
+                                    style="background:#e74a3b; color:white; padding:6px 10px; border-radius:4px; border:none; cursor:pointer;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </td>
             </tr>

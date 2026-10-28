@@ -32,6 +32,7 @@
     </div>
 
     <form action="admin-add-news" method="post" id="newsForm">
+        <input type="hidden" name="csrfToken" value="${csrfToken}">
         <div class="an-layout">
 
             <div class="an-form-col">

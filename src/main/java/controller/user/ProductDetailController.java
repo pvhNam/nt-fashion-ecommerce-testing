@@ -13,7 +13,6 @@ import model.User;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import dao.ProductDAO;
 import dao.ProductReviewDAO;
@@ -51,11 +50,6 @@ public class ProductDetailController extends HttpServlet {
 
             HttpSession session = request.getSession();
             User currentUser = (User) session.getAttribute("user");
-            String csrfToken = (String) session.getAttribute("reviewCsrfToken");
-            if (csrfToken == null) {
-                csrfToken = UUID.randomUUID().toString();
-                session.setAttribute("reviewCsrfToken", csrfToken);
-            }
 
             List<ProductReview> reviews = reviewDao.getReviewsByProductId(pid);
             int[] ratingCounts = new int[6];
@@ -74,7 +68,6 @@ public class ProductDetailController extends HttpServlet {
             request.setAttribute("reviewsWithComment", reviewsWithComment);
             request.setAttribute("currentReview",
                     currentUser == null ? null : reviewDao.getReviewByUserAndProduct(currentUser.getUid(), pid));
-            request.setAttribute("reviewCsrfToken", csrfToken);
             moveFlashMessage(session, request, "reviewSuccess");
             moveFlashMessage(session, request, "reviewError");
 

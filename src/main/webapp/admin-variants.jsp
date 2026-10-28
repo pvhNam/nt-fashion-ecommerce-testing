@@ -83,6 +83,7 @@
                 </td>
                 <td style="text-align: center;">
                     <form action="admin-variants" method="post" class="form-inline variant-qty-form">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="action" value="update-qty">
                         <input type="hidden" name="pid" value="<%=p.getPid()%>">
                         <input type="hidden" name="vid" value="<%=v.getId()%>">
@@ -95,6 +96,7 @@
                 <td style="text-align: center;">
                     <form action="admin-variants" method="post" class="form-inline"
                           onsubmit="return confirm('Bạn có chắc muốn xóa phân loại Màu/Size này không?')">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="action" value="delete-variant">
                         <input type="hidden" name="pid" value="<%=p.getPid()%>">
                         <input type="hidden" name="vid" value="<%=v.getId()%>">

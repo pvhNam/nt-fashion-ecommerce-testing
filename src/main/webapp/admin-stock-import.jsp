@@ -68,6 +68,7 @@
         </c:when>
         <c:otherwise>
             <form action="${ctx}/admin-stock-import" method="post" id="stock-import-form" class="receipt-layout">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 <div class="receipt-main-column">
                     <section class="receipt-form-card receipt-meta-card">
                         <div class="section-heading">

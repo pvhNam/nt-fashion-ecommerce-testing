@@ -9,9 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.Order;
-import model.User;
 
 @WebServlet("/admin")
 public class AdminController extends HttpServlet {
@@ -19,22 +17,6 @@ public class AdminController extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
-        User currUser = (User) session.getAttribute("user");
-        Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-
-        int role = 0;
-        if (currUser != null) {
-            role = currUser.getIsAdmin();
-        } else if (isHardcodedAdmin != null && isHardcodedAdmin) {
-            role = 1;
-        }
-
-        if (role == 0) {
-            response.sendRedirect("login");
-            return;
-        }
 
         OrderDAO dao = new OrderDAO();
         List<Order> list = dao.getAllOrders();
