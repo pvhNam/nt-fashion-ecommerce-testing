@@ -18,17 +18,9 @@
     String backLink = "order-history";
     model.User currentUser = (model.User) session.getAttribute("user");
 
-    if (currentUser != null) {
-        String currentFullname = "";
-        try {
-            currentFullname = currentUser.getFullname();
-        } catch (Exception e) {
-            currentFullname = "";
-        }
-
-        if (currentFullname != null && currentFullname.equalsIgnoreCase("Administrator")) {
-            backLink = "admin";
-        }
+    // Admin (1) và Staff (2) xem đơn từ trang quản lý đơn hàng
+    if (currentUser != null && (currentUser.getIsAdmin() == 1 || currentUser.getIsAdmin() == 2)) {
+        backLink = "admin-orders";
     }
 %>
 

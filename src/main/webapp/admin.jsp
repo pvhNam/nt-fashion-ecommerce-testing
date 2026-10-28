@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Order"%>
 <%@ page import="java.text.DecimalFormat"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,7 +28,7 @@
             <h1 class="page-title">Tổng quan Dashboard</h1>
             <div class="user-info">
                 <i class="fa-solid fa-user-shield"></i>
-                <span>Administrator</span>
+                <span><c:out value="${empty sessionScope.user.fullname ? sessionScope.user.username : sessionScope.user.fullname}" /> · ${sessionScope.user.isAdmin == 2 ? 'Staff' : 'Admin'}</span>
             </div>
         </div>
 
@@ -55,7 +56,8 @@
                 </div>
             </a>
 
-            <a href="admin-revenue-report" class="stat-link">
+            <%-- Báo cáo doanh thu chỉ Admin vào được; Staff bấm thẻ này thì mở các đơn giao thành công --%>
+            <a href="${sessionScope.user.isAdmin == 1 ? 'admin-revenue-report' : 'admin-orders?filter=success'}" class="stat-link">
                 <div class="card-stat green">
                     <div class="stat-info">
                         <h3 style="color: var(--success);"><%= df.format(totalRevenue) %></h3>
@@ -158,6 +160,7 @@
         </div>
         <% } %>
 
+        <c:if test="${sessionScope.user.isAdmin == 1}">
         <div class="export-container report-launch-card">
             <div>
                 <span class="report-launch-icon"><i class="fa-solid fa-chart-column"></i></span>
@@ -170,6 +173,7 @@
                 Mở trang báo cáo <i class="fa-solid fa-arrow-right"></i>
             </a>
         </div>
+        </c:if>
 
         <div class="table-container">
             <div class="table-header-box">

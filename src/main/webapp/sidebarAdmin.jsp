@@ -27,10 +27,17 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 			class="menu-item <%=activePage.equals("dashboard") ? "active" : ""%>">
 			<i class="fa-solid fa-chart-pie"></i> Tổng quan
 		</a>
+		<%-- Staff chỉ thấy đơn hàng, sản phẩm, nhập kho (KAN-11: IS-02, khớp AdminAuthFilter) --%>
+		<%
+		if (role == 1) {
+		%>
 		<a href="admin-revenue-report"
 			class="menu-item <%=activePage.equals("revenue-report") ? "active" : ""%>">
 			<i class="fa-solid fa-chart-column"></i> Báo cáo doanh thu
 		</a>
+		<%
+		}
+		%>
 		<a href="admin-orders"
 			class="menu-item <%=activePage.equals("orders") ? "active" : ""%>">
 			<i class="fa-solid fa-box"></i> Quản lý Đơn hàng
@@ -38,33 +45,24 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 			class="menu-item <%=activePage.equals("products") ? "active" : ""%>">
 			<i class="fa-solid fa-shirt"></i> Quản lý Sản phẩm
 		</a>
-		<%
-		if (role == 1) {
-		%>
 		<a href="admin-stock-import"
 			class="menu-item <%=activePage.equals("stock-import") ? "active" : ""%>">
 			<i class="fa-solid fa-truck-ramp-box"></i> Đặt hàng nhập kho
 		</a>
+		<%
+		if (role == 1) {
+		%>
 		<a href="admin-collections" class="menu-item <%=activePage.equals("collections") ? "active" : ""%>">
 			<i class="fa-solid fa-layer-group"></i> Quản lý Bộ sưu tập
 		</a>
-		<%
-		}
-		%>
 		<a href="admin-users"
 			class="menu-item <%=activePage.equals("users") ? "active" : ""%>">
 			<i class="fa-solid fa-user-group"></i> Quản lý Khách hàng
 		</a>
-
-		<%-- CẢ ADMIN VÀ NHÂN VIÊN ĐỀU THẤY DANH SÁCH ĐỒNG NGHIỆP --%>
 		<a href="admin-staffs"
 			class="menu-item <%=activePage.equals("staffs") ? "active" : ""%>">
 			<i class="fa-solid fa-address-book"></i> Danh sách Nhân viên
 		</a>
-
-		<%
-		if (role == 1) {
-		%>
 		 <a href="admin-news"
 			class="menu-item <%=activePage.equals("news") ? "active" : ""%>">
 			<i class="fa-solid fa-newspaper"></i> Quản lý Tin tức
