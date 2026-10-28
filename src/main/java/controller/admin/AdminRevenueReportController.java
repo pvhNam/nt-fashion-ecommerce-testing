@@ -6,9 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.ReportPeriod;
-import model.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,11 +24,6 @@ public class AdminRevenueReportController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-
-        if (!isAdminOrStaff(request.getSession())) {
-            response.sendRedirect("login");
-            return;
-        }
 
         ReportPeriod period = ReportPeriod.fromParameters(
                 request.getParameter("period"), request.getParameter("month"), request.getParameter("year"));
@@ -71,13 +64,6 @@ public class AdminRevenueReportController extends HttpServlet {
         request.setAttribute("generatedAt", LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         request.getRequestDispatcher("/admin-revenue-report.jsp").forward(request, response);
-    }
-
-    private boolean isAdminOrStaff(HttpSession session) {
-        User currentUser = (User) session.getAttribute("user");
-        Boolean hardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        return (currentUser != null && currentUser.getIsAdmin() > 0)
-                || Boolean.TRUE.equals(hardcodedAdmin);
     }
 
     private String normalizeFilter(String value) {
