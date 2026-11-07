@@ -7,10 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import dao.ProductDAO;
 import model.Product;
 
@@ -70,7 +72,10 @@ public class AboutController extends HttpServlet {
 		} else if ("price_desc".equals(sortType)) {
 			Collections.sort(filteredProducts, Comparator.comparingDouble(Product::getPrice).reversed());
 		} else if ("name_asc".equals(sortType)) {
-			Collections.sort(filteredProducts, Comparator.comparing(Product::getPdescription));
+			// Sắp theo bảng chữ cái tiếng Việt (a < ă < â, d < đ...), không theo mã ký tự
+			Collator vietnamese = Collator.getInstance(Locale.forLanguageTag("vi-VN"));
+			Collections.sort(filteredProducts, Comparator.comparing(
+					(Product p) -> p.getPdescription() == null ? "" : p.getPdescription(), vietnamese));
 		}
 
 		// phân trang 
@@ -95,8 +100,8 @@ public class AboutController extends HttpServlet {
 		}
 
 		String pageParams = baseParams;
-		if (priceFilter != null) pageParams += "&price=" + priceFilter;
-		if (sortType != null) pageParams += "&sort=" + sortType;
+		if (priceFilter != null) pageParams += "&price=" + URLEncoder.encode(priceFilter, "UTF-8");
+		if (sortType != null) pageParams += "&sort=" + URLEncoder.encode(sortType, "UTF-8");
 		if (category != null) pageParams += "&category=" + URLEncoder.encode(category, "UTF-8");
 
 		// Set attributes cho JSP
