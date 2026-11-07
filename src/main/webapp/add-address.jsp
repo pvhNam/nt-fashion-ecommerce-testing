@@ -16,6 +16,10 @@
 <%
   Address editAddress = (Address) request.getAttribute("editAddress");
   boolean isEditMode = editAddress != null;
+  // Khi server từ chối (ST-14 / IS-13): hiện lại dữ liệu khách vừa nhập kèm thông báo lỗi
+  Address formAddress = (Address) request.getAttribute("formAddress");
+  Address shown = formAddress != null ? formAddress : editAddress;
+  String formError = (String) request.getAttribute("addressFormError");
   String formTitle = isEditMode ? "Sửa địa chỉ" : "Thêm địa chỉ mới";
   String formAction = isEditMode ? "edit-address" : "add-address";
 %>
@@ -52,6 +56,9 @@
 <jsp:include page="header.jsp" />
 <div class="form-container">
   <h2 style="text-align: center; margin-bottom: 20px;"><%= formTitle %></h2>
+  <% if (formError != null) { %>
+    <div class="address-error" style="display: block;"><%= h(formError) %></div>
+  <% } %>
 
   <form action="<%= formAction %>" method="post">
       <input type="hidden" name="csrfToken" value="${csrfToken}">
@@ -61,11 +68,11 @@
 
     <div class="form-group">
       <label for="receiverName">Tên người nhận</label>
-      <input type="text" id="receiverName" name="receiverName" required placeholder="Nhập họ và tên" value="<%= isEditMode ? h(editAddress.getReceiverName()) : "" %>">
+      <input type="text" id="receiverName" name="receiverName" required placeholder="Nhập họ và tên" value="<%= shown != null ? h(shown.getReceiverName()) : "" %>">
     </div>
     <div class="form-group">
       <label for="phone">Số điện thoại</label>
-      <input type="tel" id="phone" name="phone" required placeholder="Nhập số điện thoại" value="<%= isEditMode ? h(editAddress.getPhone()) : "" %>">
+      <input type="tel" id="phone" name="phone" required placeholder="Nhập số điện thoại" value="<%= shown != null ? h(shown.getPhone()) : "" %>">
     </div>
 
     <div id="addressError" class="address-error"></div>
@@ -73,29 +80,29 @@
     <div class="address-row">
       <div class="form-group">
         <label for="city">Tỉnh/Thành phố</label>
-        <select id="city" name="city" required data-selected="<%= isEditMode ? h(editAddress.getCity()) : "" %>">
+        <select id="city" name="city" required data-selected="<%= shown != null ? h(shown.getCity()) : "" %>">
           <option value="">Đang tải tỉnh/thành phố...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="district">Quận/Huyện</label>
-        <select id="district" name="district" required disabled data-selected="<%= isEditMode ? h(editAddress.getDistrict()) : "" %>">
+        <select id="district" name="district" required disabled data-selected="<%= shown != null ? h(shown.getDistrict()) : "" %>">
           <option value="">Chọn tỉnh/thành phố trước</option>
         </select>
       </div>
     </div>
     <div class="form-group">
       <label for="ward">Phường/Xã</label>
-      <select id="ward" name="ward" required disabled data-selected="<%= isEditMode ? h(editAddress.getWard()) : "" %>">
+      <select id="ward" name="ward" required disabled data-selected="<%= shown != null ? h(shown.getWard()) : "" %>">
         <option value="">Chọn quận/huyện trước</option>
       </select>
     </div>
     <div class="form-group">
       <label for="specificAddress">Địa chỉ cụ thể</label>
-      <input type="text" id="specificAddress" name="specificAddress" required placeholder="Số nhà, tên đường..." value="<%= isEditMode ? h(editAddress.getSpecificAddress()) : "" %>">
+      <input type="text" id="specificAddress" name="specificAddress" required placeholder="Số nhà, tên đường..." value="<%= shown != null ? h(shown.getSpecificAddress()) : "" %>">
     </div>
     <div class="checkbox-group">
-      <input type="checkbox" id="isDefault" name="isDefault" value="true" <%= isEditMode && editAddress.isDefault() ? "checked" : "" %>>
+      <input type="checkbox" id="isDefault" name="isDefault" value="true" <%= shown != null && shown.isDefault() ? "checked" : "" %>>
       <label for="isDefault" style="margin:0; font-weight:normal; cursor:pointer;">Đặt làm địa chỉ mặc định</label>
     </div>
 
