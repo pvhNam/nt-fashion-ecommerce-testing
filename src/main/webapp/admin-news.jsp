@@ -59,12 +59,15 @@
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
                                 
-                                <a href="admin-news?type=delete&id=<%= n.getId() %>" 
-                                   class="btn-action btn-del" 
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?')" 
-                                   title="Xóa bài viết">
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>
+                                <form action="admin-news" method="post" style="display:inline;margin:0"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?')">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                    <input type="hidden" name="type" value="delete">
+                                    <input type="hidden" name="id" value="<%= n.getId() %>">
+                                    <button type="submit" class="btn-action btn-del" title="Xóa bài viết" style="border:none;cursor:pointer">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

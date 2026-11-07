@@ -16,10 +16,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.Product;
 import model.StockImportLine;
-import model.User;
 
 @WebServlet("/admin-stock-import")
 public class AdminStockImportController extends HttpServlet {
@@ -30,9 +28,6 @@ public class AdminStockImportController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        if (!requireAdmin(request, response)) {
-            return;
-        }
 
         ProductDAO productDAO = new ProductDAO();
         InventoryDAO inventoryDAO = new InventoryDAO();
@@ -55,9 +50,6 @@ public class AdminStockImportController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        if (!requireAdmin(request, response)) {
-            return;
-        }
 
         String redirectBase = request.getContextPath() + "/admin-stock-import";
         try {
@@ -166,25 +158,6 @@ public class AdminStockImportController extends HttpServlet {
         Set<String> commonSizes = Set.of("3XS", "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL",
                 "2XL", "3XL", "4XL", "5XL");
         return commonSizes.contains(normalized) || normalized.matches("\\d+(?:\\.\\d+)?");
-    }
-
-    private boolean requireAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        User currentUser = session == null ? null : (User) session.getAttribute("user");
-        Boolean hardcodedAdmin = session == null ? null : (Boolean) session.getAttribute("isAdmin");
-        int role = currentUser != null
-                ? currentUser.getIsAdmin()
-                : (Boolean.TRUE.equals(hardcodedAdmin) ? 1 : 0);
-
-        if (role == 0) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return false;
-        }
-        if (role != 1) {
-            response.sendRedirect(request.getContextPath() + "/admin-products?msg=error_permission");
-            return false;
-        }
-        return true;
     }
 
     private int parsePositiveInt(String rawValue) {

@@ -6,9 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.ReportPeriod;
-import model.User;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -37,11 +35,6 @@ public class ExportRevenueReportController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!isAdminOrStaff(request.getSession())) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xuất báo cáo.");
-            return;
-        }
-
         ReportPeriod period = ReportPeriod.fromParameters(
                 request.getParameter("period"), request.getParameter("month"), request.getParameter("year"));
         String scope = normalizeScope(request.getParameter("scope"));
@@ -287,12 +280,5 @@ public class ExportRevenueReportController extends HttpServlet {
             case "unsold" -> "Mặt hàng chưa bán trong kỳ";
             default -> "Toàn bộ mặt hàng";
         };
-    }
-
-    private boolean isAdminOrStaff(HttpSession session) {
-        User currentUser = (User) session.getAttribute("user");
-        Boolean hardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        return (currentUser != null && currentUser.getIsAdmin() > 0)
-                || Boolean.TRUE.equals(hardcodedAdmin);
     }
 }

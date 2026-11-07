@@ -18,17 +18,9 @@
     String backLink = "order-history";
     model.User currentUser = (model.User) session.getAttribute("user");
 
-    if (currentUser != null) {
-        String currentFullname = "";
-        try {
-            currentFullname = currentUser.getFullname();
-        } catch (Exception e) {
-            currentFullname = "";
-        }
-
-        if (currentFullname != null && currentFullname.equalsIgnoreCase("Administrator")) {
-            backLink = "admin";
-        }
+    // Admin (1) và Staff (2) xem đơn từ trang quản lý đơn hàng
+    if (currentUser != null && (currentUser.getIsAdmin() == 1 || currentUser.getIsAdmin() == 2)) {
+        backLink = "admin-orders";
     }
 %>
 
@@ -100,6 +92,7 @@
 
             <% if (Order.STATUS_PROCESSING.equals(order.getStatus())) { %>
                 <form action="order-detail" method="post" onsubmit="return confirm('<fmt:message key="order.cancel_confirm" />');" style="margin: 0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                     <input type="hidden" name="id" value="<%= order.getId() %>">
                     <input type="hidden" name="action" value="cancel">
                     <button type="submit" class="btn-cancel"><i class="fa-solid fa-xmark"></i> <fmt:message key="order.cancel_btn" /></button>

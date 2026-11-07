@@ -34,6 +34,7 @@
             <% } %>
 
             <form action="admin-add-staff" method="post">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 <div class="form-group">
                     <label>Tài khoản đăng nhập (Username):</label>
                     <input type="text" name="username" class="form-control" required placeholder="Nhập tài khoản viết liền không dấu...">

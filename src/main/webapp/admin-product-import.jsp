@@ -38,6 +38,7 @@
         </div>
 
         <form action="admin-products" method="post">
+            <input type="hidden" name="csrfToken" value="${csrfToken}">
             <input type="hidden" name="action" value="import">
             <input type="hidden" name="pid" value="<%=p.getPid()%>">
 

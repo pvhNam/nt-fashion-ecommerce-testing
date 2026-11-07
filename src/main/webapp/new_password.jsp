@@ -28,6 +28,7 @@
             <p class="login-subtitle">Vui lòng nhập mật khẩu mới cho tài khoản</p>
 
             <form action="newPassword" method="post" class="login-form">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 
                 <% String message = (String) request.getAttribute("message");
                    if (message != null) { %>

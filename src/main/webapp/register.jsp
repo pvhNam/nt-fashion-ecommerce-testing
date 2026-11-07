@@ -28,6 +28,7 @@
             <p class="login-subtitle"><fmt:message key="register.subtitle" /></p>
             
             <form action="register" method="post" class="login-form">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
 
                 <% String mess = (String) request.getAttribute("mess");
                    if (mess != null) { %>

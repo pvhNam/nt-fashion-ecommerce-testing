@@ -578,6 +578,11 @@
         }
     }
 
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : '';
+    }
+
     async function postForm(url, body) {
         var response = await fetch(url, {
             method: 'POST',
@@ -585,7 +590,8 @@
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken()
             },
             body: body.toString()
         });
@@ -945,7 +951,7 @@
             switchLanguage(languageOption);
             return;
         }
-        var remove = event.target.closest('.cart-items-section .btn-remove');
+        var remove = event.target.closest('.cart-items-section a.btn-remove');
         if (remove) {
             event.preventDefault();
             removeCartItem(remove);

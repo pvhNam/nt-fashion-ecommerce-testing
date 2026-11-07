@@ -28,6 +28,7 @@
             <p class="login-subtitle">Mã OTP đã được gửi đến email của bạn</p>
 
             <form action="validateOtp" method="post" class="login-form">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 
                 <% String message = (String) request.getAttribute("message");
                    if (message != null) { 

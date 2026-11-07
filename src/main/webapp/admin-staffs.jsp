@@ -96,11 +96,15 @@
                                     onclick="openChangePass('<%=u.getUsername()%>', '<%=u.getFullname() != null ? u.getFullname() : u.getUsername()%>')">
                                     <i class="fa-solid fa-key"></i>
                                 </button>
-                                <a href="admin-staffs?type=delete&uid=<%=u.getUid()%>"
-                                   class="btn-icon btn-delete" title="Xóa nhân viên"
-                                   onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')">
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>
+                                <form action="admin-staffs" method="post" style="display:inline;margin:0"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa nhân viên này?')">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                    <input type="hidden" name="type" value="delete">
+                                    <input type="hidden" name="uid" value="<%=u.getUid()%>">
+                                    <button type="submit" class="btn-icon btn-delete" title="Xóa nhân viên" style="border:none;cursor:pointer">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -122,7 +126,8 @@
         <div class="modal-box">
             <h3><i class="fa-solid fa-key"></i> Đổi Mật Khẩu Nhân Viên</h3>
             <p id="modal-staff-name" style="color:#555; margin-bottom:15px;"></p>
-            <form action="admin-staffs" method="get" id="changePassForm">
+            <form action="admin-staffs" method="post" id="changePassForm">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
                 <input type="hidden" name="type" value="changepass">
                 <input type="hidden" name="uname" id="modal-uname">
                 <label style="font-weight:600;color:#333;">Mật khẩu mới:</label>

@@ -79,6 +79,7 @@
         <div class="p-price"><fmt:formatNumber value="${p.price}" pattern="#,### 'VNĐ'"/></div>
 
         <form method="post" id="productForm">
+            <input type="hidden" name="csrfToken" value="${csrfToken}">
             <input type="hidden" name="pid" value="${p.pid}">
 
             <!-- SIZE -->
@@ -212,7 +213,7 @@
                 <c:when test="${not empty sessionScope.user}">
                     <form action="product-review" method="post" class="review-form">
                         <input type="hidden" name="pid" value="${p.pid}">
-                        <input type="hidden" name="csrfToken" value="${reviewCsrfToken}">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
 
                         <div class="review-form-heading">
                             <span class="review-form-icon"><i class="fa-regular fa-pen-to-square"></i></span>

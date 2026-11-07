@@ -134,7 +134,6 @@ public class GoogleCallbackController extends HttpServlet {
             if (u != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", u);
-                session.setAttribute("isAdmin", u.getIsAdmin() == 1 || u.getIsAdmin() == 2);
                 response.sendRedirect("home");
             } else {
                 request.setAttribute("error", "Unable to create or find user account for Google email.");

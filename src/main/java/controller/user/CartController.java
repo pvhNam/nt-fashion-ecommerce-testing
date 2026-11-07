@@ -32,38 +32,6 @@ public class CartController extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         String action = request.getParameter("action");
 
-        if ("remove".equals(action)) {
-            int pid = 0;
-            try { pid = Integer.parseInt(request.getParameter("pid")); } catch (Exception e) {}
-            String color = request.getParameter("color");
-            String size = request.getParameter("size");
-            if (color == null) color = "";
-            if (size == null) size = "";
-
-            if (currentUser != null) {
-                CartDAO dao = new CartDAO();
-                dao.removeItem(currentUser.getUid(), pid, color, size);
-            } else {
-                List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-                if (cart != null) {
-                    Iterator<CartItem> iterator = cart.iterator();
-                    while (iterator.hasNext()) {
-                        CartItem item = iterator.next();
-                        String itemColor = item.getColor() == null ? "" : item.getColor();
-                        String itemSize = item.getSize() == null ? "" : item.getSize();
-
-                        if (item.getProduct().getPid() == pid && itemColor.equals(color) && itemSize.equals(size)) {
-                            iterator.remove();
-                            break;
-                        }
-                    }
-                    session.setAttribute("cart", cart);
-                }
-            }
-            response.sendRedirect("cart");
-            return;
-        }
-
         List<CartItem> cart = new ArrayList<>();
         List<Voucher> myVouchers = new ArrayList<>();
 
