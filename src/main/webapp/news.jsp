@@ -1,5 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, dao.NewsDAO, model.News, model.User"%>
+<%!
+  private String h(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
+        .replace("'", "&#39;");
+  }
+%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
@@ -25,11 +38,11 @@
                    for (News n : list) { %>
             <a href="news-detail?id=<%=n.getId()%>" style="text-decoration: none; color: inherit;">
                 <div class="news-card">
-                    <img src="<%=n.getImage()%>" alt="<%=n.getTitle()%>" class="news-img" onerror="this.src='img/no-image.png'">
+                    <img src="<%=h(n.getImage())%>" alt="<%=h(n.getTitle())%>" class="news-img" onerror="this.src='img/no-image.png'">
                     <div class="news-content">
                         <span class="news-date"><i class="fa-regular fa-calendar"></i> <%=n.getCreatedAt()%></span>
-                        <h3 class="news-title"><%=n.getTitle()%></h3>
-                        <p class="news-desc"><%=n.getShortDesc()%></p>
+                        <h3 class="news-title"><%=h(n.getTitle())%></h3>
+                        <p class="news-desc"><%=h(n.getShortDesc())%></p>
                         <span style="color: #333; font-weight: 600; margin-top: 10px; font-size: 0.9rem;"><fmt:message key="news.read_more" /> &rarr;</span>
                     </div>
                 </div>

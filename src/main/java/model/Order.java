@@ -25,6 +25,8 @@ public class Order {
 	private String contactEmail;
 	private String contactPhone;
 	private double memberDiscountPercent;
+	// Voucher đơn đã giữ (0 = không dùng voucher); dùng để trả voucher khi đơn online thất bại/hết hạn
+	private int voucherId;
 
 	public Order() {
 	}
@@ -84,6 +86,14 @@ public class Order {
 
 	public void setMemberDiscountPercent(double memberDiscountPercent) {
 		this.memberDiscountPercent = memberDiscountPercent;
+	}
+
+	public int getVoucherId() {
+		return voucherId;
+	}
+
+	public void setVoucherId(int voucherId) {
+		this.voucherId = voucherId;
 	}
 
 	// --- Các Getter/Setter cũ (Giữ nguyên) ---

@@ -114,4 +114,36 @@ public class CartDAO {
 			ps.executeUpdate();
 		} catch (Exception e) { e.printStackTrace(); }
 	}
+
+	/**
+	 * Chỉ bỏ khỏi giỏ đúng các món (sản phẩm + màu + size) và số lượng đã đặt (ST-16).
+	 * Món khách thêm vào giỏ sau khi đặt đơn vẫn được giữ lại.
+	 */
+	public void removePurchasedItems(int uid, List<CartItem> purchasedItems) {
+		if (purchasedItems == null || purchasedItems.isEmpty()) {
+			return;
+		}
+		String decrease = "UPDATE cart SET quantity = quantity - ? WHERE user_id = ? AND product_id = ? "
+				+ "AND TRIM(COALESCE(color, '')) = ? AND TRIM(COALESCE(size, '')) = ?";
+		String cleanup = "DELETE FROM cart WHERE user_id = ? AND quantity <= 0";
+		try (Connection connection = DBConnect.getConnection()) {
+			try (PreparedStatement statement = connection.prepareStatement(decrease)) {
+				for (CartItem item : purchasedItems) {
+					if (item == null || item.getProduct() == null || item.getQuantity() <= 0) {
+						continue;
+					}
+					statement.setInt(1, item.getQuantity());
+					statement.setInt(2, uid);
+					statement.setInt(3, item.getProduct().getPid());
+					statement.setString(4, item.getColor() == null ? "" : item.getColor().trim());
+					statement.setString(5, item.getSize() == null ? "" : item.getSize().trim());
+					statement.executeUpdate();
+				}
+			}
+			try (PreparedStatement statement = connection.prepareStatement(cleanup)) {
+				statement.setInt(1, uid);
+				statement.executeUpdate();
+			}
+		} catch (Exception e) { e.printStackTrace(); }
+	}
 }

@@ -177,6 +177,23 @@ public class VoucherDAO {
         }
         return false;
     }
+
+    /**
+     * Trả voucher về ví khi đơn thanh toán online thất bại hoặc hết hạn chờ thanh toán (ST-16, IS-05)
+     */
+    public boolean releaseVoucher(int userId, int voucherId) {
+        String query = "UPDATE user_wallet SET is_used = FALSE "
+                + "WHERE user_id = ? AND voucher_id = ? AND is_used = TRUE";
+        try (Connection connection = DBConnect.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            statement.setInt(2, voucherId);
+            return statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
  // Thêm voucher
     public boolean insertVoucher(Voucher v) {
         String query = "INSERT INTO vouchers (code, description, discount_amount, discount_type, min_order, expiry_date) VALUES (?, ?, ?, ?, ?, ?)";

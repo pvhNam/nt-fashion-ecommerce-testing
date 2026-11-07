@@ -78,30 +78,32 @@ public class OrderDAO {
 
     public int createOrder(int userId, double totalMoney, String address, String paymentMethod, String status,
             List<CartItem> cart) {
-        return createOrderInternal(userId, totalMoney, address, paymentMethod, status, cart, false, null, null, 0);
+        return createOrderInternal(userId, totalMoney, address, paymentMethod, status, cart, false, null, null, 0, 0);
     }
 
     public int createOrder(int userId, double totalMoney, String address, String paymentMethod, String status,
-            List<CartItem> cart, String contactEmail, String contactPhone, double memberDiscountPercent) {
+            List<CartItem> cart, String contactEmail, String contactPhone, double memberDiscountPercent,
+            int voucherId) {
         return createOrderInternal(userId, totalMoney, address, paymentMethod, status, cart, false,
-                contactEmail, contactPhone, memberDiscountPercent);
+                contactEmail, contactPhone, memberDiscountPercent, voucherId);
     }
 
     public int createOrderAndDecreaseStock(int userId, double totalMoney, String address, String paymentMethod,
             List<CartItem> cart) {
         return createOrderInternal(userId, totalMoney, address, paymentMethod,
-                Order.STATUS_PROCESSING, cart, true, null, null, 0);
+                Order.STATUS_PROCESSING, cart, true, null, null, 0, 0);
     }
 
     public int createOrderAndDecreaseStock(int userId, double totalMoney, String address, String paymentMethod,
-            List<CartItem> cart, String contactEmail, String contactPhone, double memberDiscountPercent) {
+            List<CartItem> cart, String contactEmail, String contactPhone, double memberDiscountPercent,
+            int voucherId) {
         return createOrderInternal(userId, totalMoney, address, paymentMethod,
-                Order.STATUS_PROCESSING, cart, true, contactEmail, contactPhone, memberDiscountPercent);
+                Order.STATUS_PROCESSING, cart, true, contactEmail, contactPhone, memberDiscountPercent, voucherId);
     }
 
     private int createOrderInternal(int userId, double totalMoney, String address, String paymentMethod, String status,
             List<CartItem> cart, boolean decreaseStock, String contactEmail, String contactPhone,
-            double memberDiscountPercent) {
+            double memberDiscountPercent, int voucherId) {
         int orderId = 0;
         Connection connection = null;
         PreparedStatement psOrder = null;
@@ -113,8 +115,8 @@ public class OrderDAO {
 
             String sqlOrder = "INSERT INTO orders "
                     + "(user_id, total_money, address, status, created_at, payment_method, "
-                    + "contact_email, contact_phone, member_discount_percent) "
-                    + "VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?)";
+                    + "contact_email, contact_phone, member_discount_percent, voucher_id) "
+                    + "VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)";
 
             psOrder = connection.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
             psOrder.setInt(1, userId);
@@ -125,6 +127,11 @@ public class OrderDAO {
             psOrder.setString(6, normalizeContact(contactEmail));
             psOrder.setString(7, normalizeContact(contactPhone));
             psOrder.setDouble(8, Math.max(0, memberDiscountPercent));
+            if (voucherId > 0) {
+                psOrder.setInt(9, voucherId);
+            } else {
+                psOrder.setNull(9, java.sql.Types.INTEGER);
+            }
 
             if (psOrder.executeUpdate() > 0) {
                 try (ResultSet rsKeys = psOrder.getGeneratedKeys()) {
@@ -190,15 +197,19 @@ public class OrderDAO {
 
     /** Completes a MoMo order without decreasing inventory twice on repeated callbacks. */
     public boolean finalizeMomoPayment(int orderId) {
-        return finalizeOnlinePayment(orderId, Order.STATUS_PENDING_MOMO);
+        return finalizeOnlinePayment(orderId, Order.STATUS_PENDING_MOMO, Order.STATUS_MOMO_FAILED);
     }
 
     /** Completes a VNPay order without decreasing inventory twice on repeated IPNs. */
     public boolean finalizeVnpayPayment(int orderId) {
-        return finalizeOnlinePayment(orderId, Order.STATUS_PENDING_VNPAY);
+        return finalizeOnlinePayment(orderId, Order.STATUS_PENDING_VNPAY, Order.STATUS_VNPAY_FAILED);
     }
 
-    private boolean finalizeOnlinePayment(int orderId, String pendingStatus) {
+    /**
+     * Ghi nhận thanh toán thành công. Ngoài trạng thái chờ, nhận cả trạng thái thất bại
+     * vì đơn có thể đã bị đánh hết hạn trước khi cổng thanh toán báo thành công (tiền đã trừ, IS-05).
+     */
+    private boolean finalizeOnlinePayment(int orderId, String pendingStatus, String failedStatus) {
         Connection connection = null;
         try {
             connection = DBConnect.getConnection();
@@ -219,7 +230,7 @@ public class OrderDAO {
                 connection.commit();
                 return true;
             }
-            if (!pendingStatus.equals(currentStatus)) {
+            if (!pendingStatus.equals(currentStatus) && !failedStatus.equals(currentStatus)) {
                 connection.rollback();
                 return false;
             }
@@ -247,10 +258,11 @@ public class OrderDAO {
             }
 
             try (PreparedStatement update = connection.prepareStatement(
-                    "UPDATE orders SET status = ? WHERE id = ? AND status = ?")) {
+                    "UPDATE orders SET status = ? WHERE id = ? AND status IN (?, ?)")) {
                 update.setString(1, Order.STATUS_PAID_PROCESSING);
                 update.setInt(2, orderId);
                 update.setString(3, pendingStatus);
+                update.setString(4, failedStatus);
                 if (update.executeUpdate() != 1) {
                     throw new SQLException("Order status changed while completing payment");
                 }
@@ -372,6 +384,35 @@ public class OrderDAO {
         }
     }
 
+    /**
+     * Đơn MoMo/VNPay còn chờ thanh toán nhưng đã tạo quá {@code minutes} phút (IS-05).
+     * userId = null: lấy của mọi khách (dùng ở trang quản trị).
+     */
+    public List<Order> getOverduePendingOnlineOrders(Integer userId, int minutes) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM orders WHERE status IN (?, ?) "
+                + "AND created_at < (NOW() - INTERVAL ? MINUTE)"
+                + (userId != null ? " AND user_id = ?" : "")
+                + " ORDER BY id";
+        try (Connection connection = DBConnect.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, Order.STATUS_PENDING_MOMO);
+            statement.setString(2, Order.STATUS_PENDING_VNPAY);
+            statement.setInt(3, minutes);
+            if (userId != null) {
+                statement.setInt(4, userId);
+            }
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    list.add(mapOrder(result));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean updateOrderStatusIfCurrent(int orderId, String currentStatus, String newStatus) {
         String sql = "UPDATE orders SET status = ? WHERE id = ? AND status = ?";
         try (Connection connection = DBConnect.getConnection();
@@ -439,6 +480,11 @@ public class OrderDAO {
             order.setContactEmail(resultSet.getString("contact_email"));
             order.setContactPhone(resultSet.getString("contact_phone"));
             order.setMemberDiscountPercent(resultSet.getDouble("member_discount_percent"));
+        } catch (SQLException ignored) {
+        }
+
+        try {
+            order.setVoucherId(resultSet.getInt("voucher_id"));
         } catch (SQLException ignored) {
         }
 

@@ -34,7 +34,7 @@
 		<c:if test="${not empty txtSearch}">
 			<p style="color: #d4af37; margin-top: 10px; font-weight: bold;">
 				<i class="fa-solid fa-magnifying-glass"></i> Kết quả tìm kiếm cho:
-				"${txtSearch}"
+				"<c:out value="${txtSearch}" />"
 			</p>
 		</c:if>
 	</section>
@@ -92,10 +92,10 @@
 
 				<form action="about" method="get" class="sort-box">
 					<c:if test="${not empty priceFilter}">
-						<input type="hidden" name="price" value="${priceFilter}">
+						<input type="hidden" name="price" value="<c:out value='${priceFilter}' />">
 					</c:if>
 					<c:if test="${not empty txtSearch}">
-						<input type="hidden" name="txt" value="${txtSearch}">
+						<input type="hidden" name="txt" value="<c:out value='${txtSearch}' />">
 					</c:if>
 
 					<select name="sort" onchange="this.form.submit()">
