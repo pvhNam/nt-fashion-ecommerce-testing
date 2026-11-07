@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import dao.UserDAO;
 import util.MD5;
+import util.PasswordPolicy;
 import java.io.IOException;
 
 @WebServlet("/newPassword")
@@ -32,8 +33,8 @@ public class NewPasswordController extends HttpServlet {
             return;
         }
 
-        if (!newPassword.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$")) {
-            request.setAttribute("message", "Mat khau yeu! Can 8 ky tu, 1 chu hoa, 1 thuong va 1 so.");
+        if (!PasswordPolicy.isValid(newPassword)) {
+            request.setAttribute("message", PasswordPolicy.MESSAGE);
             request.getRequestDispatcher("/new_password.jsp").forward(request, response);
             return;
         }

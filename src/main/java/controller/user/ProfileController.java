@@ -12,6 +12,7 @@ import model.User;
 import dao.LoyaltyDAO;
 import dao.UserDAO;
 import util.MD5;
+import util.PasswordPolicy;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -111,6 +112,9 @@ public class ProfileController extends HttpServlet {
 
             if (oldPass == null || newPass == null || newPass.isBlank() || !newPass.equals(confirmPass)) {
                 request.setAttribute("errPass", "Vui lòng nhập đủ mật khẩu và xác nhận trùng khớp.");
+            } else if (!PasswordPolicy.isValid(newPass)) {
+                // IS-08: cùng quy định với đăng ký và đặt lại mật khẩu
+                request.setAttribute("errPass", PasswordPolicy.MESSAGE);
             } else {
                 String oldPassHash = MD5.getMd5(oldPass);
                 if (!oldPassHash.equals(currentUser.getPasswordHash())) {
