@@ -21,6 +21,7 @@ import model.Product;
 import model.User;
 import model.Voucher;
 import org.json.JSONObject;
+import service.PendingPaymentService;
 import service.PricingService;
 
 @WebServlet("/cart")
@@ -36,6 +37,8 @@ public class CartController extends HttpServlet {
         List<Voucher> myVouchers = new ArrayList<>();
 
         if (currentUser != null) {
+            // Hủy đơn online quá hạn chờ thanh toán để voucher đã giữ quay lại ví (IS-05)
+            new PendingPaymentService().expireOverdue(currentUser.getUid());
             CartDAO dao = new CartDAO();
             cart = dao.getCartByUid(currentUser.getUid());
             VoucherDAO vDao = new VoucherDAO();
@@ -124,6 +127,7 @@ public class CartController extends HttpServlet {
             String code = request.getParameter("voucherCode");
             if (code != null) code = code.trim().toUpperCase();
 
+            new PendingPaymentService().expireOverdue(currentUser.getUid());
             VoucherDAO vDao = new VoucherDAO();
             Voucher knownVoucher = vDao.getVoucherByCode(code);
             Voucher v = vDao.getAvailableVoucherForUserByCode(currentUser.getUid(), code);

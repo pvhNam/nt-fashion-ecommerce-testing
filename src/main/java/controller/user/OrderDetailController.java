@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import model.Order;
 import model.User;
 import service.OrderNotificationService;
+import service.PendingPaymentService;
 
 @WebServlet("/order-detail")
 public class OrderDetailController extends HttpServlet {
@@ -31,7 +32,10 @@ public class OrderDetailController extends HttpServlet {
             return;
         }
         try {
-            Order order = new OrderDAO().getOrderById(Integer.parseInt(idParam));
+            int orderId = Integer.parseInt(idParam);
+            // Đơn MoMo/VNPay chờ quá hạn được chuyển sang thất bại trước khi hiển thị (IS-05)
+            new PendingPaymentService().expireOverdue(currentUser.getUid());
+            Order order = new OrderDAO().getOrderById(orderId);
             boolean adminOrStaff = currentUser.getIsAdmin() > 0;
             if (order == null || (!adminOrStaff && order.getUserId() != currentUser.getUid())) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);

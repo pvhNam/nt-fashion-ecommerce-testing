@@ -4,9 +4,7 @@ import java.io.IOException;
 
 import org.json.JSONObject;
 
-import dao.CartDAO;
 import dao.OrderDAO;
-import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +13,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Order;
 import service.MomoService;
+import service.OnlinePaymentCleanup;
 import service.OrderNotificationService;
+import service.PendingPaymentService;
 
 @WebServlet("/momo-callback")
 public class MomoCallbackController extends HttpServlet {
@@ -111,17 +111,17 @@ public class MomoCallbackController extends HttpServlet {
             if ("0".equals(resultCode)) {
                 boolean completed = orderDao.finalizeMomoPayment(orderId);
                 if (completed) {
-                    cleanupSuccessfulPayment(order, extraData);
+                    boolean wasMarkedFailed = Order.STATUS_MOMO_FAILED.equals(order.getStatus());
+                    OnlinePaymentCleanup.afterSuccess(orderDao, order,
+                            extraData.optInt("voucherId", 0), wasMarkedFailed);
                     new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(orderId), null);
                 }
                 result.success = completed;
                 return result;
             }
 
-            if (orderDao.updateOrderStatusIfCurrent(
-                    orderId, Order.STATUS_PENDING_MOMO, Order.STATUS_MOMO_FAILED)) {
-                new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(orderId), null);
-            }
+            // Thất bại: chuyển trạng thái và trả voucher đã giữ về ví (ST-16)
+            new PendingPaymentService().markFailed(order, Order.STATUS_PENDING_MOMO, Order.STATUS_MOMO_FAILED);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -174,18 +174,6 @@ public class MomoCallbackController extends HttpServlet {
         }
 
         return 0;
-    }
-
-    private void cleanupSuccessfulPayment(Order order, JSONObject extraData) {
-        CartDAO cartDao = new CartDAO();
-        VoucherDAO voucherDao = new VoucherDAO();
-
-        cartDao.clearCart(order.getUserId());
-
-        int voucherId = extraData.optInt("voucherId", 0);
-        if (voucherId > 0) {
-            voucherDao.markVoucherUsed(order.getUserId(), voucherId);
-        }
     }
 
     private static class CallbackResult {
