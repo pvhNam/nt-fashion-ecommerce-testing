@@ -7,10 +7,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @WebServlet("/google-login")
 public class GoogleLoginController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    // Mã chống giả mạo gửi kèm sang Google; GoogleCallbackController so lại khi Google trả về
+    static final String STATE_ATTRIBUTE = "googleOAuthState";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String clientId = getServletContext().getInitParameter("google.clientId");
@@ -38,13 +43,18 @@ public class GoogleLoginController extends HttpServlet {
             return;
         }
         String scope = "openid email profile";
+        byte[] stateBytes = new byte[32];
+        RANDOM.nextBytes(stateBytes);
+        String state = Base64.getUrlEncoder().withoutPadding().encodeToString(stateBytes);
+        request.getSession().setAttribute(STATE_ATTRIBUTE, state);
         String authUrl = "https://accounts.google.com/o/oauth2/v2/auth"
                 + "?client_id=" + URLEncoder.encode(clientId, "UTF-8")
                 + "&response_type=code"
                 + "&scope=" + URLEncoder.encode(scope, "UTF-8")
                 + "&redirect_uri=" + URLEncoder.encode(redirectUri, "UTF-8")
                 + "&access_type=online"
-                + "&prompt=select_account";
+                + "&prompt=select_account"
+                + "&state=" + state;
         if (configuredRedirect != null && !configuredRedirect.isEmpty() && !configuredRedirect.equals(redirectUri)) {
             String message = "Configured redirect URI (web.xml) does not match this server's computed redirect URI.\n"
                     + "Configured: " + configuredRedirect + "\nComputed: " + redirectUri
