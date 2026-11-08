@@ -13,7 +13,10 @@ public class DBConnect {
         Connection conn = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection(url, user, pass);
+            conn = DriverManager.getConnection(
+                    setting("db.url", "DB_URL", url),
+                    setting("db.user", "DB_USER", user),
+                    setting("db.password", "DB_PASSWORD", pass));
             System.out.println("Kết nối thành công!");
         } catch (Exception e) {
             System.out.println("Kết nối thất bại!");
@@ -22,6 +25,12 @@ public class DBConnect {
         return conn;
     }
     
+    private static String setting(String property, String environment, String fallback) {
+        String value = System.getProperty(property);
+        if (value == null) value = System.getenv(environment);
+        return value == null ? fallback : value;
+    }
+
     // test
     public static void main(String[] args) {
         getConnection();
