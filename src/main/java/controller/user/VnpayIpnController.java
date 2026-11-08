@@ -6,9 +6,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import dao.CartDAO;
 import dao.OrderDAO;
-import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,7 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Order;
 import service.VnpayService;
+import service.OnlinePaymentCleanup;
 import service.OrderNotificationService;
+import service.PendingPaymentService;
 
 @WebServlet("/vnpay-ipn")
 public class VnpayIpnController extends HttpServlet {
@@ -64,26 +64,27 @@ public class VnpayIpnController extends HttpServlet {
                 return new IpnResult("04", "Invalid Amount");
             }
 
-            if (!Order.STATUS_PENDING_VNPAY.equals(order.getStatus())) {
+            boolean paymentSucceeded = "00".equals(parameters.get("vnp_ResponseCode"))
+                    && "00".equals(parameters.get("vnp_TransactionStatus"));
+            // Đơn đã bị đánh hết hạn nhưng VNPay báo đã trừ tiền: vẫn ghi nhận thanh toán (IS-05)
+            boolean latePayment = paymentSucceeded && Order.STATUS_VNPAY_FAILED.equals(order.getStatus());
+            if (!Order.STATUS_PENDING_VNPAY.equals(order.getStatus()) && !latePayment) {
                 return new IpnResult("02", "Order already confirmed");
             }
 
-            boolean paymentSucceeded = "00".equals(parameters.get("vnp_ResponseCode"))
-                    && "00".equals(parameters.get("vnp_TransactionStatus"));
             if (paymentSucceeded) {
                 if (!orderDao.finalizeVnpayPayment(orderId)) {
                     return new IpnResult("99", "Unable to confirm order");
                 }
-                cleanupSuccessfulPayment(order, vnpayService.extractVoucherId(transactionReference));
+                OnlinePaymentCleanup.afterSuccess(orderDao, order,
+                        vnpayService.extractVoucherId(transactionReference), latePayment);
                 new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(orderId), null);
                 return new IpnResult("00", "Confirm Success");
             }
 
-            boolean updated = orderDao.updateOrderStatusIfCurrent(
-                    orderId, Order.STATUS_PENDING_VNPAY, Order.STATUS_VNPAY_FAILED);
-            if (updated) {
-                new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(orderId), null);
-            }
+            // Thất bại: chuyển trạng thái và trả voucher đã giữ về ví (ST-16)
+            boolean updated = new PendingPaymentService().markFailed(
+                    order, Order.STATUS_PENDING_VNPAY, Order.STATUS_VNPAY_FAILED);
             return updated
                     ? new IpnResult("00", "Confirm Success")
                     : new IpnResult("02", "Order already confirmed");
@@ -113,13 +114,6 @@ public class VnpayIpnController extends HttpServlet {
             return Long.parseLong(value);
         } catch (Exception e) {
             return -1L;
-        }
-    }
-
-    private void cleanupSuccessfulPayment(Order order, int voucherId) {
-        new CartDAO().clearCart(order.getUserId());
-        if (voucherId > 0) {
-            new VoucherDAO().markVoucherUsed(order.getUserId(), voucherId);
         }
     }
 

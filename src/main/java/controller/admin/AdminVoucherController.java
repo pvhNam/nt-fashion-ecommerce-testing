@@ -2,7 +2,6 @@ package controller.admin;
 
 import dao.VoucherDAO;
 import model.Voucher;
-import model.User;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
@@ -11,28 +10,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/admin-vouchers")
 public class AdminVoucherController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private boolean checkAdminPermission(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession();
-        User currUser = (User) session.getAttribute("user");
-        Boolean isHardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        int role = (currUser != null) ? currUser.getIsAdmin() : ((isHardcodedAdmin != null && isHardcodedAdmin) ? 1 : 0);
-
-        if (role != 1) {
-            response.sendRedirect("admin");
-            return false;
-        }
-        return true;
-    }
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!checkAdminPermission(request, response)) return;
-
         String action = request.getParameter("action");
         VoucherDAO vDao = new VoucherDAO();
 
@@ -40,10 +23,6 @@ public class AdminVoucherController extends HttpServlet {
             List<Voucher> list = vDao.getAllVouchers();
             request.setAttribute("listVouchers", list);
             request.getRequestDispatcher("/admin-vouchers.jsp").forward(request, response);
-        } else if (action.equals("delete")) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            vDao.deleteVoucher(id);
-            response.sendRedirect("admin-vouchers?msg=deleted");
         } else if (action.equals("edit")) {
             int id = Integer.parseInt(request.getParameter("id"));
             Voucher v = vDao.getVoucherById(id);
@@ -55,10 +34,15 @@ public class AdminVoucherController extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!checkAdminPermission(request, response)) return;
-
         String action = request.getParameter("action");
         VoucherDAO vDao = new VoucherDAO();
+
+        if ("delete".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            vDao.deleteVoucher(id);
+            response.sendRedirect("admin-vouchers?msg=deleted");
+            return;
+        }
 
         String code = request.getParameter("code");
         String desc = request.getParameter("description");

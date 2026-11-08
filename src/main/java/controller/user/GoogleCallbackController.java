@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Random;
 
 @WebServlet("/google-callback")
@@ -27,8 +28,23 @@ public class GoogleCallbackController extends HttpServlet {
         String code = request.getParameter("code");
         String error = request.getParameter("error");
 
+        // Không in lại giá trị error trên URL (login.jsp in thông báo không mã hóa)
         if (error != null) {
-            request.setAttribute("error", "Google sign-in was cancelled or failed: " + error);
+            request.setAttribute("error", "Đăng nhập Google đã bị hủy hoặc không thành công. Vui lòng thử lại.");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            return;
+        }
+
+        // Mã state phải khớp với mã đã tạo ở /google-login; dùng một lần rồi xóa
+        HttpSession stateSession = request.getSession(false);
+        Object expectedState = stateSession == null ? null : stateSession.getAttribute(GoogleLoginController.STATE_ATTRIBUTE);
+        if (stateSession != null) {
+            stateSession.removeAttribute(GoogleLoginController.STATE_ATTRIBUTE);
+        }
+        String state = request.getParameter("state");
+        if (!(expectedState instanceof String) || state == null || !MessageDigest.isEqual(
+                ((String) expectedState).getBytes(StandardCharsets.UTF_8), state.getBytes(StandardCharsets.UTF_8))) {
+            request.setAttribute("error", "Phiên đăng nhập Google không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.");
             request.getRequestDispatcher("/login.jsp").forward(request, response);
             return;
         }
@@ -134,7 +150,6 @@ public class GoogleCallbackController extends HttpServlet {
             if (u != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", u);
-                session.setAttribute("isAdmin", u.getIsAdmin() == 1 || u.getIsAdmin() == 2);
                 response.sendRedirect("home");
             } else {
                 request.setAttribute("error", "Unable to create or find user account for Google email.");

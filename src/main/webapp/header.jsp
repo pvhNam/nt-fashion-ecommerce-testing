@@ -6,9 +6,10 @@
 <fmt:setBundle basename="resources.messages" />
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20260831.1">
+<meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/user-pages.css?v=20260831.1">
-<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20260822.5" defer></script>
+<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261027.1" defer></script>
 
 <header class="ym-header" id="ym-site-header"
 		data-current-lang="${sessionScope.lang == 'en' ? 'en' : 'vi'}">
@@ -72,7 +73,7 @@
 							<div class="user-greet"><i class="fa-regular fa-face-smile"></i> <fmt:message key="header.greeting" /> <c:out value="${sessionScope.user.fullname}" />!</div>
 							<a href="${pageContext.request.contextPath}/profile" role="menuitem"><i class="fa-regular fa-id-card"></i> <fmt:message key="profile.info_title" /></a>
 							<a href="${pageContext.request.contextPath}/order-history" role="menuitem"><i class="fa-solid fa-clock-rotate-left"></i> <fmt:message key="header.history_title" /></a>
-							<c:if test="${sessionScope.isAdmin}">
+							<c:if test="${sessionScope.user.isAdmin == 1 || sessionScope.user.isAdmin == 2}">
 								<a href="${pageContext.request.contextPath}/admin" class="ym-admin-link" role="menuitem"><i class="fa-solid fa-chart-line"></i> Quản trị Admin</a>
 							</c:if>
 							<a href="${pageContext.request.contextPath}/logout" role="menuitem"><i class="fa-solid fa-arrow-right-from-bracket"></i> <fmt:message key="header.logout_title" /></a>

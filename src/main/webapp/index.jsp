@@ -562,7 +562,7 @@
 			<h2 id="voucher-heading">Chạm để nhận quà.</h2>
 			<p>Lưu mã yêu thích và sử dụng ngay khi thanh toán. Mỗi ưu đãi là một lý do tuyệt vời để làm mới tủ đồ.</p>
 		</div>
-		<c:if test="${sessionScope.isAdmin}">
+		<c:if test="${sessionScope.user.isAdmin == 1}">
 			<a href="admin-add-voucher.jsp" class="badge-add">+ <fmt:message key="home.voucher.add" /></a>
 		</c:if>
 	</div>
@@ -715,6 +715,7 @@
 		<button type="button" class="modal-close" onclick="closeBuyNowModal()" aria-label="Đóng cửa sổ"><i class="fa-solid fa-xmark"></i></button>
 		<h3 id="buy-modal-title">Tùy chọn sản phẩm</h3>
 		<form id="buyNowForm" action="buy-now" method="post">
+		    <input type="hidden" name="csrfToken" value="${csrfToken}">
 			<input type="hidden" name="pid" id="modal-pid">
 			<input type="hidden" name="action" id="modal-action" value="buy">
 			<div id="modal-options"></div>
@@ -914,7 +915,10 @@
 
 		fetch('voucher', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+			},
 			body: 'action=save&code=' + encodeURIComponent(code)
 		})
 				.then(response => response.text())

@@ -24,6 +24,7 @@ import model.User;
 import model.Voucher;
 import service.MomoService;
 import service.OrderNotificationService;
+import service.PendingPaymentService;
 import service.PricingService;
 import service.VnpayService;
 
@@ -50,6 +51,9 @@ public class CheckoutController extends HttpServlet {
             response.sendRedirect("login");
             return;
         }
+
+        // Đơn online quá hạn chờ thanh toán được hủy trước, để voucher đã giữ quay về ví (IS-05)
+        new PendingPaymentService().expireOverdue(currentUser.getUid());
 
         CartDAO cartDao = new CartDAO();
         List<CartItem> cart = cartDao.getCartByUid(currentUser.getUid());
@@ -195,32 +199,63 @@ public class CheckoutController extends HttpServlet {
         response.sendRedirect("cart");
     }
 
+    /**
+     * Giữ voucher ngay khi tạo đơn (ST-16): đánh dấu đã dùng trong ví, câu lệnh chỉ thành công
+     * một lần nên hai đơn không thể cùng dùng một voucher. Trả về false (và báo lỗi) nếu voucher đã bị giữ.
+     */
+    private boolean reserveVoucher(HttpServletResponse response, HttpSession session, int userId, Voucher voucher)
+            throws IOException {
+        if (voucher == null) {
+            return true;
+        }
+        if (new VoucherDAO().markVoucherUsed(userId, voucher.getId())) {
+            return true;
+        }
+        session.removeAttribute("appliedVoucher");
+        rejectCheckout(response, session,
+                "Voucher này đang được dùng cho một đơn hàng khác. Vui lòng chọn voucher khác.");
+        return false;
+    }
+
+    /** Trả voucher về ví khi không tạo được đơn. */
+    private void releaseVoucher(int userId, Voucher voucher) {
+        if (voucher != null) {
+            new VoucherDAO().releaseVoucher(userId, voucher.getId());
+        }
+    }
+
+    private int voucherIdOf(Voucher voucher) {
+        return voucher == null ? 0 : voucher.getId();
+    }
+
     private void handleDirectCheckout(HttpServletResponse response, HttpSession session, User currentUser, CartDAO cartDao,
             List<CartItem> cart, PricingService.Quote quote, String address, String paymentMethod,
             String contactEmail, String contactPhone) throws IOException {
         Voucher appliedVoucher = (Voucher) session.getAttribute("appliedVoucher");
+        if (!reserveVoucher(response, session, currentUser.getUid(), appliedVoucher)) {
+            return;
+        }
         OrderDAO orderDao = new OrderDAO();
         int newOrderId = orderDao.createOrderAndDecreaseStock(
                 currentUser.getUid(), quote.getFinalTotal(), address, paymentMethod, cart,
-                contactEmail, contactPhone, quote.getMemberDiscountPercent());
+                contactEmail, contactPhone, quote.getMemberDiscountPercent(), voucherIdOf(appliedVoucher));
 
         if (newOrderId <= 0) {
+            releaseVoucher(currentUser.getUid(), appliedVoucher);
             session.setAttribute("voucherMsg", "Dat hang that bai, vui long thu lai.");
             session.setAttribute("msgType", "error");
             response.sendRedirect("cart");
             return;
         }
 
-        VoucherDAO vDao = new VoucherDAO();
-
         if (appliedVoucher != null) {
-            vDao.markVoucherUsed(currentUser.getUid(), appliedVoucher.getId());
             session.removeAttribute("appliedVoucher");
             session.removeAttribute("voucherMsg");
         }
 
-        cartDao.clearCart(currentUser.getUid());
-        session.setAttribute("cartCount", 0);
+        // Chỉ bỏ khỏi giỏ các món vừa đặt (ST-16)
+        cartDao.removePurchasedItems(currentUser.getUid(), cart);
+        session.setAttribute("cartCount", cartDao.getCartByUid(currentUser.getUid()).size());
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
         response.sendRedirect("order-success?id=" + newOrderId);
     }
@@ -238,16 +273,23 @@ public class CheckoutController extends HttpServlet {
         }
 
         Voucher appliedVoucher = (Voucher) session.getAttribute("appliedVoucher");
+        if (!reserveVoucher(response, session, userId, appliedVoucher)) {
+            return;
+        }
         OrderDAO orderDao = new OrderDAO();
         int newOrderId = orderDao.createOrder(userId, quote.getFinalTotal(), address, "MOMO",
-                Order.STATUS_PENDING_MOMO, cart, contactEmail, contactPhone, quote.getMemberDiscountPercent());
+                Order.STATUS_PENDING_MOMO, cart, contactEmail, contactPhone, quote.getMemberDiscountPercent(),
+                voucherIdOf(appliedVoucher));
 
         if (newOrderId <= 0) {
+            releaseVoucher(userId, appliedVoucher);
             session.setAttribute("voucherMsg", "Khong the tao don hang cho thanh toan MoMo.");
             session.setAttribute("msgType", "error");
             response.sendRedirect("cart");
             return;
         }
+        // Voucher đã gắn với đơn này; nếu thanh toán thất bại/hết hạn, voucher được trả về ví
+        session.removeAttribute("appliedVoucher");
 
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
 
@@ -271,8 +313,8 @@ public class CheckoutController extends HttpServlet {
             response.sendRedirect(payUrl);
         } catch (Exception e) {
             e.printStackTrace();
-            orderDao.updateOrderStatus(newOrderId, Order.STATUS_MOMO_FAILED);
-            new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(newOrderId), null);
+            new PendingPaymentService().markFailed(orderDao.getOrderById(newOrderId),
+                    Order.STATUS_PENDING_MOMO, Order.STATUS_MOMO_FAILED);
             session.setAttribute("voucherMsg", "Khong the khoi tao thanh toan MoMo. Vui long thu lai.");
             session.setAttribute("msgType", "error");
             response.sendRedirect("cart");
@@ -302,16 +344,23 @@ public class CheckoutController extends HttpServlet {
             return;
         }
 
+        if (!reserveVoucher(response, session, userId, appliedVoucher)) {
+            return;
+        }
         OrderDAO orderDao = new OrderDAO();
         int newOrderId = orderDao.createOrder(userId, quote.getFinalTotal(), address, "VNPAY",
-                Order.STATUS_PENDING_VNPAY, cart, contactEmail, contactPhone, quote.getMemberDiscountPercent());
+                Order.STATUS_PENDING_VNPAY, cart, contactEmail, contactPhone, quote.getMemberDiscountPercent(),
+                voucherIdOf(appliedVoucher));
 
         if (newOrderId <= 0) {
+            releaseVoucher(userId, appliedVoucher);
             session.setAttribute("voucherMsg", "Không thể tạo đơn hàng chờ thanh toán VNPay.");
             session.setAttribute("msgType", "error");
             response.sendRedirect("cart");
             return;
         }
+        // Voucher đã gắn với đơn này; nếu thanh toán thất bại/hết hạn, voucher được trả về ví
+        session.removeAttribute("appliedVoucher");
 
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
 
@@ -331,8 +380,8 @@ public class CheckoutController extends HttpServlet {
             response.sendRedirect(paymentUrl);
         } catch (Exception e) {
             e.printStackTrace();
-            orderDao.updateOrderStatus(newOrderId, Order.STATUS_VNPAY_FAILED);
-            new OrderNotificationService().notifyStatusChanged(orderDao.getOrderById(newOrderId), null);
+            new PendingPaymentService().markFailed(orderDao.getOrderById(newOrderId),
+                    Order.STATUS_PENDING_VNPAY, Order.STATUS_VNPAY_FAILED);
             session.setAttribute("voucherMsg", "Không thể khởi tạo thanh toán VNPay. Vui lòng thử lại.");
             session.setAttribute("msgType", "error");
             response.sendRedirect("cart");

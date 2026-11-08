@@ -36,6 +36,7 @@
 			</p>
 
 			<form action="login" method="post" class="login-form">
+			    <input type="hidden" name="csrfToken" value="${csrfToken}">
 				<input type="hidden" name="origin"
 					value="<%=request.getParameter("origin") == null ? "" : request.getParameter("origin")%>">
 

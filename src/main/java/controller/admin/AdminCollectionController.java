@@ -7,7 +7,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -15,27 +14,14 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import model.CollectionTheme;
 import model.Product;
-import model.User;
 
 @WebServlet("/admin-collections")
 public class AdminCollectionController extends HttpServlet {
-    private boolean authorize(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        User user = session == null ? null : (User) session.getAttribute("user");
-        boolean allowed = user != null ? user.getIsAdmin() == 1
-                : session != null && Boolean.TRUE.equals(session.getAttribute("isAdmin"));
-        if (!allowed) response.sendError(HttpServletResponse.SC_FORBIDDEN);
-        return allowed;
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!authorize(request, response)) return;
-        HttpSession session = request.getSession();
-        if (session.getAttribute("collectionCsrf") == null) session.setAttribute("collectionCsrf", UUID.randomUUID().toString());
         String search = request.getParameter("search");
         request.setAttribute("searchKeyword", search);
         request.setAttribute("themes", CollectionTheme.all());
@@ -58,13 +44,7 @@ public class AdminCollectionController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (!authorize(request, response)) return;
         request.setCharacterEncoding("UTF-8");
-        Object token = request.getSession().getAttribute("collectionCsrf");
-        if (token == null || !token.equals(request.getParameter("csrf"))) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
         String message;
         int productId;
         try {

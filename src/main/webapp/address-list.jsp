@@ -77,6 +77,7 @@
 
     <div class="address-actions">
       <form action="select-address" method="post">
+          <input type="hidden" name="csrfToken" value="${csrfToken}">
         <input type="hidden" name="addressId" value="<%= addr.getId() %>">
         <input type="hidden" name="fullAddressInfo" value="<%= h(fullAddressInfo) %>">
         <button type="submit" class="btn-select"><i class="fa-solid fa-check"></i> Chọn</button>
@@ -87,6 +88,7 @@
       </a>
 
       <form action="delete-address" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?');">
+          <input type="hidden" name="csrfToken" value="${csrfToken}">
         <input type="hidden" name="id" value="<%= addr.getId() %>">
         <button type="submit" class="btn-delete"><i class="fa-solid fa-trash"></i> Xóa</button>
       </form>

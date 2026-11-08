@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import service.PendingPaymentService;
 
 @WebServlet("/order-history")
 public class OrderHistoryController extends HttpServlet {
@@ -24,6 +25,8 @@ public class OrderHistoryController extends HttpServlet {
             response.sendRedirect("login");
             return;
         }
+        // Đơn MoMo/VNPay chờ quá hạn được chuyển sang thất bại trước khi hiển thị (IS-05)
+        new PendingPaymentService().expireOverdue(currentUser.getUid());
         OrderDAO orderDao = new OrderDAO();
         List<Order> listOrders = orderDao.getOrdersByUserId(currentUser.getUid());
         request.setAttribute("listOrders", listOrders);

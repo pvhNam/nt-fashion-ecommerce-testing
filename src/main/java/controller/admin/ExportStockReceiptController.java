@@ -25,10 +25,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.StockImportRecord;
 import model.StockReceipt;
-import model.User;
 
 @WebServlet("/admin-stock-import/export")
 public class ExportStockReceiptController extends HttpServlet {
@@ -37,11 +35,6 @@ public class ExportStockReceiptController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!isAdmin(request.getSession(false))) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xuất phiếu nhập kho.");
-            return;
-        }
-
         int receiptId;
         try {
             receiptId = Integer.parseInt(request.getParameter("receiptId"));
@@ -269,15 +262,5 @@ public class ExportStockReceiptController extends HttpServlet {
 
     private String valueOrDash(String value) {
         return value == null || value.isBlank() ? "—" : value;
-    }
-
-    private boolean isAdmin(HttpSession session) {
-        if (session == null) {
-            return false;
-        }
-        User currentUser = (User) session.getAttribute("user");
-        Boolean hardcodedAdmin = (Boolean) session.getAttribute("isAdmin");
-        return (currentUser != null && currentUser.getIsAdmin() == 1)
-                || Boolean.TRUE.equals(hardcodedAdmin);
     }
 }

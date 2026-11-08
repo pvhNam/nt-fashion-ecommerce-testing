@@ -158,6 +158,18 @@ body {
     text-decoration: none;
 }
 
+.cart-remove-form {
+    display: inline;
+    margin: 0;
+}
+
+button.btn-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
 .btn-remove:hover {
     color: #e74c3c;
 }

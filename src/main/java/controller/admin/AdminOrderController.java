@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Order;
+import service.PendingPaymentService;
 
 @WebServlet("/admin-orders")
 public class AdminOrderController extends HttpServlet {
@@ -19,6 +20,8 @@ public class AdminOrderController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Đơn MoMo/VNPay chờ quá hạn được chuyển sang thất bại trước khi hiển thị (IS-05)
+        new PendingPaymentService().expireAllOverdue();
         OrderDAO orderDao = new OrderDAO();
         List<Order> allOrders = orderDao.getAllOrders();
 

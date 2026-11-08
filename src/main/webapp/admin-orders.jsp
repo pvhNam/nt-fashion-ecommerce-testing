@@ -125,6 +125,7 @@
 
                                 <% if (order.isShippableStatus()) { %>
                                 <form action="update-order" method="post" style="margin: 0;">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="ship">
                                     <button type="submit" class="btn-action btn-ship" title="Chuyen sang dang giao hang">
@@ -135,6 +136,7 @@
 
                                 <% if (order.isAdminCancelableStatus()) { %>
                                 <form action="update-order" method="post" style="margin: 0;">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="cancel">
                                     <button type="submit" class="btn-action btn-cancel" title="Huy don hang"
@@ -146,6 +148,7 @@
 
                                 <% if (order.isShippingStatus()) { %>
                                 <form action="update-order" method="post" style="margin: 0;">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="success">
                                     <button type="submit" class="btn-action btn-success" title="Xac nhan giao thanh cong">

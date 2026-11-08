@@ -81,11 +81,15 @@
                         <a href="admin-vouchers?action=edit&id=<%=v.getId()%>" class="vc-btn vc-edit">
                             <i class="fa-solid fa-pen"></i> Sửa
                         </a>
-                        <a href="admin-vouchers?action=delete&id=<%=v.getId()%>"
-                           class="vc-btn vc-delete"
-                           onclick="return confirm('Xóa voucher <%=v.getCode()%>?')">
-                            <i class="fa-solid fa-trash"></i> Xóa
-                        </a>
+                        <form action="admin-vouchers" method="post" style="display:inline;margin:0"
+                              onsubmit="return confirm('Xóa voucher <%=v.getCode()%>?')">
+                            <input type="hidden" name="csrfToken" value="${csrfToken}">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="<%=v.getId()%>">
+                            <button type="submit" class="vc-btn vc-delete" style="border:none;cursor:pointer;font:inherit">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

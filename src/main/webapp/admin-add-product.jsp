@@ -39,6 +39,7 @@
     <% } %>
 
     <form action="admin-add-product" method="post" id="productForm">
+        <input type="hidden" name="csrfToken" value="${csrfToken}">
         <div class="product-layout">
 
             <div class="product-main">
