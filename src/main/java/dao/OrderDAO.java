@@ -111,6 +111,15 @@ public class OrderDAO {
             connection = new DBConnect().getConnection();
             connection.setAutoCommit(false);
 
+            // Lock before inserting FK-backed detail rows, which otherwise take
+            // shared product locks and can deadlock when both checkouts upgrade.
+            if (decreaseStock && cart != null) {
+                for (int productId : cart.stream().map(item -> item.getProduct().getPid())
+                        .distinct().sorted().toList()) {
+                    lockProductStock(connection, productId);
+                }
+            }
+
             String sqlOrder = "INSERT INTO orders "
                     + "(user_id, total_money, address, status, created_at, payment_method, "
                     + "contact_email, contact_phone, member_discount_percent) "
@@ -242,6 +251,10 @@ public class OrderDAO {
             if (stockLines.isEmpty()) {
                 throw new SQLException("Order has no details");
             }
+            for (int productId : stockLines.stream().map(line -> line.productId)
+                    .distinct().sorted().toList()) {
+                lockProductStock(connection, productId);
+            }
             for (StockLine line : stockLines) {
                 decreaseStock(connection, line.productId, line.color, line.size, line.quantity);
             }
@@ -278,40 +291,64 @@ public class OrderDAO {
         }
     }
 
+    private void lockProductStock(Connection connection, int productId) throws SQLException {
+        // Inventory imports lock the product first too. Serialize changes to this
+        // product before locking its variants and synchronizing the parent total.
+        try (PreparedStatement product = connection.prepareStatement(
+                "SELECT pid FROM product WHERE pid = ? FOR UPDATE")) {
+            product.setInt(1, productId);
+            try (ResultSet result = product.executeQuery()) {
+                if (!result.next()) throw new SQLException("Product not found: " + productId);
+            }
+        }
+    }
+
     private void decreaseStock(Connection connection, int productId, String color, String size, int quantity)
             throws SQLException {
         if (quantity <= 0) {
             throw new SQLException("Invalid order quantity");
         }
 
-        int variantId = 0;
-        int variantStock = 0;
+        List<VariantStock> variants = new ArrayList<>();
+        long availableStock = 0;
         String normalizedColor = normalizeVariantValue(color);
         String normalizedSize = normalizeVariantValue(size);
         try (PreparedStatement variant = connection.prepareStatement(
                 "SELECT id, stock_quantity FROM product_variants "
-                        + "WHERE product_id = ? AND color = ? AND size = ? ORDER BY id LIMIT 1 FOR UPDATE")) {
+                        + "WHERE product_id = ? AND color = ? AND size = ? ORDER BY id FOR UPDATE")) {
             variant.setInt(1, productId);
             variant.setString(2, normalizedColor);
             variant.setString(3, normalizedSize);
             try (ResultSet result = variant.executeQuery()) {
-                if (result.next()) {
-                    variantId = result.getInt("id");
-                    variantStock = result.getInt("stock_quantity");
+                while (result.next()) {
+                    int stock = Math.max(0, result.getInt("stock_quantity"));
+                    variants.add(new VariantStock(result.getInt("id"), stock));
+                    availableStock += stock;
                 }
             }
         }
 
-        if (variantId > 0) {
-            if (variantStock < quantity) {
+        if (!variants.isEmpty()) {
+            // Match ProductDAO.getAvailableStock(), which sums all matching rows.
+            // This also supports legacy duplicate rows until migration 005 runs.
+            if (availableStock < quantity) {
                 throw new SQLException("Insufficient variant stock for product " + productId);
             }
             try (PreparedStatement updateVariant = connection.prepareStatement(
-                    "UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE id = ?")) {
-                updateVariant.setInt(1, quantity);
-                updateVariant.setInt(2, variantId);
-                if (updateVariant.executeUpdate() != 1) {
-                    throw new SQLException("Unable to update variant stock for product " + productId);
+                    "UPDATE product_variants SET stock_quantity = stock_quantity - ? "
+                            + "WHERE id = ? AND stock_quantity >= ?")) {
+                int remaining = quantity;
+                for (VariantStock variant : variants) {
+                    int taken = Math.min(remaining, variant.quantity());
+                    if (taken == 0) continue;
+                    updateVariant.setInt(1, taken);
+                    updateVariant.setInt(2, variant.id());
+                    updateVariant.setInt(3, taken);
+                    if (updateVariant.executeUpdate() != 1) {
+                        throw new SQLException("Unable to update variant stock for product " + productId);
+                    }
+                    remaining -= taken;
+                    if (remaining == 0) break;
                 }
             }
             try (PreparedStatement syncProduct = connection.prepareStatement(
@@ -339,6 +376,9 @@ public class OrderDAO {
 
     private String normalizeVariantValue(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private record VariantStock(int id, int quantity) {
     }
 
     private String normalizeContact(String value) {

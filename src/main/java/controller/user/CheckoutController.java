@@ -220,6 +220,7 @@ public class CheckoutController extends HttpServlet {
         }
 
         cartDao.clearCart(currentUser.getUid());
+        session.setAttribute("cartCount", 0);
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
         response.sendRedirect("order-success?id=" + newOrderId);
     }
