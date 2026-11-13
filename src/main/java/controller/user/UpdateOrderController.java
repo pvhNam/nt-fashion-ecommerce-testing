@@ -19,7 +19,13 @@ public class UpdateOrderController extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int orderId = Integer.parseInt(request.getParameter("id"));
+        int orderId;
+        try {
+            orderId = Integer.parseInt(request.getParameter("id"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect("admin-orders?msg=not-found");
+            return;
+        }
         String action = request.getParameter("action");
         OrderDAO dao = new OrderDAO();
         Order order = dao.getOrderById(orderId);

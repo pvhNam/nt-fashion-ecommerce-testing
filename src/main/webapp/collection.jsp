@@ -33,7 +33,7 @@
     <div class="edits-section-label" id="collection-themes"><span>${en ? 'FIND YOUR INSPIRATION' : 'CẢM HỨNG CHO BẠN'}</span><span>01 — 05</span></div>
     <section class="edits-themes" aria-label="${en ? 'Choose a collection' : 'Chọn bộ sưu tập'}">
         <c:forEach var="theme" items="${themes}" varStatus="status">
-            <a href="collection?category=${theme.slug}#collection-products" class="edit-theme edit-theme-${theme.slug} ${selectedCategory == theme.slug ? 'is-selected' : ''}" aria-current="${selectedCategory == theme.slug ? 'page' : 'false'}">
+            <a href="collection?category=${fn:escapeXml(theme.slug)}#collection-products" class="edit-theme edit-theme-${fn:escapeXml(theme.slug)} ${selectedCategory == theme.slug ? 'is-selected' : ''}" aria-current="${selectedCategory == theme.slug ? 'page' : 'false'}">
                 <div class="edit-theme-top"><span>0${status.index + 1}</span><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></div>
                 <div class="edit-theme-bottom">
                     <h2><c:out value="${en ? theme.nameEn : theme.nameVi}" /></h2>
@@ -49,7 +49,7 @@
         </div>
         <nav class="edits-filters" aria-label="${en ? 'Filter by collection' : 'Lọc theo bộ sưu tập'}">
             <a href="collection?category=all#collection-products" class="${selectedCategory == 'all' ? 'is-active' : ''}" aria-current="${selectedCategory == 'all' ? 'page' : 'false'}">${en ? 'All collections' : 'Tất cả bộ sưu tập'}</a>
-            <c:forEach var="theme" items="${themes}"><a href="collection?category=${theme.slug}#collection-products" class="${selectedCategory == theme.slug ? 'is-active' : ''}" aria-current="${selectedCategory == theme.slug ? 'page' : 'false'}"><c:out value="${en ? theme.nameEn : theme.nameVi}" /></a></c:forEach>
+            <c:forEach var="theme" items="${themes}"><a href="collection?category=${fn:escapeXml(theme.slug)}#collection-products" class="${selectedCategory == theme.slug ? 'is-active' : ''}" aria-current="${selectedCategory == theme.slug ? 'page' : 'false'}"><c:out value="${en ? theme.nameEn : theme.nameVi}" /></a></c:forEach>
         </nav>
         <c:choose>
             <c:when test="${collectionUnavailable}"><div class="edits-empty" role="alert"><i class="fa-solid fa-cloud" aria-hidden="true"></i><h3>${en ? 'Collections are temporarily unavailable' : 'Tạm thời chưa tải được bộ sưu tập'}</h3><p>${en ? 'Please try again in a moment.' : 'Bạn vui lòng thử lại sau ít phút nhé.'}</p><a href="collection">${en ? 'Try again' : 'Thử lại'} <i class="fa-solid fa-arrow-rotate-right" aria-hidden="true"></i></a></div></c:when>
@@ -58,7 +58,7 @@
                 <c:forEach var="p" items="${products}">
                     <a class="edit-product" href="product-detail?pid=${p.pid}">
                         <div class="edit-product-image"><i class="fa-solid fa-shirt edit-product-placeholder" aria-hidden="true"></i><c:if test="${not empty p.image}"><img src="<c:out value='${p.image}' />" alt="<c:out value='${p.pdescription}' />" loading="lazy" onerror="this.hidden=true"></c:if><span class="edit-product-action" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
-                        <div class="edit-product-info"><span>${empty selectedTheme ? 'NAM THANH' : (en ? selectedTheme.nameEn : selectedTheme.nameVi)}</span><h3><c:out value="${p.pdescription}" /></h3><strong><fmt:formatNumber value="${p.price}" pattern="#,##0" /> đ</strong></div>
+                        <div class="edit-product-info"><span>${fn:escapeXml(empty selectedTheme ? 'NAM THANH' : (en ? selectedTheme.nameEn : selectedTheme.nameVi))}</span><h3><c:out value="${p.pdescription}" /></h3><strong><fmt:formatNumber value="${p.price}" pattern="#,##0" /> đ</strong></div>
                     </a>
                 </c:forEach>
             </div></c:otherwise>

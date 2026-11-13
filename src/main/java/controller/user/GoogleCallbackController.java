@@ -149,6 +149,7 @@ public class GoogleCallbackController extends HttpServlet {
 
             if (u != null) {
                 HttpSession session = request.getSession();
+                request.changeSessionId();
                 session.setAttribute("user", u);
                 response.sendRedirect("home");
             } else {

@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="util.Html"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -29,7 +30,7 @@
                 if (error != null) {
             %>
                 <div class="alert-error">
-                    <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= Html.escape(error) %>
                 </div>
             <% } %>
 

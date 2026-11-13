@@ -8,6 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import util.InputValidator;
 
 @WebServlet("/admin-add-product")
 public class AdminAddProductController extends HttpServlet {
@@ -26,6 +27,10 @@ public class AdminAddProductController extends HttpServlet {
             String size = request.getParameter("size");
             int stock = Integer.parseInt(request.getParameter("stock"));
             String image = request.getParameter("image");
+            if (!InputValidator.isSafeImageUrl(image)) {
+                response.sendRedirect("admin-products?msg=error_image");
+                return;
+            }
 
             Product p = new Product(0, name, price, cateId, color, size, stock, image);
             ProductDAO dao = new ProductDAO();
@@ -35,12 +40,12 @@ public class AdminAddProductController extends HttpServlet {
             if (isAdded) {
                 response.sendRedirect("admin-products?msg=added_product");
             } else {
-                response.getWriter().write("<h3>Lỗi: Không thể lưu vào Database!</h3>");
+                response.sendRedirect("admin-products?msg=error_add");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().write("Lỗi dữ liệu nhập vào: " + e.getMessage());
+            response.sendRedirect("admin-products?msg=error_data");
         }
     }
 }

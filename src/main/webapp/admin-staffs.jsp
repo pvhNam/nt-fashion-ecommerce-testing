@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.User"%>
+<%@ page import="java.util.List, model.User, util.Html"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
@@ -75,17 +75,17 @@
                         <td><strong>#<%=u.getUid()%></strong></td>
                         <td>
                             <div class="user-info-cell">
-                                <img src="<%=avatarUrl%>" class="user-avatar-small" onerror="this.src='img/images.jpg'">
+                                <img src="<%=Html.escape(avatarUrl)%>" class="user-avatar-small" onerror="this.src='img/images.jpg'">
                                 <div>
-                                    <div class="user-name"><%=u.getFullname() != null ? u.getFullname() : "Chưa cập nhật"%></div>
-                                    <div class="user-username">@<%=u.getUsername()%></div>
+                                    <div class="user-name"><%=Html.escape(u.getFullname() != null ? u.getFullname() : "Chưa cập nhật")%></div>
+                                    <div class="user-username">@<%=Html.escape(u.getUsername())%></div>
                                 </div>
                             </div>
                         </td>
-                        <td style="color:#555;"><%=u.getEmail()%></td>
+                        <td style="color:#555;"><%=Html.escape(u.getEmail())%></td>
                         <td>
                             <% if (u.getPhonenumber() != null && !u.getPhonenumber().isEmpty()) { %>
-                                <%=u.getPhonenumber()%>
+                                <%=Html.escape(u.getPhonenumber())%>
                             <% } else { %>
                                 <span style="color:#ccc;font-style:italic;">---</span>
                             <% } %>
@@ -93,7 +93,7 @@
                         <td style="text-align:center;">
                             <div style="display:flex;gap:6px;justify-content:center;">
                                 <button class="btn-icon btn-edit" title="Đổi mật khẩu"
-                                    onclick="openChangePass('<%=u.getUsername()%>', '<%=u.getFullname() != null ? u.getFullname() : u.getUsername()%>')">
+                                    onclick="openChangePass('<%=Html.js(u.getUsername())%>', '<%=Html.js(u.getFullname() != null ? u.getFullname() : u.getUsername())%>')">
                                     <i class="fa-solid fa-key"></i>
                                 </button>
                                 <form action="admin-staffs" method="post" style="display:inline;margin:0"

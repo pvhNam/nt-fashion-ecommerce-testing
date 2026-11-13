@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Product, model.ProductVariant"%>
+<%@ page import="java.util.List, model.Product, model.ProductVariant, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 <!DOCTYPE html>
 <html lang="vi">
@@ -37,9 +37,9 @@
     </div>
 
     <div class="variant-header">
-        <img src="<%=p.getImage()%>" onerror="this.src='img/no-image.png'" alt="Product Image">
+        <img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'" alt="Product Image">
         <div class="v-info">
-            <h2><%=p.getPdescription()%></h2>
+            <h2><%=Html.escape(p.getPdescription())%></h2>
             <p><strong>Mã SP:</strong> #<%=p.getPid()%></p>
             <p><strong>Giá bán:</strong> <span style="color: var(--danger); font-weight: bold;"><%=df.format(p.getPrice())%></span></p>
             <p><strong>Tổng tồn kho hệ thống:</strong>
@@ -75,10 +75,10 @@
                     totalDetailed += v.getStockQuantity();
             %>
             <tr>
-                <td><strong style="color: #333;"><%=v.getColor()%></strong></td>
+                <td><strong style="color: #333;"><%=Html.escape(v.getColor())%></strong></td>
                 <td>
                     <span style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: bold;">
-                        <%=v.getSize()%>
+                        <%=Html.escape(v.getSize())%>
                     </span>
                 </td>
                 <td style="text-align: center;">

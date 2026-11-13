@@ -20,6 +20,7 @@ import model.Membership;
 import model.Product;
 import model.User;
 import model.Voucher;
+import util.I18n;
 import org.json.JSONObject;
 import service.PendingPaymentService;
 import service.PricingService;
@@ -144,21 +145,21 @@ public class CartController extends HttpServlet {
             }
 
             if (knownVoucher == null) {
-                session.setAttribute("voucherMsg", "Mã giảm giá không tồn tại hoặc đã hết hạn.");
+                session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.not_found"));
                 session.setAttribute("msgType", "error");
                 session.removeAttribute("appliedVoucher");
             } else if (v == null) {
-                session.setAttribute("voucherMsg", "Voucher đã được sử dụng hoặc không thuộc ví của bạn.");
+                session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.unavailable"));
                 session.setAttribute("msgType", "error");
                 session.removeAttribute("appliedVoucher");
             } else if (calculateSubtotal(getCurrentCart(session, currentUser)) < v.getMinOrder()) {
-                session.setAttribute("voucherMsg", "Đơn hàng chưa đạt giá trị tối thiểu "
-                        + (long) v.getMinOrder() + "đ để dùng mã " + v.getCode() + ".");
+                session.setAttribute("voucherMsg",
+                        I18n.t(request, "voucher.msg.min_order", (long) v.getMinOrder(), v.getCode()));
                 session.setAttribute("msgType", "error");
                 session.removeAttribute("appliedVoucher");
             } else {
                 session.setAttribute("appliedVoucher", v);
-                session.setAttribute("voucherMsg", "Áp dụng mã " + v.getCode() + " thành công!");
+                session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.applied", v.getCode()));
                 session.setAttribute("msgType", "success");
             }
             if (ajax) {

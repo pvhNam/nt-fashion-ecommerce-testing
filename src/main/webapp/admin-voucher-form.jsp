@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.Voucher"%>
+<%@ page import="model.Voucher, util.Html"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -51,7 +51,7 @@
                             <div class="vf-input-wrap">
                                 <i class="fa-solid fa-ticket"></i>
                                 <input type="text" name="code" required
-                                       value="<%= isEdit ? v.getCode() : "" %>"
+                                       value="<%= Html.escape(isEdit ? v.getCode() : "") %>"
                                        placeholder="Ví dụ: SALE20, FREESHIP..."
                                        style="text-transform:uppercase;">
                             </div>
@@ -63,7 +63,7 @@
                             <div class="vf-input-wrap">
                                 <i class="fa-solid fa-align-left"></i>
                                 <input type="text" name="description"
-                                       value="<%= isEdit ? v.getDescription() : "" %>"
+                                       value="<%= Html.escape(isEdit ? v.getDescription() : "") %>"
                                        placeholder="Mô tả ngắn về voucher...">
                             </div>
                         </div>

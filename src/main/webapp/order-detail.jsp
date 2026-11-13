@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, dao.OrderDAO, model.OrderDetail, model.Order, model.User, java.text.DecimalFormat"%>
+<%@ page import="java.util.List, dao.OrderDAO, model.OrderDetail, model.Order, model.User, java.text.DecimalFormat, util.Html"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
@@ -43,15 +43,15 @@
         <div class="head-title">
             <span><i class="fa-solid fa-file-invoice"></i> <fmt:message key="order.id" /> #<%=order.getId()%></span>
             <span style="font-size: 14px; background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 20px;">
-                <%=order.getStatus()%>
+                <% String statusKey = order.getStatusKey(); if (statusKey != null) { %><fmt:message key="<%=statusKey%>" /><% } else { %><%=Html.escape(order.getDisplayStatus())%><% } %>
             </span>
         </div>
 
         <div class="customer-info">
-            <div class="info-row"><strong><fmt:message key="order.receiver" />:</strong> <%=order.getUserName()%></div>
+            <div class="info-row"><strong><fmt:message key="order.receiver" />:</strong> <%=Html.escape(order.getUserName())%></div>
             <div class="info-row"><strong><fmt:message key="order.date" />:</strong> <%=order.getCreatedAt()%></div>
-            <div class="info-row"><strong>Thanh toan:</strong> <%=order.getPaymentMethod()%></div>
-            <div class="info-row" style="grid-column: span 2;"><strong><fmt:message key="order.address" />:</strong> <%=order.getAddress()%></div>
+            <div class="info-row"><strong>Thanh toan:</strong> <%=Html.escape(order.getPaymentMethod())%></div>
+            <div class="info-row" style="grid-column: span 2;"><strong><fmt:message key="order.address" />:</strong> <%=Html.escape(order.getAddress())%></div>
         </div>
 
         <table class="detail-table">
@@ -69,10 +69,10 @@
                 %>
                 <tr>
                     <td style="display: flex; align-items: center;">
-                        <img src="<%=item.getProduct().getImage()%>" class="img-thumb">
+                        <img src="<%=Html.escape(item.getProduct().getImage())%>" class="img-thumb">
                         <div>
-                            <div style="font-weight: 600;"><%=item.getProduct().getPdescription()%></div>
-                            <small>Size: <%=item.getSize()%> | Color: <%=item.getColor()%></small>
+                            <div style="font-weight: 600;"><%=Html.escape(item.getProduct().getPdescription())%></div>
+                            <small>Size: <%=Html.escape(item.getSize())%> | Color: <%=Html.escape(item.getColor())%></small>
                         </div>
                     </td>
                     <td style="text-align: center;"><%=df.format(item.getPrice())%></td>
@@ -107,7 +107,7 @@
             </div>
         <% }
             } catch (Exception e) { %>
-            <p style="color: red;">Error: <%=e.getMessage()%></p>
+            <p style="color: red;"><fmt:message key="order.not_found" /></p>
             <a href="<%= backLink %>" class="btn-back-link"><fmt:message key="order.back" /></a>
         <% }
         } else { %>

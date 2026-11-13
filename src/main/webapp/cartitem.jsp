@@ -33,12 +33,12 @@
                             <c:set var="isOverStock" value="${currentQty gt maxStock}" />
 
                             <div class="cart-card" data-cart-item style="${isOverStock ? 'border: 1px solid #e74a3b; background: #fffdfd;' : ''}">
-                                <div class="card-img"><img src="${item.product.image}" alt="Product Image"></div>
+                                <div class="card-img"><img src="${fn:escapeXml(item.product.image)}" alt="Product Image"></div>
                                 <div class="card-details">
-                                    <h3>${item.product.pdescription}</h3>
+                                    <h3>${fn:escapeXml(item.product.pdescription)}</h3>
                                     <p class="product-variant" style="font-size:0.9rem;color:#666;margin-top:4px;">
-                                        <c:if test="${not empty item.size}">Kích cỡ: ${item.size}</c:if>
-                                        <c:if test="${not empty item.color}"><c:if test="${not empty item.size}"> - </c:if>Màu sắc: ${item.color}</c:if>
+                                        <c:if test="${not empty item.size}">Kích cỡ: ${fn:escapeXml(item.size)}</c:if>
+                                        <c:if test="${not empty item.color}"><c:if test="${not empty item.size}"> - </c:if>Màu sắc: ${fn:escapeXml(item.color)}</c:if>
                                     </p>
                                     <p class="price-tag"><fmt:formatNumber value="${item.product.price}" pattern="#,### VNĐ"/></p>
                                     <div class="card-actions">
@@ -46,8 +46,8 @@
                                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                                             <input type="hidden" name="action" value="update_quantity" />
                                             <input type="hidden" name="pid" value="${item.product.pid}" />
-                                            <input type="hidden" name="color" value="${item.color}" />
-                                            <input type="hidden" name="size" value="${item.size}" />
+                                            <input type="hidden" name="color" value="${fn:escapeXml(item.color)}" />
+                                            <input type="hidden" name="size" value="${fn:escapeXml(item.size)}" />
 
                                             <button type="submit" name="mod" value="decrease" class="btn-qty"><i class="fa-solid fa-minus"></i></button>
 
@@ -111,13 +111,13 @@
                                     <div class="mini-voucher-card">
                                         <div class="v-tag"><span><c:choose><c:when test="${v.discountType == 'PERCENT'}">${v.discountAmount}%</c:when><c:otherwise>${v.discountAmount / 1000}K</c:otherwise></c:choose></span></div>
                                         <div class="v-details">
-                                            <strong class="v-code">${v.code}</strong>
+                                            <strong class="v-code">${fn:escapeXml(v.code)}</strong>
                                             <p class="v-condition">Min: <fmt:formatNumber value="${v.minOrder}" pattern="#,### VNĐ"/></p>
                                         </div>
                                         <form action="cart" method="post" style="margin:0;" data-cart-ajax>
                                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                                             <input type="hidden" name="action" value="apply_voucher" />
-                                            <input type="hidden" name="voucherCode" value="${v.code}" />
+                                            <input type="hidden" name="voucherCode" value="${fn:escapeXml(v.code)}" />
                                             <button type="submit" class="btn-use-now"><fmt:message key="cart.use" /></button>
                                         </form>
                                     </div>
@@ -129,7 +129,7 @@
                     <c:if test="${not empty sessionScope.voucherMsg}">
                         <p class="${sessionScope.msgType == 'success' ? 'msg-success' : 'msg-error'}">
                             <i class="fa-solid ${sessionScope.msgType == 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>
-                            ${sessionScope.voucherMsg}
+                            ${fn:escapeXml(sessionScope.voucherMsg)}
                         </p>
                         <c:remove var="voucherMsg" scope="session" />
                         <c:remove var="msgType" scope="session" />
@@ -142,7 +142,7 @@
                         <c:when test="${memberDiscountPercent gt 0}">
                             <div class="success-alert-box" style="margin-bottom:16px;">
                                 <i class="fa-solid fa-crown"></i>
-                                ${memberTier}: tự động giảm <fmt:formatNumber value="${memberDiscountPercent}" maxFractionDigits="0"/>% mỗi hóa đơn.
+                                ${fn:escapeXml(memberTier)}: tự động giảm <fmt:formatNumber value="${memberDiscountPercent}" maxFractionDigits="0"/>% mỗi hóa đơn.
                             </div>
                         </c:when>
                         <c:otherwise>
@@ -206,9 +206,9 @@
                             <c:choose>
                                 <c:when test="${not empty sessionScope.selectedAddress}">
                                     <div class="address-display-box">
-                                        <p class="address-text"><i class="fa-solid fa-map-pin" style="color: #e74a3b; margin-right: 5px;"></i> ${sessionScope.selectedAddress}</p>
+                                        <p class="address-text"><i class="fa-solid fa-map-pin" style="color: #e74a3b; margin-right: 5px;"></i> ${fn:escapeXml(sessionScope.selectedAddress)}</p>
                                     </div>
-                                    <input type="hidden" name="address" value="${sessionScope.selectedAddress}" required />
+                                    <input type="hidden" name="address" value="${fn:escapeXml(sessionScope.selectedAddress)}" required />
                                 </c:when>
                                 <c:otherwise>
                                     <a href="address-list" class="address-select-box">

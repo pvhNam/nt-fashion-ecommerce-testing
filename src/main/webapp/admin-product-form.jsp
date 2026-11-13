@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.Product"%>
+<%@ page import="model.Product, util.Html"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -37,7 +37,7 @@
 
             <div class="form-group">
                 <label>Tên sản phẩm *</label>
-                <input type="text" name="name" required value="<%= isEdit ? p.getPdescription() : "" %>" placeholder="Nhập tên sản phẩm...">
+                <input type="text" name="name" required value="<%= Html.escape(isEdit ? p.getPdescription() : "") %>" placeholder="Nhập tên sản phẩm...">
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -56,11 +56,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Màu sắc chung (Không bắt buộc)</label>
-                    <input type="text" name="color" value="<%= isEdit ? (p.getColor()!=null?p.getColor():"") : "" %>" placeholder="Để trống nếu muốn quản lý qua biến thể">
+                    <input type="text" name="color" value="<%= Html.escape(isEdit ? (p.getColor()!=null?p.getColor():"") : "") %>" placeholder="Để trống nếu muốn quản lý qua biến thể">
                 </div>
                 <div class="form-group">
                     <label>Kích thước chung (Không bắt buộc)</label>
-                    <input type="text" name="size" value="<%= isEdit ? (p.getSize()!=null?p.getSize():"") : "" %>" placeholder="Để trống nếu muốn quản lý qua biến thể">
+                    <input type="text" name="size" value="<%= Html.escape(isEdit ? (p.getSize()!=null?p.getSize():"") : "") %>" placeholder="Để trống nếu muốn quản lý qua biến thể">
                 </div>
             </div>
             <div class="form-row">
@@ -71,7 +71,7 @@
             </div>
             <div class="form-group">
                 <label>Link Hình ảnh (Ảnh đại diện chính) *</label>
-                <input type="text" name="image" required value="<%= isEdit ? p.getImage() : "" %>" placeholder="Ví dụ: img/sanpham.jpg">
+                <input type="text" name="image" required value="<%= Html.escape(isEdit ? p.getImage() : "") %>" placeholder="Ví dụ: img/sanpham.jpg">
             </div>
 
             <div class="form-group gallery-box">
@@ -85,7 +85,7 @@
                             for (String imgUrl : p.getExtraImages()) {
                     %>
                     <div class="extra-img-row">
-                        <input type="text" name="extraImages" value="<%=imgUrl%>" placeholder="Nhập link ảnh phụ...">
+                        <input type="text" name="extraImages" value="<%=Html.escape(imgUrl)%>" placeholder="Nhập link ảnh phụ...">
                         <button type="button" class="btn-remove-img" onclick="this.parentElement.remove()" title="Xóa ô này">
                             <i class="fa-solid fa-trash"></i>
                         </button>

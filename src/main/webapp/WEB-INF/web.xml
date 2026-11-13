@@ -16,4 +16,7 @@
         <param-value>https://phamvanhoain.id.vn/google-callback</param-value>
     </context-param>
 
+    <error-page>
+        <location>/error.jsp</location>
+    </error-page>
 </web-app>

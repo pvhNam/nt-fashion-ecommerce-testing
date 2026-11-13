@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%
 	if (request.getAttribute("homePage") == null) {
@@ -586,8 +587,8 @@
 				</div>
 				<div class="vt-right">
 					<div>
-						<span class="vt-code">${v.code}</span>
-						<h4 class="vt-desc">${v.description}</h4>
+						<span class="vt-code">${fn:escapeXml(v.code)}</span>
+						<h4 class="vt-desc">${fn:escapeXml(v.description)}</h4>
 						<p class="vt-exp">
 							<c:choose>
 								<c:when test="${v.minOrder > 0}">Đơn tối thiểu: <fmt:formatNumber value="${v.minOrder}" />đ</c:when>
@@ -595,7 +596,7 @@
 							</c:choose>
 						</p>
 					</div>
-					<button class="btn-vt-save" onclick="saveVoucher(this, '${v.code}')">
+					<button class="btn-vt-save" data-code="${fn:escapeXml(v.code)}" onclick="saveVoucher(this, this.dataset.code)">
 						LƯU MÃ NGAY
 					</button>
 				</div>
@@ -622,7 +623,7 @@
 
 				<article class="ym-item ym-reveal ${loop.index == 0 ? 'featured' : ''}" data-delay="${loop.index % 4}">
 					<div class="ym-img-wrap">
-						<img src="${p.image != null ? p.image : 'img/no-image.png'}" alt="${p.pdescription}" loading="lazy" decoding="async">
+						<img src="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}" alt="${fn:escapeXml(p.pdescription)}" loading="lazy" decoding="async">
 					</div>
 
 					<c:if test="${stock <= 0}">
@@ -630,7 +631,7 @@
 					</c:if>
 
 					<div class="ym-info-overlay">
-						<h3 class="ym-p-name">${p.pdescription}</h3>
+						<h3 class="ym-p-name">${fn:escapeXml(p.pdescription)}</h3>
 						<c:choose>
 							<c:when test="${p.reviewCount > 0}">
 								<div class="ym-product-rating" role="img"
@@ -663,14 +664,14 @@
 								<c:when test="${canAdd && stock > 0}">
 									<button type="button" class="btn-ym-action btn-ym-cart"
 									        onclick="openBuyNowModal(this, 'cart')" data-pid="${p.pid}"
-									        data-name="${p.pdescription}" data-img="${p.image != null ? p.image : 'img/no-image.png'}"
-									        data-price="${p.price}" data-stock="${stock}" data-sizes="${p.size}" data-colors="${p.color}">
+									        data-name="${fn:escapeXml(p.pdescription)}" data-img="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}"
+									        data-price="${p.price}" data-stock="${stock}" data-sizes="${fn:escapeXml(p.size)}" data-colors="${fn:escapeXml(p.color)}">
 										<i class="fa-solid fa-cart-shopping"></i> GIỎ HÀNG
 									</button>
 									<button type="button" class="btn-ym-action btn-ym-buy"
 									        onclick="openBuyNowModal(this, 'buy')" data-pid="${p.pid}"
-									        data-name="${p.pdescription}" data-img="${p.image != null ? p.image : 'img/no-image.png'}"
-									        data-price="${p.price}" data-stock="${stock}" data-sizes="${p.size}" data-colors="${p.color}">
+									        data-name="${fn:escapeXml(p.pdescription)}" data-img="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}"
+									        data-price="${p.price}" data-stock="${stock}" data-sizes="${fn:escapeXml(p.size)}" data-colors="${fn:escapeXml(p.color)}">
 										MUA NGAY
 									</button>
 								</c:when>
@@ -683,7 +684,7 @@
 									</button>
 								</c:otherwise>
 							</c:choose>
-							<a href="product-detail?pid=${p.pid}" class="btn-ym-action btn-ym-cart ym-view-button" aria-label="Xem chi tiết ${p.pdescription}"><i class="fa-regular fa-eye"></i></a>
+							<a href="product-detail?pid=${p.pid}" class="btn-ym-action btn-ym-cart ym-view-button" aria-label="Xem chi tiết ${fn:escapeXml(p.pdescription)}"><i class="fa-regular fa-eye"></i></a>
 						</div>
 					</div>
 					<div id="home-variants-${p.pid}" hidden>
