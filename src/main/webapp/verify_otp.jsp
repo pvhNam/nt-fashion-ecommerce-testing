@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="util.Html"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
@@ -37,7 +38,7 @@
                 %>
                     <div class="alert-error" style="<%= isError ? "" : "background-color: #d4edda; color: #155724; border-color: #c3e6cb;" %>">
                         <i class="fa-solid <%= isError ? "fa-circle-exclamation" : "fa-check-circle" %>"></i> 
-                        <%= message %>
+                        <%= Html.escape(message) %>
                     </div>
                 <% } %>
 

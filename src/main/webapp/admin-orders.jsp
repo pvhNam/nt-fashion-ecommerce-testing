@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Order"%>
+<%@ page import="java.util.List, model.Order, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 
 <!DOCTYPE html>
@@ -103,18 +103,18 @@
                         <td><strong>#<%=order.getId()%></strong></td>
 
                         <td>
-                            <div style="font-weight: 500;"><%=order.getUserName()%></div>
-                            <small style="color: #888;"><%=order.getPhoneNumber()%></small>
+                            <div style="font-weight: 500;"><%=Html.escape(order.getUserName())%></div>
+                            <small style="color: #888;"><%=Html.escape(order.getPhoneNumber())%></small>
                         </td>
 
                         <td><%=order.getCreatedAt()%></td>
 
-                        <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%=order.getAddress()%>">
-                            <%=order.getAddress()%>
+                        <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%=Html.escape(order.getAddress())%>">
+                            <%=Html.escape(order.getAddress())%>
                         </td>
 
                         <td class="money"><%=df.format(order.getTotalMoney())%></td>
-                        <td><%=order.getPaymentMethod()%></td>
+                        <td><%=Html.escape(order.getPaymentMethod())%></td>
                         <td><span class="badge <%=order.getAdminBadgeClass()%>"><%=order.getDisplayStatus()%></span></td>
 
                         <td>

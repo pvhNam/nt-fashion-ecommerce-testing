@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.User, model.Order, java.text.DecimalFormat"%>
+<%@ page import="java.util.List, model.User, model.Order, java.text.DecimalFormat, util.Html"%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,16 +27,16 @@
             if(u != null) {
         %>
 
-        <h2 class="page-title" style="margin-bottom: 20px;">Hồ Sơ: <%=u.getFullname()%></h2>
+        <h2 class="page-title" style="margin-bottom: 20px;">Hồ Sơ: <%=Html.escape(u.getFullname())%></h2>
 
         <div class="detail-card">
             <h3 style="color: #3498db; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                 <i class="fa-solid fa-id-card"></i> Thông Tin Cá Nhân
             </h3>
-            <div class="info-row"><span class="info-label">Họ tên:</span> <span><%=u.getFullname()%></span></div>
-            <div class="info-row"><span class="info-label">Username:</span> <span><%=u.getUsername()%></span></div>
-            <div class="info-row"><span class="info-label">Email:</span> <span><%=u.getEmail()%></span></div>
-            <div class="info-row"><span class="info-label">Số điện thoại:</span> <span><%=u.getPhonenumber()%></span></div>
+            <div class="info-row"><span class="info-label">Họ tên:</span> <span><%=Html.escape(u.getFullname())%></span></div>
+            <div class="info-row"><span class="info-label">Username:</span> <span><%=Html.escape(u.getUsername())%></span></div>
+            <div class="info-row"><span class="info-label">Email:</span> <span><%=Html.escape(u.getEmail())%></span></div>
+            <div class="info-row"><span class="info-label">Số điện thoại:</span> <span><%=Html.escape(u.getPhonenumber())%></span></div>
         </div>
 
         <div class="card-box">
@@ -66,9 +66,9 @@
                     <tr>
                         <td><strong>#<%=o.getId()%></strong></td>
                         <td><%=o.getCreatedAt()%></td>
-                        <td><%=o.getAddress()%></td>
+                        <td><%=Html.escape(o.getAddress())%></td>
                         <td class="money"><%=df.format(o.getTotalMoney())%></td>
-                        <td><span class="badge <%=badge%>"><%=st%></span></td>
+                        <td><span class="badge <%=badge%>"><%=Html.escape(st)%></span></td>
                         <td>
                             <a href="order-detail?id=<%=o.getId()%>" class="btn-action btn-view" title="Xem chi tiết">
                                 <i class="fa-solid fa-eye"></i>

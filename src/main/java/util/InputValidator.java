@@ -34,23 +34,36 @@ public final class InputValidator {
         return digits.matches("0\\d{9}") ? digits : null;
     }
 
+    /** Link ảnh chỉ nhận http(s) hoặc đường dẫn trong web, không có dấu cách hay ký tự HTML. */
+    public static boolean isSafeImageUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        String u = url.trim();
+        if (u.isEmpty() || u.length() > 500 || u.matches("(?s).*[\\s\"'<>`\\\\].*") || u.startsWith("//")) {
+            return false;
+        }
+        String lower = u.toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://") || !lower.matches("^[a-z][a-z0-9+.-]*:.*");
+    }
+
     /**
-     * Trả về thông báo lỗi nếu địa chỉ giao hàng thiếu thông tin, null nếu hợp lệ.
+     * Trả về khóa thông báo lỗi (messages_vi/en) nếu địa chỉ thiếu thông tin, null nếu hợp lệ.
      * phone là số đã qua normalizePhone.
      */
     public static String addressError(String receiverName, String phone, String specificAddress,
             String city, String district, String ward) {
         if (receiverName.isEmpty() || receiverName.length() > 100) {
-            return "Vui lòng nhập tên người nhận (tối đa 100 ký tự).";
+            return "address.err.name";
         }
         if (phone == null) {
-            return "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.";
+            return "address.err.phone";
         }
         if (city.isEmpty() || district.isEmpty() || ward.isEmpty()) {
-            return "Vui lòng chọn đầy đủ tỉnh/thành phố, quận/huyện và phường/xã.";
+            return "address.err.area";
         }
         if (specificAddress.isEmpty() || specificAddress.length() > 255) {
-            return "Vui lòng nhập địa chỉ cụ thể (tối đa 255 ký tự).";
+            return "address.err.detail";
         }
         return null;
     }

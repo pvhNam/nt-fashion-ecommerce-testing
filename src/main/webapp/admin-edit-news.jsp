@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ page import="model.News"%>
+<%@ page import="model.News, util.Html"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,7 +21,7 @@
 
 			<div class="form-group">
 				<label>Tiêu đề:</label><input type="text" name="title"
-					value="<%=n.getTitle()%>">
+					value="<%=Html.escape(n.getTitle())%>">
 			</div>
 			<div class="form-group">
 				<label>Mô tả ngắn:</label>
@@ -29,11 +29,11 @@
 			</div>
 			<div class="form-group">
 				<label>Nội dung chi tiết:</label>
-				<textarea name="content" rows="10"><%=n.getContent()%></textarea>
+				<textarea name="content" rows="10"><%=Html.escape(n.getContent())%></textarea>
 			</div>
 			<div class="form-group">
 				<label>Hình ảnh:</label><input type="text" name="image"
-					value="<%=n.getImage()%>">
+					value="<%=Html.escape(n.getImage())%>">
 			</div>
 
 			<button type="submit" class="btn-submit">Lưu Thay Đổi</button>

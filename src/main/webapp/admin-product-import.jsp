@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.Product"%>
+<%@ page import="model.Product, util.Html"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -31,10 +31,10 @@
     <div class="import-wrapper">
         <div class="im-banner">
             <div>
-                <h3><%=p.getPdescription()%></h3>
+                <h3><%=Html.escape(p.getPdescription())%></h3>
                 <p>Mã SP: <strong>#<%=p.getPid()%></strong> | Đang tồn kho: <strong style="color:var(--danger);"><%=p.getStockquantyti()%> cái</strong></p>
             </div>
-            <img src="<%=p.getImage()%>" onerror="this.src='img/no-image.png'">
+            <img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'">
         </div>
 
         <form action="admin-products" method="post">

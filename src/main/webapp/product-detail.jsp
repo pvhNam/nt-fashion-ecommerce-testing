@@ -11,7 +11,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>${p.pdescription} | Fashion Store</title>
+    <title>${fn:escapeXml(p.pdescription)} | Fashion Store</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -45,10 +45,10 @@
             <div class="slide-counter" id="slideCounter" aria-live="polite">1 / 1</div>
         </div>
         <div class="thumbnail-gallery" id="thumbGallery"></div>
-        <div id="img-data" style="display:none" data-main="${not empty p.image ? p.image : 'img/no-image.png'}">
+        <div id="img-data" style="display:none" data-main="${fn:escapeXml(not empty p.image ? p.image : 'img/no-image.png')}">
             <c:if test="${not empty p.extraImages}">
                 <c:forEach var="img" items="${p.extraImages}">
-                    <span class="extra-img">${img}</span>
+                    <span class="extra-img">${fn:escapeXml(img)}</span>
                 </c:forEach>
             </c:if>
         </div>
@@ -57,7 +57,7 @@
     <!-- RIGHT: Product Info -->
     <div class="detail-right">
         <span class="p-cat"><fmt:message key="product.code" />: #${p.pid}</span>
-        <h1 class="p-title">${p.pdescription}</h1>
+        <h1 class="p-title">${fn:escapeXml(p.pdescription)}</h1>
         <a class="p-rating-summary" href="#reviews">
             <span class="p-rating-stars" aria-hidden="true">
                 <c:forEach begin="1" end="5" var="star">
@@ -91,9 +91,9 @@
                     <c:choose>
                         <c:when test="${not empty p.variants}"><%-- filled by JS --%></c:when>
                         <c:otherwise>
-                            <input type="hidden" name="size" value="${p.size != null ? p.size : 'Mặc định'}">
+                            <input type="hidden" name="size" value="${fn:escapeXml(p.size != null ? p.size : 'Mặc định')}">
                             <span class="size-label" style="pointer-events:none; opacity:0.7;">
-                                    ${p.size != null ? p.size : 'Mặc định'}
+                                    ${fn:escapeXml(p.size != null ? p.size : 'Mặc định')}
                             </span>
                         </c:otherwise>
                     </c:choose>
@@ -109,10 +109,10 @@
                     <c:choose>
                         <c:when test="${not empty p.variants}"><%-- filled by JS --%></c:when>
                         <c:otherwise>
-                            <input type="hidden" name="color" value="${p.color != null ? p.color : 'Mặc định'}">
+                            <input type="hidden" name="color" value="${fn:escapeXml(p.color != null ? p.color : 'Mặc định')}">
                             <span class="color-swatch-wrap">
                                 <span class="color-swatch" style="background:#ccc; border-color:#999; pointer-events:none;"></span>
-                                <span class="color-swatch-name">${p.color != null ? p.color : 'Mặc định'}</span>
+                                <span class="color-swatch-name">${fn:escapeXml(p.color != null ? p.color : 'Mặc định')}</span>
                             </span>
                         </c:otherwise>
                     </c:choose>
@@ -150,7 +150,7 @@
             </div>
         </form>
 
-        <p class="p-desc">${p.pdescription}. <fmt:message key="product.desc_default" /></p>
+        <p class="p-desc">${fn:escapeXml(p.pdescription)}. <fmt:message key="product.desc_default" /></p>
     </div>
 </div>
 
@@ -353,7 +353,7 @@
 
 <div id="v-data" style="display:none;">
     <c:forEach var="v" items="${p.variants}">
-        <div class="v-item" data-s="${v.size}" data-c="${v.color}" data-q="${v.stockQuantity}"></div>
+        <div class="v-item" data-s="${fn:escapeXml(v.size)}" data-c="${fn:escapeXml(v.color)}" data-q="${v.stockQuantity}"></div>
     </c:forEach>
 </div>
 

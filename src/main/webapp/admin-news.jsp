@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.News"%>
+<%@ page import="java.util.List, model.News, util.Html"%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -46,7 +46,7 @@
                         <td><strong>#<%= n.getId() %></strong></td>
                         
                         <td style="font-weight: 500; color: #2c3e50;">
-                            <%= n.getTitle() %>
+                            <%= Html.escape(n.getTitle()) %>
                         </td>
                         
                         <td style="color: #666;">
