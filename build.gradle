@@ -38,6 +38,10 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.21'
     implementation 'com.zaxxer:SparseBitSet:1.2'
     implementation 'org.json:json:20240303'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.jsoup:jsoup:1.18.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 group = 'com.thuctapweb'
@@ -62,4 +66,30 @@ tasks.withType(Javadoc) {
 }
 tasks.named('war') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    maxParallelForks = 1
+    systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+    defaultCharacterEncoding = 'UTF-8'
+    systemProperty 'stdout.encoding', 'UTF-8'
+    systemProperty 'stderr.encoding', 'UTF-8'
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf('Tests exercise a live Tomcat and mutable QA database') { true }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+        showStackTraces = false
+    }
+}
+
+tasks.register('adminTest', Test) {
+    group = 'verification'
+    description = 'Runs the Admin JUnit integration tests against local Tomcat.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'admin'
+    }
 }
