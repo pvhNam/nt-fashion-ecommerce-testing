@@ -198,6 +198,32 @@ public class Order {
 		}
 	}
 
+	/** Khóa trong messages_vi/en cho trạng thái; null nếu trạng thái lạ (khi đó dùng getDisplayStatus). */
+	public String getStatusKey() {
+		switch (getNormalizedStatus()) {
+		case STATUS_PROCESSING:
+			return "order.status.processing";
+		case STATUS_PENDING_MOMO:
+			return "order.status.pending_momo";
+		case STATUS_PENDING_VNPAY:
+			return "order.status.pending_vnpay";
+		case STATUS_PAID_PROCESSING:
+			return "order.status.paid_processing";
+		case STATUS_SHIPPING:
+			return "order.status.shipping";
+		case STATUS_SUCCESS:
+			return "order.status.success";
+		case STATUS_MOMO_FAILED:
+			return "order.status.momo_failed";
+		case STATUS_VNPAY_FAILED:
+			return "order.status.vnpay_failed";
+		case STATUS_CANCELLED:
+			return "order.status.cancelled";
+		default:
+			return status == null || status.isBlank() ? "order.status.unknown" : null;
+		}
+	}
+
 	public boolean isProcessingStatus() {
 		String normalizedStatus = getNormalizedStatus();
 		return STATUS_PROCESSING.equals(normalizedStatus)
