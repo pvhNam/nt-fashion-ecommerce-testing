@@ -11,6 +11,9 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.UserDAO;
+import model.User;
 import util.AdminAccess;
 
 // Kiểm tra quyền cho mọi trang quản trị (KAN-11: ST-10 / IS-02).
@@ -35,9 +38,22 @@ public class AdminAuthFilter implements Filter {
             return;
         }
 
-        if (AdminAccess.currentUser(request) == null) {
+        User user = AdminAccess.currentUser(request);
+        if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
+        }
+
+        // ST-22: quyền đọc lại từ DB, tài khoản bị xóa hoặc hạ quyền thì chặn ngay
+        Integer dbRole = new UserDAO().findRole(user.getUid());
+        if (dbRole == null) {
+            HttpSession session = request.getSession(false);
+            if (session != null) session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (dbRole != user.getIsAdmin()) {
+            user.setIsAdmin(dbRole);
         }
 
         int role = AdminAccess.role(request);
