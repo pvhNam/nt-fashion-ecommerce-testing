@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.User;
 import dao.UserDAO;
+import util.I18n;
 import util.MD5;
 import java.io.IOException;
 
@@ -29,6 +30,7 @@ public class LoginController extends HttpServlet {
 
         if (loginUser != null) {
             HttpSession session = request.getSession();
+            request.changeSessionId();
             session.setAttribute("user", loginUser);
 
             int role = loginUser.getIsAdmin();
@@ -38,7 +40,7 @@ public class LoginController extends HttpServlet {
                 response.sendRedirect("home");
             }
         } else {
-            request.setAttribute("error", "Sai tài khoản hoặc mật khẩu!");
+            request.setAttribute("error", I18n.t(request, "login.error"));
             request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
     }
