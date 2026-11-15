@@ -186,6 +186,20 @@ public class CartController extends HttpServlet {
             response.sendRedirect("cart");
             return;
         }
+        int requestedQuantity = parseInt(request.getParameter("quantity"), 1);
+        if (requestedQuantity <= 0 && ("add".equals(action) || "buyNow".equals(action)
+                || "update_quantity".equals(action))) {
+            if (ajax) {
+                writeCartState(request, response, currentUser,
+                        "Số lượng phải là số nguyên dương hợp lệ.", false);
+            } else {
+                session.setAttribute("toastMessage", "Số lượng phải là số nguyên dương hợp lệ.");
+                session.setAttribute("toastType", "error");
+                response.sendRedirect("cart");
+            }
+            return;
+        }
+
         int pid = 0;
         try { if (request.getParameter("pid") != null) pid = Integer.parseInt(request.getParameter("pid")); } catch (Exception e) {}
 
@@ -212,8 +226,7 @@ public class CartController extends HttpServlet {
             int uid = currentUser.getUid();
 
             if ("add".equals(action) || "buyNow".equals(action)) {
-                String qParam = request.getParameter("quantity");
-                int quantity = parseInt(qParam, 1);
+                int quantity = requestedQuantity;
                 int currentQuantity = 0;
                 for (CartItem item : dao.getCartByUid(uid)) {
                     String itemColor = item.getColor() == null ? "" : item.getColor();
@@ -224,7 +237,7 @@ public class CartController extends HttpServlet {
                     }
                 }
                 int availableStock = productDAO.getAvailableStock(pid, color, size);
-                if (quantity <= 0 || availableStock <= 0 || currentQuantity + quantity > availableStock) {
+                if (quantity <= 0 || availableStock <= 0 || (long) currentQuantity + quantity > availableStock) {
                     if (ajax) {
                         writeCartState(request, response, currentUser,
                                 "Phân loại đã hết hàng hoặc số lượng vượt quá tồn kho.", false);
@@ -245,10 +258,8 @@ public class CartController extends HttpServlet {
                 return;
 
             } else if ("update_quantity".equals(action)) {
-                int currentQty = 1;
-                try { currentQty = Integer.parseInt(request.getParameter("quantity")); } catch (Exception e) {}
                 String mod = request.getParameter("mod");
-                int newQty = currentQty;
+                long newQty = requestedQuantity;
                 if ("increase".equals(mod)) newQty++;
                 else if ("decrease".equals(mod)) newQty--;
 
@@ -260,7 +271,7 @@ public class CartController extends HttpServlet {
                         return;
                     }
                 } else if (newQty > 0) {
-                    dao.updateQuantity(uid, pid, color, size, newQty);
+                    dao.updateQuantity(uid, pid, color, size, (int) newQty);
                 } else {
                     dao.removeItem(uid, pid, color, size);
                 }
@@ -271,7 +282,7 @@ public class CartController extends HttpServlet {
             if (cart == null) cart = new ArrayList<>();
 
             if ("add".equals(action) || "buyNow".equals(action)) {
-                int quantity = parseInt(request.getParameter("quantity"), 1);
+                int quantity = requestedQuantity;
                 Product p = productDAO.getProductById(pid);
                 boolean exists = false;
                 int currentQuantity = 0;
@@ -283,7 +294,7 @@ public class CartController extends HttpServlet {
                     }
                 }
                 int maxStock = productDAO.getAvailableStock(pid, color, size);
-                if (p == null || quantity <= 0 || maxStock <= 0 || currentQuantity + quantity > maxStock) {
+                if (p == null || quantity <= 0 || maxStock <= 0 || (long) currentQuantity + quantity > maxStock) {
                     if (ajax) {
                         writeCartState(request, response, null,
                                 "Phân loại đã hết hàng hoặc số lượng vượt quá tồn kho.", false);
@@ -317,13 +328,21 @@ public class CartController extends HttpServlet {
                     String itemColor = item.getColor() == null ? "" : item.getColor();
                     String itemSize = item.getSize() == null ? "" : item.getSize();
                     if (item.getProduct().getPid() == pid && itemColor.equals(color) && itemSize.equals(size)) {
-                        int newQty = item.getQuantity();
+                        long newQty = item.getQuantity();
                         if ("increase".equals(mod)) newQty++;
                         else if ("decrease".equals(mod)) newQty--;
                         int maxStock = productDAO.getAvailableStock(pid, color, size);
                         item.getProduct().setStockquantyti(maxStock);
+                        if (newQty > maxStock || ("increase".equals(mod) && requestedQuantity > maxStock)) {
+                            if (ajax) {
+                                writeCartState(request, response, null,
+                                        "Sản phẩm đã đạt giới hạn tồn kho.", false);
+                                return;
+                            }
+                            break;
+                        }
                         if (newQty <= 0) iterator.remove();
-                        else if (newQty <= maxStock) item.setQuantity(newQty);
+                        else item.setQuantity((int) newQty);
                         break;
                     }
                 }
@@ -443,9 +462,10 @@ public class CartController extends HttpServlet {
         response.getWriter().write(json.toString());
     }
 
-    private int parseInt(String value, int fallback) {
-        try { return value == null ? fallback : Integer.parseInt(value); }
-        catch (NumberFormatException e) { return fallback; }
+    private int parseInt(String value, int missingValue) {
+        if (value == null) return missingValue;
+        try { return Integer.parseInt(value); }
+        catch (NumberFormatException e) { return 0; }
     }
 
     private double calculateSubtotal(List<CartItem> cart) {
