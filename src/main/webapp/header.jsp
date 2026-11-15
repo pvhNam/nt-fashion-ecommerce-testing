@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
@@ -22,7 +23,7 @@
 			</span>
 		</a>
 
-		<nav class="ym-nav" id="ym-main-navigation" data-current-page="${param.page}" aria-label="Điều hướng chính">
+		<nav class="ym-nav" id="ym-main-navigation" data-current-page="${fn:escapeXml(param.page)}" aria-label="Điều hướng chính">
 			<a href="${pageContext.request.contextPath}/home" class="${param.page == 'index' ? 'active' : ''}" data-prefetch data-site-navigation data-page="index"><fmt:message key="menu.home" /></a>
 			<a href="${pageContext.request.contextPath}/collection" class="${param.page == 'collection' ? 'active' : ''}" data-prefetch data-site-navigation data-page="collection"><fmt:message key="menu.collection" /></a>
 			<a href="${pageContext.request.contextPath}/about" class="${param.page == 'about' ? 'active' : ''}" data-prefetch data-site-navigation data-page="about"><fmt:message key="menu.products" /></a>
@@ -55,7 +56,7 @@
 				<button class="ym-user-trigger" type="button" aria-label="Mở menu tài khoản" aria-haspopup="true" aria-expanded="false">
 					<c:choose>
 						<c:when test="${sessionScope.user != null && not empty sessionScope.user.avatar}">
-							<img src="${pageContext.request.contextPath}/img/avatars/${sessionScope.user.avatar}" alt="Ảnh đại diện">
+							<img src="${pageContext.request.contextPath}/img/avatars/${fn:escapeXml(sessionScope.user.avatar)}" alt="Ảnh đại diện">
 						</c:when>
 						<c:otherwise>
 							<i class="fa-regular fa-user"></i>

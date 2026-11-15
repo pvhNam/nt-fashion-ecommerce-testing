@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Product"%>
+<%@ page import="java.util.List, model.Product, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -72,14 +72,14 @@
             %>
             <tr>
                 <td><strong>#<%=p.getPid()%></strong></td>
-                <td><img src="<%=p.getImage()%>" onerror="this.src='img/no-image.png'" class="product-img" alt="Ảnh SP" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #eee;"></td>
+                <td><img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'" class="product-img" alt="Ảnh SP" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #eee;"></td>
 
                 <td style="font-weight: 500;">
                     <!-- LINK CHUYỂN SANG TRANG CHI TIẾT BIẾN THỂ -->
                     <a href="admin-variants?pid=<%=p.getPid()%>"
                        style="color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;"
                        onmouseover="this.style.color='#2e59d9'" onmouseout="this.style.color='var(--primary)'" title="Xem chi tiết kho theo màu sắc, size">
-                        <%=p.getPdescription()%>
+                        <%=Html.escape(p.getPdescription())%>
                         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 13px; color: #17a2b8;"></i>
                     </a>
                 </td>

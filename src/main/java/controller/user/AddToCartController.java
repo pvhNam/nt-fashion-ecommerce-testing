@@ -5,6 +5,7 @@ import java.util.List;
 import model.Product;
 import model.CartItem;
 import model.User;
+import util.I18n;
 import dao.CartDAO;
 import dao.ProductDAO;
 import jakarta.servlet.ServletException;
@@ -30,7 +31,7 @@ public class AddToCartController extends HttpServlet {
         if (acc == null) {
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_UNAUTHORIZED, false,
-                        "Vui lòng đăng nhập để thêm sản phẩm.", 0, true);
+                        I18n.t(req, "cart.msg.login_required"), 0, true);
                 return;
             }
             resp.sendRedirect("login");
@@ -55,7 +56,7 @@ public class AddToCartController extends HttpServlet {
 
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, false,
-                        "Thông tin sản phẩm không hợp lệ.", 0, false);
+                        I18n.t(req, "cart.msg.bad_product"), 0, false);
                 return;
             }
 
@@ -77,7 +78,7 @@ public class AddToCartController extends HttpServlet {
         if (p == null || quantity <= 0) {
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, false,
-                        "Sản phẩm hoặc số lượng không hợp lệ.", 0, false);
+                        I18n.t(req, "cart.msg.invalid"), 0, false);
                 return;
             }
             resp.sendRedirect("home");
@@ -97,7 +98,7 @@ public class AddToCartController extends HttpServlet {
 
         int availableStock = productDAO.getAvailableStock(pid, color, size);
         if (availableStock <= 0) {
-            String message = "Phân loại size/màu này đã hết hàng hoặc không tồn tại.";
+            String message = I18n.t(req, "cart.msg.out_of_stock");
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, false,
                         message, currentCart.size(), false);
@@ -113,16 +114,13 @@ public class AddToCartController extends HttpServlet {
 
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, false,
-                        "Bạn chỉ có thể thêm tối đa " + Math.max(0, availableStock - currentQuantity)
-                                + " sản phẩm nữa.", currentCart.size(), false);
+                        I18n.t(req, "cart.msg.max_more", Math.max(0, availableStock - currentQuantity)), currentCart.size(), false);
                 return;
             }
 
             session.setAttribute(
                     "toastMessage",
-                    "Không thể thêm! Kho chỉ còn "
-                            + availableStock
-                            + " sản phẩm cho phân loại đã chọn."
+                    I18n.t(req, "cart.msg.stock_left", availableStock)
             );
 
             session.setAttribute(
@@ -147,13 +145,13 @@ public class AddToCartController extends HttpServlet {
         session.setAttribute("cartCount", cartCount);
         if (ajax) {
             writeJson(resp, HttpServletResponse.SC_OK, true,
-                    "Đã thêm vào giỏ hàng.", cartCount, false);
+                    I18n.t(req, "cart.msg.added"), cartCount, false);
             return;
         }
 
         session.setAttribute(
                 "toastMessage",
-                "Đã thêm vào giỏ hàng"
+                I18n.t(req, "cart.msg.added")
         );
 
         session.setAttribute(

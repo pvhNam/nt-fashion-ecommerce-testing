@@ -197,7 +197,22 @@ public class UserDAO {
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }
     }
-    // GET USER BY ID 
+    /** Vai trò hiện tại trong DB; null nếu tài khoản không còn hoặc không đọc được. */
+    public Integer findRole(int uid) {
+        String query = "SELECT is_admin FROM users WHERE uid = ?";
+        try (Connection c = DBConnect.getConnection();
+             PreparedStatement p = c.prepareStatement(query)) {
+            p.setInt(1, uid);
+            try (ResultSet r = p.executeQuery()) {
+                return r.next() ? r.getInt(1) : null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // GET USER BY ID
     public User getUserById(int uid) {
         String query = "SELECT * FROM users WHERE uid = ?";
         try {

@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import util.AdminAccess;
+import util.InputValidator;
 
 @WebServlet("/admin-products")
 public class AdminProductController extends HttpServlet {
@@ -107,6 +108,10 @@ public class AdminProductController extends HttpServlet {
             try { stock = Integer.parseInt(request.getParameter("stock")); } catch (Exception e) {}
 
             String[] extraImages = request.getParameterValues("extraImages");
+            if (!validImages(image, extraImages)) {
+                response.sendRedirect("admin-products?msg=error_image");
+                return;
+            }
 
             if ("add".equals(action)) {
                 Product p = new Product(0, name, price, cateId, color, size, stock, image);
@@ -134,5 +139,14 @@ public class AdminProductController extends HttpServlet {
             e.printStackTrace();
             response.sendRedirect("admin-products?msg=error_data");
         }
+    }
+
+    private boolean validImages(String image, String[] extraImages) {
+        if (!InputValidator.isSafeImageUrl(image)) return false;
+        if (extraImages == null) return true;
+        for (String url : extraImages) {
+            if (url != null && !url.isBlank() && !InputValidator.isSafeImageUrl(url)) return false;
+        }
+        return true;
     }
 }

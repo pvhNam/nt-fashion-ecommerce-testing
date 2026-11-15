@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <fmt:setLocale value="vi_VN" />
 <!DOCTYPE html>
@@ -37,7 +38,7 @@
                 <div>
                     <strong>Đã nhập toàn bộ sản phẩm trong phiếu.</strong>
                     Tồn kho và giá vốn đã đồng bộ.
-                    <a href="${ctx}/admin-stock-import/export?receiptId=${param.receiptId}">
+                    <a href="${ctx}/admin-stock-import/export?receiptId=${fn:escapeXml(param.receiptId)}">
                         <i class="fa-solid fa-file-excel"></i> Xuất phiếu vừa tạo
                     </a>
                 </div>

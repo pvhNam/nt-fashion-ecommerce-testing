@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Address;
 import model.User;
+import util.I18n;
 import util.InputValidator;
 
 @WebServlet(name = "EditAddressServlet", urlPatterns = {"/edit-address"})
@@ -79,7 +80,7 @@ public class EditAddressServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("editAddress", current);
-            request.setAttribute("addressFormError", error);
+            request.setAttribute("addressFormError", I18n.t(request, error));
             request.setAttribute("formAddress", new Address(addressId, user.getUid(), receiverName, rawPhone,
                     specificAddress, ward, district, city, isDefault));
             request.getRequestDispatcher("add-address.jsp").forward(request, response);

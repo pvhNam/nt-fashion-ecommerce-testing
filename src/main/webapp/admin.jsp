@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Order"%>
+<%@ page import="java.util.List, model.Order, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
@@ -210,15 +210,15 @@
                     <tr>
                         <td><strong>#<%=o.getId()%></strong></td>
                         <td>
-                            <div style="font-weight: 500;"><%=o.getUserName()%></div>
-                            <small style="color: #888;"><%=o.getPhoneNumber()%></small>
+                            <div style="font-weight: 500;"><%=Html.escape(o.getUserName())%></div>
+                            <small style="color: #888;"><%=Html.escape(o.getPhoneNumber())%></small>
                         </td>
                         <td><%=o.getCreatedAt()%></td>
                         <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            <%=o.getAddress()%>
+                            <%=Html.escape(o.getAddress())%>
                         </td>
                         <td class="money"><%=df.format(o.getTotalMoney())%></td>
-                        <td><span class="badge <%=badgeClass%>"><%=st%></span></td>
+                        <td><span class="badge <%=badgeClass%>"><%=Html.escape(st)%></span></td>
                         <td>
                             <div class="action-group">
                                 <a href="order-detail?id=<%=o.getId()%>" class="btn-icon btn-view" title="Xem chi tiết">

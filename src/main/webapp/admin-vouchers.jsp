@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Voucher"%>
+<%@ page import="java.util.List, model.Voucher, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 <!DOCTYPE html>
 <html lang="vi">
@@ -52,7 +52,7 @@
                 <div class="vc-top">
                     <div class="vc-code">
                         <i class="fa-solid fa-ticket"></i>
-                        <span><%=v.getCode()%></span>
+                        <span><%=Html.escape(v.getCode())%></span>
                     </div>
                     <div class="vc-discount"><%=discountLabel%></div>
                 </div>
@@ -66,7 +66,7 @@
                 <div class="vc-bottom">
                     <div class="vc-info-row">
                         <i class="fa-solid fa-circle-info"></i>
-                        <span><%=v.getDescription() != null && !v.getDescription().isEmpty() ? v.getDescription() : "Không có mô tả"%></span>
+                        <span><%=Html.escape(v.getDescription() != null && !v.getDescription().isEmpty() ? v.getDescription() : "Không có mô tả")%></span>
                     </div>
                     <div class="vc-info-row">
                         <i class="fa-solid fa-cart-shopping"></i>
@@ -82,7 +82,7 @@
                             <i class="fa-solid fa-pen"></i> Sửa
                         </a>
                         <form action="admin-vouchers" method="post" style="display:inline;margin:0"
-                              onsubmit="return confirm('Xóa voucher <%=v.getCode()%>?')">
+                              onsubmit="return confirm('Xóa voucher <%=Html.js(v.getCode())%>?')">
                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<%=v.getId()%>">

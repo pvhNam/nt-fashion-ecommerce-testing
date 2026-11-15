@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Address;
 import model.User;
+import util.I18n;
 import util.InputValidator;
 
 @WebServlet(name = "AddAddressServlet", urlPatterns = {"/add-address"})
@@ -55,7 +56,7 @@ public class AddAddressServlet extends HttpServlet {
         // IS-13: bắt buộc tên người nhận, SĐT hợp lệ, địa chỉ cụ thể; sai thì quay lại form, không lưu
         String error = InputValidator.addressError(receiverName, phone, specificAddress, city, district, ward);
         if (error != null) {
-            request.setAttribute("addressFormError", error);
+            request.setAttribute("addressFormError", I18n.t(request, error));
             request.setAttribute("formAddress", new Address(0, user.getUid(), receiverName, rawPhone,
                     specificAddress, ward, district, city, isDefault));
             request.getRequestDispatcher("add-address.jsp").forward(request, response);

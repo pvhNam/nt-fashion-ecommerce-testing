@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <fmt:setLocale
 	value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
@@ -47,22 +48,22 @@
 					<fmt:message key="shop.filter_price" />
 				</h3>
 				<ul class="filter-list">
-					<li><a href="about?price=all${baseParams}"
+					<li><a href="about?price=all${fn:escapeXml(baseParams)}"
 						class="${priceFilter == null || priceFilter == 'all' ? 'active' : ''}">
 							<i class="fa-solid fa-circle-check"></i> <fmt:message
 								key="shop.price_all" />
 					</a></li>
-					<li><a href="about?price=under500${baseParams}"
+					<li><a href="about?price=under500${fn:escapeXml(baseParams)}"
 						class="${priceFilter == 'under500' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_under500" />
 					</a></li>
-					<li><a href="about?price=500to1000${baseParams}"
+					<li><a href="about?price=500to1000${fn:escapeXml(baseParams)}"
 						class="${priceFilter == '500to1000' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_500_1000" />
 					</a></li>
-					<li><a href="about?price=above1000${baseParams}"
+					<li><a href="about?price=above1000${fn:escapeXml(baseParams)}"
 						class="${priceFilter == 'above1000' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_above1000" />
@@ -75,10 +76,10 @@
 					<fmt:message key="shop.category" />
 				</h3>
 				<ul class="filter-list">
-					<li><a href="about?category=áo nam${baseParams}" class="${categoryFilter == null || categoryFilter == 'all' ? '' : (categoryFilter == 'áo nam' ? 'active' : '')}">Áo nam</a></li>
-					<li><a href="about?category=quần nam${baseParams}" class="${categoryFilter == 'quần nam' ? 'active' : ''}">Quần nam</a></li>
-					<li><a href="about?category=phụ kiện${baseParams}" class="${categoryFilter == 'phụ kiện' ? 'active' : ''}">Phụ kiện</a></li>
-					<li><a href="about?category=bộ sưu tập 2026${baseParams}" class="${categoryFilter == 'bộ sưu tập 2026' ? 'active' : ''}">Bộ sưu tập 2026</a></li>
+					<li><a href="about?category=áo nam${fn:escapeXml(baseParams)}" class="${categoryFilter == null || categoryFilter == 'all' ? '' : (categoryFilter == 'áo nam' ? 'active' : '')}">Áo nam</a></li>
+					<li><a href="about?category=quần nam${fn:escapeXml(baseParams)}" class="${categoryFilter == 'quần nam' ? 'active' : ''}">Quần nam</a></li>
+					<li><a href="about?category=phụ kiện${fn:escapeXml(baseParams)}" class="${categoryFilter == 'phụ kiện' ? 'active' : ''}">Phụ kiện</a></li>
+					<li><a href="about?category=bộ sưu tập 2026${fn:escapeXml(baseParams)}" class="${categoryFilter == 'bộ sưu tập 2026' ? 'active' : ''}">Bộ sưu tập 2026</a></li>
 				</ul>
 			</div>
 		</aside>
@@ -141,8 +142,8 @@
 							<div class="product-card">
 								<div class="product-image">
 									<a href="product-detail?pid=${p.pid}"> <img
-										src="${p.image != null ? p.image : 'img/no-image.png'}"
-										alt="${p.pdescription}">
+										src="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}"
+										alt="${fn:escapeXml(p.pdescription)}">
 									</a> <a href="product-detail?pid=${p.pid}" class="overlay-btn"><i
 										class="fa-regular fa-eye"></i></a>
 
@@ -155,7 +156,7 @@
 
 								<div class="product-details">
 									<h3 class="product-name">
-										<a href="product-detail?pid=${p.pid}">${p.pdescription}</a>
+										<a href="product-detail?pid=${p.pid}">${fn:escapeXml(p.pdescription)}</a>
 									</h3>
 									<span class="price"><fmt:formatNumber value="${p.price}"
 											pattern="#,###" /> VNĐ</span>
@@ -165,19 +166,19 @@
 											<c:when test="${canAdd && stock > 0}">
 												<button type="button" class="btn-add-cart"
 													onclick="openBuyNowModal(this, 'cart')" data-pid="${p.pid}"
-													data-name="${p.pdescription}"
-													data-img="${p.image != null ? p.image : 'img/no-image.png'}"
+													data-name="${fn:escapeXml(p.pdescription)}"
+													data-img="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}"
 													data-price="${p.price}" data-stock="${stock}"
-													data-sizes="${p.size}" data-colors="${p.color}">
+													data-sizes="${fn:escapeXml(p.size)}" data-colors="${fn:escapeXml(p.color)}">
 													<fmt:message key="home.product.add_cart" />
 												</button>
 
 												<button type="button" class="btn-buy-now"
 													onclick="openBuyNowModal(this, 'buy')" data-pid="${p.pid}"
-													data-name="${p.pdescription}"
-													data-img="${p.image != null ? p.image : 'img/no-image.png'}"
+													data-name="${fn:escapeXml(p.pdescription)}"
+													data-img="${fn:escapeXml(p.image != null ? p.image : 'img/no-image.png')}"
 													data-price="${p.price}" data-stock="${stock}"
-													data-sizes="${p.size}" data-colors="${p.color}">MUA
+													data-sizes="${fn:escapeXml(p.size)}" data-colors="${fn:escapeXml(p.color)}">MUA
 													NGAY</button>
 											</c:when>
 											<c:otherwise>
@@ -209,17 +210,17 @@
 			<c:if test="${totalPages > 1}">
 				<div class="pagination">
 					<c:if test="${pageCurrent > 1}">
-						<a href="about?page=${pageCurrent - 1}${pageParams}"
+						<a href="about?page=${pageCurrent - 1}${fn:escapeXml(pageParams)}"
 							class="page-link"><i class="fa-solid fa-chevron-left"></i></a>
 					</c:if>
 
 					<c:forEach var="i" begin="1" end="${totalPages}">
-						<a href="about?page=${i}${pageParams}"
+						<a href="about?page=${i}${fn:escapeXml(pageParams)}"
 							class="page-link <c:out value='${i == pageCurrent ? "active" : ""}'/>">${i}</a>
 					</c:forEach>
 
 					<c:if test="${pageCurrent < totalPages}">
-						<a href="about?page=${pageCurrent + 1}${pageParams}"
+						<a href="about?page=${pageCurrent + 1}${fn:escapeXml(pageParams)}"
 							class="page-link"><i class="fa-solid fa-chevron-right"></i></a>
 					</c:if>
 				</div>

@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.Order, model.User"%>
+<%@ page import="java.util.List, model.Order, model.User, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -36,19 +36,19 @@
     <!-- Tab navigation -->
     <div class="order-tabs">
         <a href="order-history?tab=all" class="tab-item <%= "all".equals(activeTab) ? "active" : "" %>">
-            <i class="fa-solid fa-list"></i> Tất cả
+            <i class="fa-solid fa-list"></i> <fmt:message key="order.tab.all" />
         </a>
         <a href="order-history?tab=shipping" class="tab-item <%= "shipping".equals(activeTab) ? "active" : "" %>">
-            <i class="fa-solid fa-truck"></i> Đang giao
+            <i class="fa-solid fa-truck"></i> <fmt:message key="order.tab.shipping" />
         </a>
         <a href="order-history?tab=success" class="tab-item <%= "success".equals(activeTab) ? "active" : "" %>">
-            <i class="fa-solid fa-circle-check"></i> Đã giao
+            <i class="fa-solid fa-circle-check"></i> <fmt:message key="order.tab.success" />
         </a>
         <a href="order-history?tab=pending" class="tab-item <%= "pending".equals(activeTab) ? "active" : "" %>">
-            <i class="fa-solid fa-clock"></i> Chưa giao
+            <i class="fa-solid fa-clock"></i> <fmt:message key="order.tab.pending" />
         </a>
         <a href="order-history?tab=cancelled" class="tab-item <%= "cancelled".equals(activeTab) ? "active" : "" %>">
-            <i class="fa-solid fa-ban"></i> Đã hủy
+            <i class="fa-solid fa-ban"></i> <fmt:message key="order.tab.cancelled" />
         </a>
     </div>
 
@@ -95,7 +95,7 @@
     %>
     <div class="empty-cart" style="text-align: center; padding: 50px;">
         <i class="fa-solid fa-box-open" style="font-size: 40px; color: #ccc;"></i>
-        <p>Không có đơn hàng nào trong mục này.</p>
+        <p><fmt:message key="order.empty_tab" /></p>
         <a href="index.jsp" class="btn-shop-now"><fmt:message key="cart.shop_now" /></a>
     </div>
     <%
@@ -132,9 +132,9 @@
         <tr>
             <td>#<%=o.getId()%></td>
             <td><%=o.getCreatedAt()%></td>
-            <td><%=o.getAddress()%></td>
+            <td><%=Html.escape(o.getAddress())%></td>
             <td style="font-weight: bold; color: #d00;"><%=df.format(o.getTotalMoney())%></td>
-            <td><span class="status-tag <%=statusClass%>"><%=o.getDisplayStatus()%></span></td>
+            <td><span class="status-tag <%=statusClass%>"><% String statusKey = o.getStatusKey(); if (statusKey != null) { %><fmt:message key="<%=statusKey%>" /><% } else { %><%=Html.escape(o.getDisplayStatus())%><% } %></span></td>
             <td>
                 <a href="order-detail?id=<%=o.getId()%>" class="btn-view-detail">
                     <fmt:message key="history.view_detail" />

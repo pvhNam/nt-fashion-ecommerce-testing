@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.User"%>
+<%@ page import="java.util.List, model.User, util.Html"%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -21,7 +21,7 @@
         <div class="content-header" style="justify-content: space-between;">
             <h1 class="page-title">Quản Lý Khách Hàng</h1>
             <form action="admin-users" method="get" class="search-box" data-admin-ajax>
-                <input type="search" name="search" placeholder="Tìm tên, email, sđt..." value="${param.search}"
+                <input type="search" name="search" placeholder="Tìm tên, email, sđt..." value="<%=Html.escape(request.getParameter("search"))%>"
                        aria-label="Tìm khách hàng" data-admin-live-search>
                 <button type="submit" title="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
             </form>
@@ -54,22 +54,22 @@
                         <td><strong>#<%=u.getUid()%></strong></td>
                         <td>
                             <div class="user-info-cell">
-                                <img src="<%=avatarUrl%>" class="user-avatar-small" onerror="this.src='img/images.jpg'">
+                                <img src="<%=Html.escape(avatarUrl)%>" class="user-avatar-small" onerror="this.src='img/images.jpg'">
                                 <div>
                                     <div class="user-name">
                                         <a href="admin-user-detail?uid=<%=u.getUid()%>" title="Xem lịch sử mua hàng">
-                                            <%=u.getFullname() != null ? u.getFullname() : "Chưa cập nhật"%>
+                                            <%=Html.escape(u.getFullname() != null ? u.getFullname() : "Chưa cập nhật")%>
                                             <i class="fa-solid fa-arrow-up-right-from-square icon-link"></i>
                                         </a>
                                     </div>
-                                    <div class="user-username">@<%=u.getUsername()%></div>
+                                    <div class="user-username">@<%=Html.escape(u.getUsername())%></div>
                                 </div>
                             </div>
                         </td>
-                        <td style="color: #555;"><%=u.getEmail()%></td>
+                        <td style="color: #555;"><%=Html.escape(u.getEmail())%></td>
                         <td>
                             <% if (u.getPhonenumber() != null && !u.getPhonenumber().isEmpty()) { %>
-                                <%=u.getPhonenumber()%>
+                                <%=Html.escape(u.getPhonenumber())%>
                             <% } else { %>
                                 <span style="color: #ccc; font-style: italic;">---</span>
                             <% } %>

@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="util.Html"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
@@ -33,7 +34,7 @@
                 <% String message = (String) request.getAttribute("message");
                    if (message != null) { %>
                     <div class="alert-error" style="background-color: #e8f0fe; color: #1967d2; border: 1px solid #1967d2;">
-                        <i class="fa-solid fa-circle-info"></i> <%= message %>
+                        <i class="fa-solid fa-circle-info"></i> <%= Html.escape(message) %>
                     </div>
                 <% } %>
 
