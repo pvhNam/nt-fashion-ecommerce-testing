@@ -895,6 +895,7 @@
     }
 
     async function updateCart(form, submitter) {
+        var body = formDataWithSubmitter(form, submitter);
         setBusy(submitter, true);
         startProgress(false);
         var card = form.closest('.cart-card');
@@ -902,7 +903,7 @@
         try {
             var url = formActionUrl(form, submitter);
             if (!url) throw new Error('Địa chỉ xử lý biểu mẫu không hợp lệ.');
-            var data = await postForm(url.href, formDataWithSubmitter(form, submitter));
+            var data = await postForm(url.href, body);
             applyCartState(data, submitter || form);
             if (data.message) showMessage(data.message, data.success === false ? 'error' : 'success');
         } catch (error) {
