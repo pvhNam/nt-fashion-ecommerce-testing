@@ -187,7 +187,8 @@ public class CartController extends HttpServlet {
             response.sendRedirect("cart");
             return;
         }
-        int requestedQuantity = parseInt(request.getParameter("quantity"), 1);
+        int requestedQuantity = parseInt(request.getParameter("quantity"),
+                "update_quantity".equals(action) ? 0 : 1);
         if (requestedQuantity <= 0 && ("add".equals(action) || "buyNow".equals(action)
                 || "update_quantity".equals(action))) {
             if (ajax) {
@@ -217,6 +218,55 @@ public class CartController extends HttpServlet {
                 writeCartState(request, response, currentUser,
                         "Đã xóa sản phẩm khỏi giỏ hàng.", true);
             } else {
+                response.sendRedirect("cart");
+            }
+            return;
+        }
+
+        if ("update_quantity".equals(action)) {
+            String mod = request.getParameter("mod");
+            long newQty = requestedQuantity + ("increase".equals(mod) ? 1L : -1L);
+            int availableStock = productDAO.getAvailableStock(pid, color, size);
+            String error = null;
+            boolean updated = false;
+            if (!"increase".equals(mod) && !"decrease".equals(mod)) {
+                error = "Thao tác cập nhật số lượng không hợp lệ.";
+            } else if (newQty > availableStock) {
+                error = "Sản phẩm đã đạt giới hạn tồn kho.";
+            } else if (currentUser != null) {
+                updated = new CartDAO().updateQuantityIfCurrent(currentUser.getUid(), pid, color, size,
+                        requestedQuantity, (int) newQty);
+            } else {
+                synchronized (session) {
+                    List<CartItem> cart = getCurrentCart(session, null);
+                    Iterator<CartItem> iterator = cart.iterator();
+                    while (iterator.hasNext()) {
+                        CartItem item = iterator.next();
+                        String itemColor = item.getColor() == null ? "" : item.getColor();
+                        String itemSize = item.getSize() == null ? "" : item.getSize();
+                        if (item.getProduct().getPid() == pid && itemColor.equals(color) && itemSize.equals(size)) {
+                            item.getProduct().setStockquantyti(availableStock);
+                            if (item.getQuantity() == requestedQuantity) {
+                                if (newQty == 0) iterator.remove();
+                                else item.setQuantity((int) newQty);
+                                session.setAttribute("cart", cart);
+                                updated = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            if (error == null && !updated) {
+                error = "Giỏ hàng đã thay đổi. Vui lòng kiểm tra số lượng mới và thử lại.";
+            }
+            if (ajax) {
+                writeCartState(request, response, currentUser, error, error == null);
+            } else {
+                if (error != null) {
+                    session.setAttribute("toastMessage", error);
+                    session.setAttribute("toastType", "error");
+                }
                 response.sendRedirect("cart");
             }
             return;
@@ -258,24 +308,6 @@ public class CartController extends HttpServlet {
                 else response.sendRedirect("cart"); // Thêm xong chuyển ra giỏ hàng
                 return;
 
-            } else if ("update_quantity".equals(action)) {
-                String mod = request.getParameter("mod");
-                long newQty = requestedQuantity;
-                if ("increase".equals(mod)) newQty++;
-                else if ("decrease".equals(mod)) newQty--;
-
-                int maxStock = productDAO.getAvailableStock(pid, color, size);
-                if (newQty > maxStock) {
-                    if (ajax) {
-                        writeCartState(request, response, currentUser,
-                                "Sản phẩm đã đạt giới hạn tồn kho.", false);
-                        return;
-                    }
-                } else if (newQty > 0) {
-                    dao.updateQuantity(uid, pid, color, size, (int) newQty);
-                } else {
-                    dao.removeItem(uid, pid, color, size);
-                }
             }
         } else {
             // khách chưa log(Lưu session)
@@ -321,33 +353,6 @@ public class CartController extends HttpServlet {
                 }
                 session.setAttribute("cart", cart);
                 if ("buyNow".equals(action)) { response.sendRedirect("checkout"); return; }
-            } else if ("update_quantity".equals(action)) {
-                String mod = request.getParameter("mod");
-                Iterator<CartItem> iterator = cart.iterator();
-                while (iterator.hasNext()) {
-                    CartItem item = iterator.next();
-                    String itemColor = item.getColor() == null ? "" : item.getColor();
-                    String itemSize = item.getSize() == null ? "" : item.getSize();
-                    if (item.getProduct().getPid() == pid && itemColor.equals(color) && itemSize.equals(size)) {
-                        long newQty = item.getQuantity();
-                        if ("increase".equals(mod)) newQty++;
-                        else if ("decrease".equals(mod)) newQty--;
-                        int maxStock = productDAO.getAvailableStock(pid, color, size);
-                        item.getProduct().setStockquantyti(maxStock);
-                        if (newQty > maxStock || ("increase".equals(mod) && requestedQuantity > maxStock)) {
-                            if (ajax) {
-                                writeCartState(request, response, null,
-                                        "Sản phẩm đã đạt giới hạn tồn kho.", false);
-                                return;
-                            }
-                            break;
-                        }
-                        if (newQty <= 0) iterator.remove();
-                        else item.setQuantity((int) newQty);
-                        break;
-                    }
-                }
-                session.setAttribute("cart", cart);
             }
         }
         if (ajax) {

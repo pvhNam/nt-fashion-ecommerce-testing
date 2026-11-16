@@ -91,6 +91,33 @@ public class CartDAO {
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 
+	/** Chỉ cập nhật khi số lượng vẫn khớp với phiên bản khách đang xem. */
+	public boolean updateQuantityIfCurrent(int uid, int pid, String color, String size,
+			int expectedQuantity, int quantity) {
+		if (expectedQuantity <= 0 || quantity < 0) {
+			return false;
+		}
+		String condition = " WHERE user_id = ? AND product_id = ? "
+				+ "AND TRIM(COALESCE(color, '')) = ? AND TRIM(COALESCE(size, '')) = ? AND quantity = ?";
+		String query = quantity == 0 ? "DELETE FROM cart" + condition : "UPDATE cart SET quantity = ?" + condition;
+		try (Connection connection = DBConnect.getConnection();
+				PreparedStatement statement = connection.prepareStatement(query)) {
+			int parameter = 1;
+			if (quantity > 0) {
+				statement.setInt(parameter++, quantity);
+			}
+			statement.setInt(parameter++, uid);
+			statement.setInt(parameter++, pid);
+			statement.setString(parameter++, color == null ? "" : color.trim());
+			statement.setString(parameter++, size == null ? "" : size.trim());
+			statement.setInt(parameter, expectedQuantity);
+			return statement.executeUpdate() > 0;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	// Xóa sản phẩm
 	public void removeItem(int uid, int pid, String color, String size) {
 		String query = "DELETE FROM cart WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?";
