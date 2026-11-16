@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import dao.ProductDAO;
 import model.Product;
-import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -97,15 +96,18 @@ public class AdminProductController extends HttpServlet {
                 return;
             }
 
+            if (!"add".equals(action) && !"update".equals(action)) {
+                response.sendRedirect("admin-products?msg=error_data");
+                return;
+            }
+
             String name = request.getParameter("name");
-            String priceStr = request.getParameter("price");
-            double price = (priceStr != null && !priceStr.isEmpty()) ? Double.parseDouble(priceStr) : 0;
+            double price = InputValidator.productPrice(request.getParameter("price"));
             int cateId = Integer.parseInt(request.getParameter("cateId"));
             String color = request.getParameter("color");
             String size = request.getParameter("size");
             String image = request.getParameter("image");
-            int stock = 0;
-            try { stock = Integer.parseInt(request.getParameter("stock")); } catch (Exception e) {}
+            int stock = InputValidator.productStock(request.getParameter("stock"));
 
             String[] extraImages = request.getParameterValues("extraImages");
             if (!validImages(image, extraImages)) {
@@ -116,11 +118,9 @@ public class AdminProductController extends HttpServlet {
             if ("add".equals(action)) {
                 Product p = new Product(0, name, price, cateId, color, size, stock, image);
 
-                // ĐÃ SỬA: Dùng hàm trả về ID và cập nhật ảnh phụ
-                int newPid = dao.addProductReturnId(p);
+                int newPid = dao.addProductWithImages(p, extraImages);
 
                 if (newPid > 0) {
-                    dao.updateExtraImages(newPid, extraImages);
                     response.sendRedirect("admin-products?msg=added");
                 } else {
                     response.sendRedirect("admin-products?msg=error_add");
@@ -130,13 +130,13 @@ public class AdminProductController extends HttpServlet {
                 int pid = Integer.parseInt(request.getParameter("pid"));
                 Product p = new Product(pid, name, price, cateId, color, size, stock, image);
 
-                dao.updateProduct(p);
-                dao.updateExtraImages(pid, extraImages);
-
-                response.sendRedirect("admin-products?msg=updated");
+                boolean updated = dao.updateProductWithImages(p, extraImages);
+                response.sendRedirect("admin-products?msg=" + (updated ? "updated" : "error_update"));
             }
+        } catch (IllegalArgumentException e) {
+            response.sendRedirect("admin-products?msg=error_data");
         } catch (Exception e) {
-            e.printStackTrace();
+            getServletContext().log("Unable to save Admin product", e);
             response.sendRedirect("admin-products?msg=error_data");
         }
     }

@@ -13,6 +13,28 @@ public final class InputValidator {
         return value == null ? "" : value.trim();
     }
 
+    /** Required product price: finite and nonnegative; blank input is not zero. */
+    public static double productPrice(String value) {
+        String input = trim(value);
+        if (input.isEmpty()) {
+            throw new IllegalArgumentException("Product price is required.");
+        }
+        double price = Double.parseDouble(input);
+        if (!Double.isFinite(price) || price < 0) {
+            throw new IllegalArgumentException("Product price must be finite and nonnegative.");
+        }
+        return price;
+    }
+
+    /** Required product stock: a whole number in the nonnegative int range. */
+    public static int productStock(String value) {
+        String input = trim(value);
+        if (!input.matches("[0-9]+")) {
+            throw new IllegalArgumentException("Product stock must be a nonnegative integer.");
+        }
+        return Integer.parseInt(input);
+    }
+
     public static boolean isValidEmail(String email) {
         return email != null && email.length() <= 100 && email.matches(EMAIL_PATTERN);
     }

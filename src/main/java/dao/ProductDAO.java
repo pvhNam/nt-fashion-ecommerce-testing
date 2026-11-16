@@ -3,6 +3,8 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,90 +114,178 @@ public class ProductDAO {
 
     // Thêm sản phẩm
     public boolean addProduct(Product p) {
-        String sql = "INSERT INTO product (name, price, cateID, color, size, amount, img) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try {
-            Connection conn = DBConnect.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, p.getPdescription());
-            ps.setDouble(2, p.getPrice());
-            ps.setInt(3, p.getCid());
-            ps.setString(4, p.getColor());
-            ps.setString(5, p.getSize());
-            ps.setInt(6, p.getStockquantyti());
-            ps.setString(7, p.getImage());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
-        return false;
+        return addProductReturnId(p) > 0;
     }
 
     public int addProductReturnId(Product p) {
-        String sql = "INSERT INTO product (name, price, cateID, color, size, amount, img) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try {
-            Connection conn = DBConnect.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, p.getPdescription());
-            ps.setDouble(2, p.getPrice());
-            ps.setInt(3, p.getCid());
-            ps.setString(4, p.getColor());
-            ps.setString(5, p.getSize());
-            ps.setInt(6, p.getStockquantyti());
-            ps.setString(7, p.getImage());
+        return addProductWithImages(p, null);
+    }
 
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        return rs.getInt(1); // Trả về ID vừa sinh ra
-                    }
-                }
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return -1;
+    /** Creates the product and its gallery as one committed change. */
+    public int addProductWithImages(Product product, String[] imageUrls) {
+        if (!validProductNumbers(product)) {
+            return -1;
+        }
+        return inTransaction(connection -> {
+            int productId = insertProductRow(connection, product);
+            replaceExtraImages(connection, productId, imageUrls);
+            return productId;
+        });
     }
 
     // Cập nhật sản phẩm
     public boolean updateProduct(Product p) {
-        String sql = "UPDATE product SET name=?, price=?, cateID=?, color=?, size=?, amount=?, img=? WHERE pid=?";
-        try {
-            Connection conn = DBConnect.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, p.getPdescription());
-            ps.setDouble(2, p.getPrice());
-            ps.setInt(3, p.getCid());
-            ps.setString(4, p.getColor());
-            ps.setString(5, p.getSize());
-            ps.setInt(6, p.getStockquantyti());
-            ps.setString(7, p.getImage());
-            ps.setInt(8, p.getPid());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
-        return false;
+        if (!validProductNumbers(p) || p.getPid() <= 0) {
+            return false;
+        }
+        return inTransaction(connection -> updateProductRow(connection, p)) > 0;
+    }
+
+    /** Updates the product and replaces its gallery in the same transaction. */
+    public boolean updateProductWithImages(Product product, String[] imageUrls) {
+        if (!validProductNumbers(product) || product.getPid() <= 0) {
+            return false;
+        }
+        return inTransaction(connection -> {
+            int affectedRows = updateProductRow(connection, product);
+            if (affectedRows == 0) {
+                return 0;
+            }
+            replaceExtraImages(connection, product.getPid(), imageUrls);
+            return affectedRows;
+        }) > 0;
     }
 
     // Cập nhật bộ ảnh phụ (Xóa ảnh cũ, thêm ảnh mới)
     public void updateExtraImages(int pid, String[] imageUrls) {
-        try (Connection conn = DBConnect.getConnection()) {
-            // 1. Xóa toàn bộ ảnh phụ cũ của SP này
-            String sqlDelete = "DELETE FROM product_images WHERE product_id = ?";
-            try (PreparedStatement psDel = conn.prepareStatement(sqlDelete)) {
-                psDel.setInt(1, pid);
-                psDel.executeUpdate();
-            }
-
-            // 2. Thêm danh sách ảnh mới vào
-            if (imageUrls != null && imageUrls.length > 0) {
-                String sqlInsert = "INSERT INTO product_images (product_id, image_url) VALUES (?, ?)";
-                try (PreparedStatement psIn = conn.prepareStatement(sqlInsert)) {
-                    for (String url : imageUrls) {
-                        if (url != null && !url.trim().isEmpty()) {
-                            psIn.setInt(1, pid);
-                            psIn.setString(2, url.trim());
-                            psIn.executeUpdate();
-                        }
+        if (pid <= 0) {
+            return;
+        }
+        inTransaction(connection -> {
+            // Serialize gallery-only calls with product updates, including an empty gallery.
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT pid FROM product WHERE pid=? FOR UPDATE")) {
+                statement.setInt(1, pid);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next()) {
+                        return 0;
                     }
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+            replaceExtraImages(connection, pid, imageUrls);
+            return 1;
+        });
+    }
+
+    private boolean validProductNumbers(Product product) {
+        return product != null && Double.isFinite(product.getPrice()) && product.getPrice() >= 0
+                && product.getStockquantyti() >= 0;
+    }
+
+    private int insertProductRow(Connection connection, Product product) throws SQLException {
+        String sql = "INSERT INTO product (name, price, cateID, color, size, amount, img) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            bindProduct(statement, product);
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("Product insert did not create exactly one row.");
+            }
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                if (!keys.next() || keys.getInt(1) <= 0) {
+                    throw new SQLException("Product insert did not return a valid generated ID.");
+                }
+                return keys.getInt(1);
+            }
+        }
+    }
+
+    private int updateProductRow(Connection connection, Product product) throws SQLException {
+        String sql = "UPDATE product SET name=?, price=?, cateID=?, color=?, size=?, amount=?, img=? WHERE pid=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindProduct(statement, product);
+            statement.setInt(8, product.getPid());
+            return statement.executeUpdate();
+        }
+    }
+
+    private void bindProduct(PreparedStatement statement, Product product) throws SQLException {
+        statement.setString(1, product.getPdescription());
+        statement.setDouble(2, product.getPrice());
+        statement.setInt(3, product.getCid());
+        statement.setString(4, product.getColor());
+        statement.setString(5, product.getSize());
+        statement.setInt(6, product.getStockquantyti());
+        statement.setString(7, product.getImage());
+    }
+
+    private void replaceExtraImages(Connection connection, int productId, String[] imageUrls)
+            throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM product_images WHERE product_id=?")) {
+            statement.setInt(1, productId);
+            statement.executeUpdate();
+        }
+        if (imageUrls == null) {
+            return;
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "INSERT INTO product_images (product_id,image_url) VALUES (?,?)")) {
+            for (String imageUrl : imageUrls) {
+                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    statement.setInt(1, productId);
+                    statement.setString(2, imageUrl.trim());
+                    if (statement.executeUpdate() != 1) {
+                        throw new SQLException("Gallery insert did not create exactly one row.");
+                    }
+                }
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface TransactionWork {
+        int execute(Connection connection) throws SQLException;
+    }
+
+    private int inTransaction(TransactionWork work) {
+        try (Connection connection = DBConnect.getConnection()) {
+            if (connection == null) {
+                return -1;
+            }
+            boolean originalAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            boolean transactionFinished = false;
+            try {
+                int result = work.execute(connection);
+                if (result > 0) {
+                    connection.commit();
+                } else {
+                    connection.rollback();
+                }
+                transactionFinished = true;
+                return result;
+            } catch (SQLException | RuntimeException error) {
+                try {
+                    connection.rollback();
+                    transactionFinished = true;
+                } catch (SQLException rollbackError) {
+                    error.addSuppressed(rollbackError);
+                }
+                error.printStackTrace();
+                return -1;
+            } finally {
+                // Enabling autocommit after a failed rollback could commit partial writes.
+                if (transactionFinished && originalAutoCommit) {
+                    try {
+                        connection.setAutoCommit(true);
+                    } catch (SQLException restoreError) {
+                        restoreError.printStackTrace();
+                    }
+                }
+            }
+        } catch (SQLException error) {
+            error.printStackTrace();
+            return -1;
+        }
     }
 
     // Xóa sản phẩm
