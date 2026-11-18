@@ -10,6 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import util.InputValidator;
 
 @WebServlet("/admin-variants")
 public class AdminVariantController extends HttpServlet {
@@ -43,22 +44,40 @@ public class AdminVariantController extends HttpServlet {
         }
     }
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
-        int pid = Integer.parseInt(request.getParameter("pid"));
+        int pid;
+        try {
+            pid = Integer.parseInt(request.getParameter("pid"));
+            if (pid <= 0) throw new IllegalArgumentException("Invalid product ID.");
+        } catch (IllegalArgumentException error) {
+            response.sendRedirect("admin-products?msg=error_data");
+            return;
+        }
         ProductDAO dao = new ProductDAO();
 
         try {
             if ("update-qty".equals(action)) {
                 int vid = Integer.parseInt(request.getParameter("vid"));
-                int newQty = Integer.parseInt(request.getParameter("newQty"));
-                dao.updateVariantQuantity(vid, newQty);
+                if (vid <= 0) throw new IllegalArgumentException("Invalid variant ID.");
+                int newQty = InputValidator.productStock(request.getParameter("newQty"));
+                boolean updated = dao.updateVariantQuantity(vid, newQty);
+                response.sendRedirect("admin-variants?pid=" + pid + "&msg="
+                        + (updated ? "success" : "error"));
+                return;
             } else if ("delete-variant".equals(action)) {
                 int vid = Integer.parseInt(request.getParameter("vid"));
                 dao.deleteVariant(vid);
+            } else {
+                response.sendRedirect("admin-variants?pid=" + pid + "&msg=error_data");
+                return;
             }
             // Sau khi xử lý xong, quay lại đúng trang chi tiết của sản phẩm đó
             response.sendRedirect("admin-variants?pid=" + pid + "&msg=success");
+        } catch (IllegalArgumentException error) {
+            response.sendRedirect("admin-variants?pid=" + pid + "&msg=error_data");
         } catch (Exception e) {
+            getServletContext().log("Unable to update Admin variant stock", e);
             response.sendRedirect("admin-variants?pid=" + pid + "&msg=error");
         }
     }

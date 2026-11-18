@@ -301,11 +301,26 @@ public class ProductDAO {
 
     // Cập nhật số lượng của 1 biến thể cụ thể
     public boolean updateVariantQuantity(int variantId, int newQty) {
+        if (variantId <= 0 || newQty < 0) {
+            return false;
+        }
         String sqlUpdateVar = "UPDATE product_variants SET stock_quantity = ? WHERE id = ?";
         String sqlSyncTotal = "UPDATE product p SET amount = (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.pid) " +
                 "WHERE pid = (SELECT product_id FROM product_variants WHERE id = ?)";
         try (Connection conn = DBConnect.getConnection()) {
+            if (conn == null) return false;
             conn.setAutoCommit(false);
+            try (PreparedStatement lock = conn.prepareStatement(
+                    "SELECT v.id FROM product_variants v JOIN product p ON p.pid=v.product_id "
+                            + "WHERE v.id=? FOR UPDATE")) {
+                lock.setInt(1, variantId);
+                try (ResultSet result = lock.executeQuery()) {
+                    if (!result.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            }
             try (PreparedStatement ps1 = conn.prepareStatement(sqlUpdateVar);
                  PreparedStatement ps2 = conn.prepareStatement(sqlSyncTotal)) {
 

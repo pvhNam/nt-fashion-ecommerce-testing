@@ -53,6 +53,8 @@
             <h3 style="margin: 0; color: var(--dark);">Danh sách Màu sắc & Kích thước</h3>
             <% if ("success".equals(request.getParameter("msg"))) { %>
             <span class="msg-success"><i class="fa-solid fa-circle-check"></i> Đã cập nhật kho hàng thành công!</span>
+            <% } else if ("error_data".equals(request.getParameter("msg"))) { %>
+            <span class="msg-error"><i class="fa-solid fa-circle-exclamation"></i> Số lượng phải là số nguyên từ 0 đến 2147483647. Vui lòng kiểm tra mã sản phẩm và biến thể.</span>
             <% } else if ("error".equals(request.getParameter("msg"))) { %>
             <span class="msg-error"><i class="fa-solid fa-circle-exclamation"></i> Có lỗi xảy ra, vui lòng thử lại!</span>
             <% } %>
@@ -87,7 +89,7 @@
                         <input type="hidden" name="action" value="update-qty">
                         <input type="hidden" name="pid" value="<%=p.getPid()%>">
                         <input type="hidden" name="vid" value="<%=v.getId()%>">
-                        <input type="number" name="newQty" value="<%=v.getStockQuantity()%>" class="variant-qty-input" min="0">
+                        <input type="number" name="newQty" value="<%=v.getStockQuantity()%>" class="variant-qty-input" min="0" max="2147483647" step="1" required>
                         <button type="submit" class="btn-icon btn-icon-save" title="Lưu thay đổi số lượng">
                             <i class="fa-solid fa-save"></i>
                         </button>
