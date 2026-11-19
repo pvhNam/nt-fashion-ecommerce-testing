@@ -49,6 +49,14 @@ public class AdminVoucherController extends HttpServlet {
         double amount = Double.parseDouble(request.getParameter("discountAmount"));
         String type = request.getParameter("discountType");
         double minOrder = Double.parseDouble(request.getParameter("minOrder"));
+
+        if (!Double.isFinite(amount) || amount < 0
+                || ("PERCENT".equals(type) && amount > 100)
+                || !Double.isFinite(minOrder) || minOrder < 0) {
+            response.sendRedirect("admin-vouchers?msg=error_value_range");
+            return;
+        }
+
         Date expiry = Date.valueOf(request.getParameter("expiryDate"));
 
         if ("insert".equals(action)) {

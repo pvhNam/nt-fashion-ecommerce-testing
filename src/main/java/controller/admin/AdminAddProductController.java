@@ -19,13 +19,12 @@ public class AdminAddProductController extends HttpServlet {
 
         try {
             String name = request.getParameter("name");
-            String priceStr = request.getParameter("price");
-            double price = (priceStr != null && !priceStr.isEmpty()) ? Double.parseDouble(priceStr) : 0;
+            double price = InputValidator.productPrice(request.getParameter("price"));
 
             int cateId = Integer.parseInt(request.getParameter("cateId"));
             String color = request.getParameter("color");
             String size = request.getParameter("size");
-            int stock = Integer.parseInt(request.getParameter("stock"));
+            int stock = InputValidator.productStock(request.getParameter("stock"));
             String image = request.getParameter("image");
             if (!InputValidator.isSafeImageUrl(image)) {
                 response.sendRedirect("admin-products?msg=error_image");
@@ -35,7 +34,7 @@ public class AdminAddProductController extends HttpServlet {
             Product p = new Product(0, name, price, cateId, color, size, stock, image);
             ProductDAO dao = new ProductDAO();
 
-            boolean isAdded = dao.addProduct(p);
+            boolean isAdded = dao.addProductWithImages(p, null) > 0;
 
             if (isAdded) {
                 response.sendRedirect("admin-products?msg=added_product");
@@ -43,8 +42,10 @@ public class AdminAddProductController extends HttpServlet {
                 response.sendRedirect("admin-products?msg=error_add");
             }
 
+        } catch (IllegalArgumentException e) {
+            response.sendRedirect("admin-products?msg=error_data");
         } catch (Exception e) {
-            e.printStackTrace();
+            getServletContext().log("Unable to add Admin product", e);
             response.sendRedirect("admin-products?msg=error_data");
         }
     }
