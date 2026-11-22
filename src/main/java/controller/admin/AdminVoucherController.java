@@ -46,9 +46,18 @@ public class AdminVoucherController extends HttpServlet {
 
         String code = request.getParameter("code");
         String desc = request.getParameter("description");
-        double amount = Double.parseDouble(request.getParameter("discountAmount"));
         String type = request.getParameter("discountType");
-        double minOrder = Double.parseDouble(request.getParameter("minOrder"));
+        String amountInput = request.getParameter("discountAmount");
+        String minOrderInput = request.getParameter("minOrder");
+        double amount;
+        double minOrder;
+        try {
+            amount = Double.parseDouble(amountInput == null ? "" : amountInput.trim());
+            minOrder = Double.parseDouble(minOrderInput == null ? "" : minOrderInput.trim());
+        } catch (NumberFormatException e) {
+            response.sendRedirect("admin-vouchers?msg=error_value_range");
+            return;
+        }
 
         if (!Double.isFinite(amount) || amount < 0
                 || ("PERCENT".equals(type) && amount > 100)
