@@ -32,7 +32,13 @@
             </a>
         </div>
 
-        <% if (request.getParameter("msg") != null) { %>
+        <% String msg = request.getParameter("msg");
+           if ("error_value_range".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Giá trị giảm và đơn hàng tối thiểu phải là số hợp lệ, không âm. Mức giảm theo phần trăm phải từ 0 đến 100%.
+        </div>
+        <% } else if ("success".equals(msg) || "deleted".equals(msg)) { %>
         <div class="alert alert-success">
             <i class="fa-solid fa-circle-check"></i> Thao tác thành công!
         </div>

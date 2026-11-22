@@ -42,7 +42,15 @@
         String msg = request.getParameter("msg");
         String alertClass = "alert-success";
         String text = "Thao tác thành công!";
-        if(msg.contains("error")) { alertClass = "alert-danger"; text = "Có lỗi xảy ra!"; }
+        if(msg.equals("error_data")) {
+            alertClass = "alert-danger";
+            text = "Dữ liệu không hợp lệ. Giá phải là số hữu hạn không âm; tồn kho phải là số nguyên từ 0 đến 2147483647. Vui lòng kiểm tra các trường bắt buộc.";
+        }
+        else if(msg.equals("error_update")) {
+            alertClass = "alert-danger";
+            text = "Không thể cập nhật sản phẩm. Thay đổi sản phẩm và ảnh phụ chưa được lưu.";
+        }
+        else if(msg.contains("error")) { alertClass = "alert-danger"; text = "Có lỗi xảy ra!"; }
         else if(msg.equals("imported")) text = "Đã nhập hàng vào kho thành công!";
     %>
     <div class="alert <%=alertClass%>" style="padding: 10px; margin-bottom: 15px; background: #d4edda; color: #155724; border-radius: 5px; border-left: 4px solid #28a745;">
