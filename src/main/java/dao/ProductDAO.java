@@ -6,13 +6,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import model.CartItem;
 import model.Category;
 import model.Product;
 import model.ProductVariant;
 
 public class ProductDAO {
+    private static final String AVAILABLE_STOCK_SQL = "SELECT CASE "
+            + "WHEN EXISTS (SELECT 1 FROM product_variants pv0 WHERE pv0.product_id = p.pid) "
+            + "THEN COALESCE((SELECT SUM(pv.stock_quantity) FROM product_variants pv "
+            + "WHERE pv.product_id = p.pid AND pv.color = ? AND pv.size = ?), 0) "
+            + "ELSE GREATEST(COALESCE(p.amount, 0), 0) END AS available_stock "
+            + "FROM product p WHERE p.pid = ?";
 
     // LẤY DANH SÁCH BIẾN THỂ (VARIANT) THEO SẢN PHẨM
     public List<ProductVariant> getVariantsByProductId(int pid) {
@@ -467,26 +476,37 @@ public class ProductDAO {
      * invalid variant selection has zero available stock.
      */
     public int getAvailableStock(int pid, String color, String size) {
-        String sql = "SELECT CASE "
-                + "WHEN EXISTS (SELECT 1 FROM product_variants pv0 WHERE pv0.product_id = p.pid) "
-                + "THEN COALESCE((SELECT SUM(pv.stock_quantity) FROM product_variants pv "
-                + "WHERE pv.product_id = p.pid AND pv.color = ? AND pv.size = ?), 0) "
-                + "ELSE GREATEST(COALESCE(p.amount, 0), 0) END AS available_stock "
-                + "FROM product p WHERE p.pid = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, normalizeVariantValue(color));
-            ps.setString(2, normalizeVariantValue(size));
-            ps.setInt(3, pid);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Math.max(0, rs.getInt("available_stock"));
-                }
-            }
+             PreparedStatement ps = conn.prepareStatement(AVAILABLE_STOCK_SQL)) {
+            return readAvailableStock(ps, pid, color, size);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public Map<CartItem, Integer> getGuestCartStock(List<CartItem> cart) {
+        Map<CartItem, Integer> stock = new HashMap<>();
+        if (cart.isEmpty()) return stock;
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(AVAILABLE_STOCK_SQL)) {
+            for (CartItem item : cart) {
+                int available = readAvailableStock(ps, item.getProduct().getPid(), item.getColor(), item.getSize());
+                stock.put(item, available);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stock;
+    }
+
+    private int readAvailableStock(PreparedStatement ps, int pid, String color, String size) throws SQLException {
+        ps.setString(1, normalizeVariantValue(color));
+        ps.setString(2, normalizeVariantValue(size));
+        ps.setInt(3, pid);
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? Math.max(0, rs.getInt("available_stock")) : 0;
+        }
     }
 
     private String normalizeVariantValue(String value) {

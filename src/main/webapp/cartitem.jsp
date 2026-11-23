@@ -28,7 +28,7 @@
                     <c:when test="${not empty cartList}">
                         <c:forEach var="item" items="${cartList}">
                             <c:set var="currentQty" value="${item.quantity}" />
-                            <c:set var="maxStock" value="${item.product.stockquantyti}" />
+                            <c:set var="maxStock" value="${empty cartStock[item] ? 0 : cartStock[item]}" />
                             <c:set var="isMaxed" value="${currentQty ge maxStock}" />
                             <c:set var="isOverStock" value="${currentQty gt maxStock}" />
 

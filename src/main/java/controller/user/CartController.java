@@ -2,8 +2,10 @@ package controller.user;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import dao.CartDAO;
 import dao.LoyaltyDAO;
@@ -32,32 +34,18 @@ public class CartController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
-        String action = request.getParameter("action");
-
-        List<CartItem> cart = new ArrayList<>();
         List<Voucher> myVouchers = new ArrayList<>();
 
         if (currentUser != null) {
             // Hủy đơn online quá hạn chờ thanh toán để voucher đã giữ quay lại ví (IS-05)
             new PendingPaymentService().expireOverdue(currentUser.getUid());
-            CartDAO dao = new CartDAO();
-            cart = dao.getCartByUid(currentUser.getUid());
             VoucherDAO vDao = new VoucherDAO();
             myVouchers = vDao.getVouchersByUid(currentUser.getUid());
-        } else {
-            cart = (List<CartItem>) session.getAttribute("cart");
-            if (cart == null) cart = new ArrayList<>();
         }
 
-        double subtotal = 0;
-        for (CartItem item : cart) subtotal += item.getTotalPrice();
-
-        boolean cartHasError = false;
-        for (CartItem item : cart) {
-            int currentQty = item.getQuantity();
-            int maxStock = item.getProduct() != null ? item.getProduct().getStockquantyti() : 0;
-            if (currentQty > maxStock) { cartHasError = true; break; }
-        }
+        List<CartItem> cart = getCurrentCart(session, currentUser);
+        Map<CartItem, Integer> stock = getCartStock(cart, currentUser);
+        double subtotal = calculateSubtotal(cart);
 
         Membership membership = currentUser == null
                 ? Membership.standard(0)
@@ -91,7 +79,8 @@ public class CartController extends HttpServlet {
                 subtotal, appliedVoucher, membership.getDiscountPercent());
 
         request.setAttribute("cartList", cart);
-        request.setAttribute("cartHasError", cartHasError);
+        request.setAttribute("cartStock", stock);
+        request.setAttribute("cartHasError", exceedsStock(cart, stock));
         request.setAttribute("subtotal", subtotal);
         request.setAttribute("discountAmount", quote.getTotalDiscount());
         request.setAttribute("voucherDiscountAmount", quote.getVoucherDiscount());
@@ -125,6 +114,19 @@ public class CartController extends HttpServlet {
                 return;
             }
 
+            List<CartItem> cart = getCurrentCart(session, currentUser);
+            if (cart.isEmpty()) {
+                session.removeAttribute("appliedVoucher");
+                String message = I18n.t(request, "cart.empty");
+                if (ajax) {
+                    writeCartState(request, response, currentUser, message, false);
+                } else {
+                    session.setAttribute("voucherMsg", message);
+                    session.setAttribute("msgType", "error");
+                    response.sendRedirect("cart");
+                }
+                return;
+            }
             String code = request.getParameter("voucherCode");
             if (code != null) code = code.trim().toUpperCase();
 
@@ -152,7 +154,7 @@ public class CartController extends HttpServlet {
                 session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.unavailable"));
                 session.setAttribute("msgType", "error");
                 session.removeAttribute("appliedVoucher");
-            } else if (calculateSubtotal(getCurrentCart(session, currentUser)) < v.getMinOrder()) {
+            } else if (calculateSubtotal(cart) < v.getMinOrder()) {
                 session.setAttribute("voucherMsg",
                         I18n.t(request, "voucher.msg.min_order", (long) v.getMinOrder(), v.getCode()));
                 session.setAttribute("msgType", "error");
@@ -218,6 +220,7 @@ public class CartController extends HttpServlet {
                 writeCartState(request, response, currentUser,
                         "Đã xóa sản phẩm khỏi giỏ hàng.", true);
             } else {
+                clearVoucherIfCartEmpty(session, currentUser);
                 response.sendRedirect("cart");
             }
             return;
@@ -238,7 +241,7 @@ public class CartController extends HttpServlet {
                         requestedQuantity, (int) newQty);
             } else {
                 synchronized (session) {
-                    List<CartItem> cart = getCurrentCart(session, null);
+                    List<CartItem> cart = getGuestCart(session);
                     Iterator<CartItem> iterator = cart.iterator();
                     while (iterator.hasNext()) {
                         CartItem item = iterator.next();
@@ -263,6 +266,7 @@ public class CartController extends HttpServlet {
             if (ajax) {
                 writeCartState(request, response, currentUser, error, error == null);
             } else {
+                if (updated && newQty == 0) clearVoucherIfCartEmpty(session, currentUser);
                 if (error != null) {
                     session.setAttribute("toastMessage", error);
                     session.setAttribute("toastType", "error");
@@ -390,45 +394,71 @@ public class CartController extends HttpServlet {
         session.setAttribute("cart", cart);
     }
 
-    private List<CartItem> getCurrentCart(HttpSession session, User currentUser) {
-        if (currentUser != null) return new CartDAO().getCartByUid(currentUser.getUid());
+    private List<CartItem> getGuestCart(HttpSession session) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         return cart != null ? cart : new ArrayList<>();
+    }
+
+    private List<CartItem> getCurrentCart(HttpSession session, User currentUser) {
+        if (currentUser != null) return new CartDAO().getCartByUid(currentUser.getUid());
+        return new ArrayList<>(getGuestCart(session));
+    }
+
+    private Map<CartItem, Integer> getCartStock(List<CartItem> cart, User user) {
+        if (user == null) return new ProductDAO().getGuestCartStock(cart);
+        Map<CartItem, Integer> stock = new HashMap<>();
+        for (CartItem item : cart) {
+            stock.put(item, item.getProduct().getStockquantyti());
+        }
+        return stock;
+    }
+
+    private boolean exceedsStock(List<CartItem> cart, Map<CartItem, Integer> stock) {
+        return cart.stream().anyMatch(item -> item.getQuantity() > stock.getOrDefault(item, 0));
+    }
+
+    private void clearVoucherIfCartEmpty(HttpSession session, User user) {
+        if (session.getAttribute("appliedVoucher") != null && getCurrentCart(session, user).isEmpty()) {
+            session.removeAttribute("appliedVoucher");
+        }
     }
 
     private void writeCartState(HttpServletRequest request, HttpServletResponse response,
                                 User currentUser, String message, boolean success) throws IOException {
         HttpSession session = request.getSession();
         List<CartItem> cart = getCurrentCart(session, currentUser);
-        double subtotal = 0;
-        boolean cartHasError = false;
-        for (CartItem item : cart) {
-            subtotal += item.getTotalPrice();
-            if (item.getQuantity() > item.getProduct().getStockquantyti()) cartHasError = true;
-        }
+        Map<CartItem, Integer> stock = getCartStock(cart, currentUser);
+        double subtotal = calculateSubtotal(cart);
 
         Membership membership = currentUser == null
                 ? Membership.standard(0)
                 : new LoyaltyDAO().getMembership(currentUser.getUid());
+        boolean applyingVoucher = "apply_voucher".equals(request.getParameter("action"));
         Voucher appliedVoucher = (Voucher) session.getAttribute("appliedVoucher");
-        if (appliedVoucher != null && currentUser != null) {
+        if (appliedVoucher != null && (cart.isEmpty() || currentUser == null)) {
+            session.removeAttribute("appliedVoucher");
+            appliedVoucher = null;
+            if (applyingVoucher && success) {
+                message = I18n.t(request, "cart.empty");
+                success = false;
+            }
+        }
+        if (appliedVoucher != null) {
             Voucher refreshedVoucher = new VoucherDAO().getAvailableVoucherForUserById(
                     currentUser.getUid(), appliedVoucher.getId());
-            if (refreshedVoucher == null) {
+            if (refreshedVoucher == null || subtotal < refreshedVoucher.getMinOrder()) {
                 session.removeAttribute("appliedVoucher");
-                message = "Voucher da het han, da su dung hoac khong con trong vi.";
-                success = false;
+                if (success) {
+                    message = refreshedVoucher == null ? I18n.t(request, "voucher.msg.unavailable")
+                            : I18n.t(request, "voucher.msg.min_order", (long) refreshedVoucher.getMinOrder(),
+                                    refreshedVoucher.getCode());
+                    success = !applyingVoucher;
+                }
                 appliedVoucher = null;
             } else {
                 appliedVoucher = refreshedVoucher;
                 session.setAttribute("appliedVoucher", refreshedVoucher);
             }
-        }
-        if (appliedVoucher != null && subtotal < appliedVoucher.getMinOrder()) {
-            session.removeAttribute("appliedVoucher");
-            message = "Voucher đã được gỡ vì đơn hàng không còn đủ điều kiện.";
-            success = false;
-            appliedVoucher = null;
         }
         PricingService.Quote quote = PricingService.calculate(
                 subtotal, appliedVoucher, membership.getDiscountPercent());
@@ -457,11 +487,11 @@ public class CartController extends HttpServlet {
         json.put("memberDiscountAmount", quote.getMemberDiscount());
         json.put("memberDiscountPercent", quote.getMemberDiscountPercent());
         json.put("finalTotal", quote.getFinalTotal());
-        json.put("cartHasError", cartHasError);
+        json.put("cartHasError", exceedsStock(cart, stock));
         json.put("removed", pid > 0 && changedItem == null);
         json.put("itemQuantity", changedItem != null ? changedItem.getQuantity() : 0);
         json.put("itemTotal", changedItem != null ? changedItem.getTotalPrice() : 0);
-        json.put("itemStock", changedItem != null ? changedItem.getProduct().getStockquantyti() : 0);
+        json.put("itemStock", stock.getOrDefault(changedItem, 0));
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
