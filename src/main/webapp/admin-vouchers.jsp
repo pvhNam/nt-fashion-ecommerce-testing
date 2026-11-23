@@ -38,6 +38,11 @@
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             Giá trị giảm và đơn hàng tối thiểu phải là số hợp lệ, không âm. Mức giảm theo phần trăm phải từ 0 đến 100%.
         </div>
+        <% } else if ("error_expiry_date".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Ngày hết hạn phải đúng định dạng yyyy-MM-dd, là ngày hợp lệ và có năm từ 1000 đến 9999.
+        </div>
         <% } else if ("success".equals(msg) || "deleted".equals(msg)) { %>
         <div class="alert alert-success">
             <i class="fa-solid fa-circle-check"></i> Thao tác thành công!

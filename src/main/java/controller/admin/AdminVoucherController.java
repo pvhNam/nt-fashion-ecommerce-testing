@@ -4,6 +4,8 @@ import dao.VoucherDAO;
 import model.Voucher;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -66,7 +68,20 @@ public class AdminVoucherController extends HttpServlet {
             return;
         }
 
-        Date expiry = Date.valueOf(request.getParameter("expiryDate"));
+        String expiryInput = request.getParameter("expiryDate");
+        // Require the form's ISO date format within MySQL DATE's supported years.
+        if (expiryInput == null || !expiryInput.matches("[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}")) {
+            response.sendRedirect("admin-vouchers?msg=error_expiry_date");
+            return;
+        }
+
+        Date expiry;
+        try {
+            expiry = Date.valueOf(LocalDate.parse(expiryInput));
+        } catch (DateTimeParseException e) {
+            response.sendRedirect("admin-vouchers?msg=error_expiry_date");
+            return;
+        }
 
         if ("insert".equals(action)) {
             Voucher v = new Voucher(0, code, desc, amount, type, minOrder, expiry);
