@@ -843,7 +843,16 @@
         if (finalTotal) finalTotal.textContent = formatMoney(data.finalTotal);
 
         var checkout = document.querySelector('.btn-checkout');
-        if (checkout && Number(data.cartCount) === 0) checkout.disabled = true;
+        if (checkout) {
+            checkout.disabled = Number(data.cartCount) === 0 || data.cartHasError;
+            var checkoutIcon = checkout.querySelector('i');
+            if (checkoutIcon) {
+                checkoutIcon.classList.toggle('fa-lock', checkout.disabled);
+                checkoutIcon.classList.toggle('fa-arrow-right', !checkout.disabled);
+            }
+        }
+        var stockError = document.querySelector('[data-cart-stock-error]');
+        if (stockError) stockError.hidden = !data.cartHasError;
 
         if (!source) return;
         var card = source.closest('.cart-card');
@@ -863,7 +872,19 @@
         var increase = card.querySelector('button[value="increase"]');
         if (quantity) quantity.value = data.itemQuantity;
         if (itemTotal) itemTotal.textContent = formatMoney(data.itemTotal);
-        if (increase) increase.disabled = Number(data.itemQuantity) >= Number(data.itemStock);
+        var itemQuantity = Number(data.itemQuantity);
+        var itemStock = Number(data.itemStock);
+        if (increase) increase.disabled = itemQuantity >= itemStock;
+        card.classList.toggle('is-overstock', itemQuantity > itemStock);
+        var warning = card.querySelector('[data-stock-warning]');
+        var limit = card.querySelector('[data-stock-limit]');
+        var stockInfo = card.querySelector('[data-stock-info]');
+        if (warning) warning.hidden = itemQuantity <= itemStock;
+        if (limit) limit.hidden = itemQuantity !== itemStock;
+        if (stockInfo) stockInfo.hidden = itemQuantity >= itemStock;
+        card.querySelectorAll('[data-stock-count]').forEach(function (count) {
+            count.textContent = String(itemStock);
+        });
         card.classList.remove('is-updating');
         void card.offsetWidth;
         card.classList.add('is-updated');
@@ -896,6 +917,7 @@
 
     async function updateCart(form, submitter) {
         var body = formDataWithSubmitter(form, submitter);
+        var data;
         setBusy(submitter, true);
         startProgress(false);
         var card = form.closest('.cart-card');
@@ -903,16 +925,21 @@
         try {
             var url = formActionUrl(form, submitter);
             if (!url) throw new Error('Địa chỉ xử lý biểu mẫu không hợp lệ.');
-            var data = await postForm(url.href, body);
-            applyCartState(data, submitter || form);
-            if (data.message) showMessage(data.message, data.success === false ? 'error' : 'success');
+            data = await postForm(url.href, body);
         } catch (error) {
             if (card) card.classList.remove('is-updating');
             showMessage(error.message || 'Không thể cập nhật giỏ hàng.', 'error');
+            return;
         } finally {
             setBusy(submitter, false);
             finishProgress();
         }
+        if (data.loginRequired) {
+            showMessage(data.message, 'error');
+            return;
+        }
+        applyCartState(data, submitter || form);
+        if (data.message) showMessage(data.message, data.success === false ? 'error' : 'success');
     }
 
     async function removeCartItem(anchor) {
