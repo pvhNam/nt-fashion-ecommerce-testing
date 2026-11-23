@@ -231,7 +231,7 @@ public class CartController extends HttpServlet {
             boolean updated = false;
             if (!"increase".equals(mod) && !"decrease".equals(mod)) {
                 error = "Thao tác cập nhật số lượng không hợp lệ.";
-            } else if (newQty > availableStock) {
+            } else if ("increase".equals(mod) && newQty > availableStock) {
                 error = "Sản phẩm đã đạt giới hạn tồn kho.";
             } else if (currentUser != null) {
                 updated = new CartDAO().updateQuantityIfCurrent(currentUser.getUid(), pid, color, size,
