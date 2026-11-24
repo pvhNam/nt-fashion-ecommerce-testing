@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/style.css">
     <link rel="stylesheet" href="CSS/user/cart.css">
-    <link rel="stylesheet" href="CSS/user/cartitem.css">
+    <link rel="stylesheet" href="CSS/user/cartitem.css?v=20261123">
 </head>
 <body class="ym-user-page ym-cart-page">
     <jsp:include page="header.jsp" />
@@ -28,11 +28,11 @@
                     <c:when test="${not empty cartList}">
                         <c:forEach var="item" items="${cartList}">
                             <c:set var="currentQty" value="${item.quantity}" />
-                            <c:set var="maxStock" value="${item.product.stockquantyti}" />
+                            <c:set var="maxStock" value="${empty cartStock[item] ? 0 : cartStock[item]}" />
                             <c:set var="isMaxed" value="${currentQty ge maxStock}" />
                             <c:set var="isOverStock" value="${currentQty gt maxStock}" />
 
-                            <div class="cart-card" data-cart-item style="${isOverStock ? 'border: 1px solid #e74a3b; background: #fffdfd;' : ''}">
+                            <div class="cart-card ${isOverStock ? 'is-overstock' : ''}" data-cart-item>
                                 <div class="card-img"><img src="${fn:escapeXml(item.product.image)}" alt="Product Image"></div>
                                 <div class="card-details">
                                     <h3>${fn:escapeXml(item.product.pdescription)}</h3>
@@ -68,17 +68,11 @@
                                         </form>
                                     </div>
 
-                                    <c:choose>
-                                        <c:when test="${isOverStock}">
-                                            <span class="stock-limit"><i class="fa-solid fa-triangle-exclamation"></i> Kho chỉ còn ${maxStock}. Vui lòng giảm số lượng!</span>
-                                        </c:when>
-                                        <c:when test="${isMaxed}">
-                                            <span class="stock-limit" style="color: #f6c23e;">Đã đạt giới hạn kho</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stock-info">Tồn kho: ${maxStock}</span>
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <span class="stock-limit" data-stock-warning ${isOverStock ? '' : 'hidden'}>
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Kho chỉ còn <span data-stock-count>${maxStock}</span>. Vui lòng giảm số lượng!
+                                    </span>
+                                    <span class="stock-limit" data-stock-limit ${currentQty eq maxStock ? '' : 'hidden'}>Đã đạt giới hạn kho</span>
+                                    <span class="stock-info" data-stock-info ${isMaxed ? 'hidden' : ''}>Tồn kho: <span data-stock-count>${maxStock}</span></span>
                                 </div>
                             </div>
                         </c:forEach>
@@ -268,17 +262,13 @@
                             </div>
                         </div>
 
-                        <c:choose>
-                            <c:when test="${cartHasError}">
-                                <div class="error-alert-box">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Giỏ hàng có sản phẩm vượt quá tồn kho. Vui lòng điều chỉnh lại số lượng để thanh toán!
-                                </div>
-                                <button type="button" class="btn-checkout" disabled><fmt:message key="cart.checkout_btn" /> <i class="fa-solid fa-lock"></i></button>
-                            </c:when>
-                            <c:otherwise>
-                                <button type="submit" class="btn-checkout"><fmt:message key="cart.checkout_btn" /> <i class="fa-solid fa-arrow-right"></i></button>
-                            </c:otherwise>
-                        </c:choose>
+                        <div class="error-alert-box" data-cart-stock-error ${cartHasError ? '' : 'hidden'}>
+                            <i class="fa-solid fa-circle-exclamation"></i> Giỏ hàng có sản phẩm vượt quá tồn kho. Vui lòng điều chỉnh lại số lượng để thanh toán!
+                        </div>
+                        <c:set var="checkoutDisabled" value="${empty cartList or cartHasError}" />
+                        <button type="submit" class="btn-checkout" ${checkoutDisabled ? 'disabled' : ''}>
+                            <fmt:message key="cart.checkout_btn" /> <i class="fa-solid ${checkoutDisabled ? 'fa-lock' : 'fa-arrow-right'}"></i>
+                        </button>
                     </form>
                 </div>
             </div>
