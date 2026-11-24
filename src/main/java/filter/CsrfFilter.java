@@ -17,12 +17,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.json.JSONObject;
+import util.I18n;
+
 // Mã chống giả mạo (CSRF) cho mọi yêu cầu POST (KAN-11: W1-04).
 // Mỗi phiên có một mã, lưu ở session với tên csrfToken; trang JSP gắn vào form bằng ${csrfToken},
 // lệnh fetch gửi qua header X-CSRF-Token. Sai hoặc thiếu mã → 403.
 @WebFilter("/*")
 public class CsrfFilter implements Filter {
     public static final String TOKEN = "csrfToken";
+    // Cờ cho error.jsp biết 403 là do sai mã CSRF
+    public static final String REJECTED = "csrfRejected";
     private static final String HEADER = "X-CSRF-Token";
     // Cổng thanh toán gọi thẳng vào server, không đi qua form của trang
     private static final Set<String> EXEMPT_PATHS = Set.of("/momo-callback", "/vnpay-ipn");
@@ -57,12 +62,27 @@ public class CsrfFilter implements Filter {
                 submitted = request.getParameter(TOKEN);
             }
             if (!matches(token, submitted)) {
+                request.setAttribute(REJECTED, Boolean.TRUE);
+                if (isAjax(request)) {
+                    // Lệnh fetch đọc JSON nên trả lý do dạng JSON thay cho trang lỗi
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write(new JSONObject().put("success", false)
+                            .put("message", I18n.t(request, "error.csrf.detail")).toString());
+                    return;
+                }
                 response.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Phiên làm việc không hợp lệ hoặc đã hết hạn. Vui lòng tải lại trang và thử lại.");
                 return;
             }
         }
         chain.doFilter(req, res);
+    }
+
+    private boolean isAjax(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        return "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || (accept != null && accept.contains("application/json"));
     }
 
     private boolean isStaticResource(String path) {
