@@ -390,8 +390,10 @@ public class ProductDAO {
                 sql = "SELECT * FROM product";
                 ps = conn.prepareStatement(sql);
             } else if ("áo nam".equalsIgnoreCase(lower) || "ao nam".equalsIgnoreCase(lower) || "áo".equalsIgnoreCase(lower) || "ao".equalsIgnoreCase(lower)) {
-                sql = "SELECT * FROM product WHERE (LOWER(name) LIKE ? ) " +
-                      "AND LOWER(name) NOT LIKE ?  AND LOWER(name) NOT LIKE ? AND LOWER(name) NOT LIKE ?";
+                // as_ci: phân biệt dấu để "áo" không khớp "Thao", "Cao"
+                sql = "SELECT * FROM product WHERE (name COLLATE utf8mb4_0900_as_ci LIKE ? ) " +
+                      "AND name COLLATE utf8mb4_0900_as_ci NOT LIKE ? AND name COLLATE utf8mb4_0900_as_ci NOT LIKE ? " +
+                      "AND name COLLATE utf8mb4_0900_as_ci NOT LIKE ?";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, "%áo%");
                 ps.setString(2, "%nữ%");
