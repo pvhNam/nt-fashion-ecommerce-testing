@@ -43,6 +43,21 @@
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             Ngày hết hạn phải đúng định dạng yyyy-MM-dd, là ngày hợp lệ và có năm từ 1000 đến 9999.
         </div>
+        <% } else if ("error_action".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Thao tác voucher không hợp lệ. Vui lòng thực hiện lại từ trang quản lý voucher.
+        </div>
+        <% } else if ("error_code_required".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Vui lòng nhập mã voucher, không được để trống hoặc chỉ chứa khoảng trắng.
+        </div>
+        <% } else if ("error_discount_type".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Vui lòng chọn loại giảm giá Tiền mặt hoặc Phần trăm.
+        </div>
         <% } else if ("success".equals(msg) || "deleted".equals(msg)) { %>
         <div class="alert alert-success">
             <i class="fa-solid fa-circle-check"></i> Thao tác thành công!

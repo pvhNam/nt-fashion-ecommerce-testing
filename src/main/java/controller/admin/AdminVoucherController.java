@@ -37,6 +37,10 @@ public class AdminVoucherController extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        if (!"insert".equals(action) && !"update".equals(action) && !"delete".equals(action)) {
+            response.sendRedirect("admin-vouchers?msg=error_action");
+            return;
+        }
         VoucherDAO vDao = new VoucherDAO();
 
         if ("delete".equals(action)) {
@@ -49,6 +53,14 @@ public class AdminVoucherController extends HttpServlet {
         String code = request.getParameter("code");
         String desc = request.getParameter("description");
         String type = request.getParameter("discountType");
+        if (code == null || code.isBlank()) {
+            response.sendRedirect("admin-vouchers?msg=error_code_required");
+            return;
+        }
+        if (!"FIXED".equals(type) && !"PERCENT".equals(type)) {
+            response.sendRedirect("admin-vouchers?msg=error_discount_type");
+            return;
+        }
         String amountInput = request.getParameter("discountAmount");
         String minOrderInput = request.getParameter("minOrder");
         double amount;
