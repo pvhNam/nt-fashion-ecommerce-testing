@@ -51,8 +51,15 @@ public class BuyNowController extends HttpServlet {
 
         ProductDAO productDAO = new ProductDAO();
         Product p = productDAO.getProductById(pid);
-        if (p == null || quantity <= 0) {
+        if (p == null) {
             resp.sendRedirect("home");
+            return;
+        }
+        if (quantity <= 0) {
+            session.setAttribute("toastMessage", "Số lượng phải là số nguyên dương hợp lệ.");
+            session.setAttribute("toastType", "error");
+            String referer = req.getHeader("referer");
+            resp.sendRedirect(referer == null || referer.isBlank() ? "home" : referer);
             return;
         }
 

@@ -259,8 +259,7 @@ public class CheckoutController extends HttpServlet {
             session.removeAttribute("voucherMsg");
         }
 
-        // Chỉ bỏ khỏi giỏ các món vừa đặt (ST-16)
-        cartDao.removePurchasedItems(currentUser.getUid(), cart);
+        // Món vừa đặt đã được bỏ khỏi giỏ trong giao dịch tạo đơn (ST-30, ST-04)
         session.setAttribute("cartCount", cartDao.getCartByUid(currentUser.getUid()).size());
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
         response.sendRedirect("order-success?id=" + newOrderId);

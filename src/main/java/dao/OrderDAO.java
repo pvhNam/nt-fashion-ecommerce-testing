@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import model.CartItem;
 import model.Order;
@@ -14,6 +16,7 @@ import model.OrderDetail;
 import model.Product;
 
 public class OrderDAO {
+    private static final Logger LOGGER = Logger.getLogger(OrderDAO.class.getName());
 
     Connection conn = null;
     PreparedStatement ps = null;
@@ -171,6 +174,7 @@ public class OrderDAO {
                         decreaseStock(connection, item.getProduct().getPid(), item.getColor(), item.getSize(),
                                 item.getQuantity());
                     }
+                    consumeCart(connection, userId, cart);
                 }
             }
 
@@ -202,6 +206,151 @@ public class OrderDAO {
             }
         }
         return orderId;
+    }
+
+    // ST-30, ST-04: bỏ món khỏi giỏ trong cùng giao dịch; giỏ đã đổi (đặt lần 2) thì hủy cả đơn.
+    private void consumeCart(Connection connection, int userId, List<CartItem> cart) throws SQLException {
+        String decrease = "UPDATE cart SET quantity = quantity - ? WHERE user_id = ? AND product_id = ? "
+                + "AND TRIM(COALESCE(color, '')) = ? AND TRIM(COALESCE(size, '')) = ? AND quantity >= ?";
+        try (PreparedStatement statement = connection.prepareStatement(decrease)) {
+            for (CartItem item : cart) {
+                statement.setInt(1, item.getQuantity());
+                statement.setInt(2, userId);
+                statement.setInt(3, item.getProduct().getPid());
+                statement.setString(4, normalizeVariantValue(item.getColor()));
+                statement.setString(5, normalizeVariantValue(item.getSize()));
+                statement.setInt(6, item.getQuantity());
+                if (statement.executeUpdate() < 1) {
+                    throw new SQLException("Cart changed before the order was saved");
+                }
+            }
+        }
+        try (PreparedStatement cleanup = connection.prepareStatement(
+                "DELETE FROM cart WHERE user_id = ? AND quantity <= 0")) {
+            cleanup.setInt(1, userId);
+            cleanup.executeUpdate();
+        }
+    }
+
+    // ST-05: hủy đơn đang xử lý, trả tồn và voucher đúng một lần; ownerId null là Admin hủy.
+    public boolean cancelProcessingOrder(int orderId, Integer ownerId) {
+        Connection connection = null;
+        try {
+            connection = DBConnect.getConnection();
+            connection.setAutoCommit(false);
+            int userId;
+            int voucherId;
+            try (PreparedStatement select = connection.prepareStatement(
+                    "SELECT user_id, status, voucher_id FROM orders WHERE id = ? FOR UPDATE")) {
+                select.setInt(1, orderId);
+                try (ResultSet result = select.executeQuery()) {
+                    if (!result.next() || !Order.STATUS_PROCESSING.equals(result.getString("status"))) {
+                        connection.rollback();
+                        return false;
+                    }
+                    userId = result.getInt("user_id");
+                    voucherId = result.getInt("voucher_id");
+                }
+            }
+            if (ownerId != null && ownerId != userId) {
+                connection.rollback();
+                return false;
+            }
+
+            List<StockLine> lines = new ArrayList<>();
+            try (PreparedStatement details = connection.prepareStatement(
+                    "SELECT product_id, quantity, color, size FROM order_details WHERE order_id = ?")) {
+                details.setInt(1, orderId);
+                try (ResultSet result = details.executeQuery()) {
+                    while (result.next()) {
+                        lines.add(new StockLine(result.getInt("product_id"), result.getInt("quantity"),
+                                result.getString("color"), result.getString("size")));
+                    }
+                }
+            }
+            for (int productId : lines.stream().map(line -> line.productId).distinct().sorted().toList()) {
+                lockProductStock(connection, productId);
+            }
+            for (StockLine line : lines) {
+                increaseStock(connection, line.productId, line.color, line.size, line.quantity);
+            }
+
+            try (PreparedStatement update = connection.prepareStatement(
+                    "UPDATE orders SET status = ? WHERE id = ? AND status = ?")) {
+                update.setString(1, Order.STATUS_CANCELLED);
+                update.setInt(2, orderId);
+                update.setString(3, Order.STATUS_PROCESSING);
+                if (update.executeUpdate() != 1) {
+                    throw new SQLException("Order status changed while cancelling");
+                }
+            }
+            if (voucherId > 0) {
+                try (PreparedStatement release = connection.prepareStatement(
+                        "UPDATE user_wallet SET is_used = FALSE WHERE user_id = ? AND voucher_id = ? AND is_used = TRUE")) {
+                    release.setInt(1, userId);
+                    release.setInt(2, voucherId);
+                    release.executeUpdate();
+                }
+            }
+            connection.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (connection != null) connection.rollback();
+            } catch (SQLException rollbackError) {
+                rollbackError.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void increaseStock(Connection connection, int productId, String color, String size, int quantity)
+            throws SQLException {
+        Integer variantId = null;
+        try (PreparedStatement variant = connection.prepareStatement(
+                "SELECT id FROM product_variants WHERE product_id = ? AND color = ? AND size = ? "
+                        + "ORDER BY id LIMIT 1 FOR UPDATE")) {
+            variant.setInt(1, productId);
+            variant.setString(2, normalizeVariantValue(color));
+            variant.setString(3, normalizeVariantValue(size));
+            try (ResultSet result = variant.executeQuery()) {
+                if (result.next()) variantId = result.getInt("id");
+            }
+        }
+        if (variantId == null) {
+            try (PreparedStatement legacy = connection.prepareStatement(
+                    "UPDATE product SET amount = amount + ? WHERE pid = ? "
+                            + "AND NOT EXISTS (SELECT 1 FROM product_variants WHERE product_id = ?)")) {
+                legacy.setInt(1, quantity);
+                legacy.setInt(2, productId);
+                legacy.setInt(3, productId);
+                legacy.executeUpdate();
+            }
+            return;
+        }
+        try (PreparedStatement update = connection.prepareStatement(
+                "UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?")) {
+            update.setInt(1, quantity);
+            update.setInt(2, variantId);
+            update.executeUpdate();
+        }
+        try (PreparedStatement syncProduct = connection.prepareStatement(
+                "UPDATE product SET amount = (SELECT COALESCE(SUM(stock_quantity), 0) "
+                        + "FROM product_variants WHERE product_id = ?) WHERE pid = ?")) {
+            syncProduct.setInt(1, productId);
+            syncProduct.setInt(2, productId);
+            syncProduct.executeUpdate();
+        }
     }
 
     /** Completes a MoMo order without decreasing inventory twice on repeated callbacks. */
@@ -266,8 +415,15 @@ public class OrderDAO {
                     .distinct().sorted().toList()) {
                 lockProductStock(connection, productId);
             }
-            for (StockLine line : stockLines) {
-                decreaseStock(connection, line.productId, line.color, line.size, line.quantity);
+            Savepoint beforeStock = connection.setSavepoint();
+            try {
+                for (StockLine line : stockLines) {
+                    decreaseStock(connection, line.productId, line.color, line.size, line.quantity);
+                }
+            } catch (SQLException stockError) {
+                // Tiền đã trừ: vẫn ghi nhận đã thanh toán, giữ nguyên kho để admin liên hệ hoàn tiền
+                connection.rollback(beforeStock);
+                LOGGER.warning("Order " + orderId + " was paid but stock is insufficient: " + stockError.getMessage());
             }
 
             try (PreparedStatement update = connection.prepareStatement(

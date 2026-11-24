@@ -68,7 +68,7 @@ public class OrderDetailController extends HttpServlet {
                 Order order = dao.getOrderById(orderId);
 
                 if (order != null && order.getUserId() == currentUser.getUid() && canCancel(order.getStatus())
-                        && dao.updateOrderStatusIfCurrent(orderId, order.getStatus(), Order.STATUS_CANCELLED)) {
+                        && dao.cancelProcessingOrder(orderId, currentUser.getUid())) {
                     new OrderNotificationService().notifyStatusChanged(dao.getOrderById(orderId), null);
                 }
             }
