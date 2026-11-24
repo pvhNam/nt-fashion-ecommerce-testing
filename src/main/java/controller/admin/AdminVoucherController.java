@@ -20,7 +20,7 @@ public class AdminVoucherController extends HttpServlet {
         VoucherDAO vDao = new VoucherDAO();
 
         if (action == null) {
-            List<Voucher> list = vDao.getAllVouchers();
+            List<Voucher> list = vDao.getAllVouchersForAdmin();
             request.setAttribute("listVouchers", list);
             request.getRequestDispatcher("/admin-vouchers.jsp").forward(request, response);
         } else if (action.equals("edit")) {
@@ -58,13 +58,20 @@ public class AdminVoucherController extends HttpServlet {
         }
 
         Date expiry = Date.valueOf(request.getParameter("expiryDate"));
+        String startParam = request.getParameter("startDate");
+        Date start = (startParam == null || startParam.isBlank()) ? null : Date.valueOf(startParam);
+        if (start != null && start.after(expiry)) {
+            response.sendRedirect("admin-vouchers?msg=error_date_range");
+            return;
+        }
 
+        int id = "update".equals(action) ? Integer.parseInt(request.getParameter("id")) : 0;
+        Voucher v = new Voucher(id, code, desc, amount, type, minOrder, expiry);
+        v.setStartDate(start);
+        v.setPublicVoucher(request.getParameter("isPublic") != null);
         if ("insert".equals(action)) {
-            Voucher v = new Voucher(0, code, desc, amount, type, minOrder, expiry);
             vDao.insertVoucher(v);
         } else if ("update".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            Voucher v = new Voucher(id, code, desc, amount, type, minOrder, expiry);
             vDao.updateVoucher(v);
         }
         response.sendRedirect("admin-vouchers?msg=success");

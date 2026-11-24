@@ -38,6 +38,11 @@
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             Giá trị giảm và đơn hàng tối thiểu phải là số hợp lệ, không âm. Mức giảm theo phần trăm phải từ 0 đến 100%.
         </div>
+        <% } else if ("error_date_range".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Ngày bắt đầu không được sau ngày hết hạn.
+        </div>
         <% } else if ("success".equals(msg) || "deleted".equals(msg)) { %>
         <div class="alert alert-success">
             <i class="fa-solid fa-circle-check"></i> Thao tác thành công!
@@ -82,6 +87,18 @@
                         <i class="fa-regular fa-calendar-xmark"></i>
                         <span>Hết hạn: <strong><%=v.getExpiryDate()%></strong></span>
                     </div>
+                    <% if (v.getStartDate() != null) { %>
+                    <div class="vc-info-row">
+                        <i class="fa-regular fa-calendar-plus"></i>
+                        <span>Bắt đầu: <strong><%=v.getStartDate()%></strong></span>
+                    </div>
+                    <% } %>
+                    <% if (!v.isPublicVoucher()) { %>
+                    <div class="vc-info-row">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Voucher riêng (không hiện trên trang chủ)</span>
+                    </div>
+                    <% } %>
 
                     <div class="vc-actions">
                         <a href="admin-vouchers?action=edit&id=<%=v.getId()%>" class="vc-btn vc-edit">

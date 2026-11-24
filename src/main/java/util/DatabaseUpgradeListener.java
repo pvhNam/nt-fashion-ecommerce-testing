@@ -49,6 +49,10 @@ public class DatabaseUpgradeListener implements ServletContextListener {
             execute(connection, "ALTER TABLE orders ADD INDEX idx_orders_status_created (status, created_at)");
             changes.add("chỉ mục orders.idx_orders_status_created");
         }
+        if (!columnExists(connection, "vouchers", "start_date")) {
+            execute(connection, "ALTER TABLE vouchers ADD COLUMN start_date date DEFAULT NULL AFTER min_order");
+            changes.add("cột vouchers.start_date");
+        }
         return changes;
     }
 
