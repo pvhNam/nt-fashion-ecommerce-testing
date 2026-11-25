@@ -2,6 +2,8 @@ package controller.user;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -34,6 +36,7 @@ public class CheckoutController extends HttpServlet {
     private static final long MOMO_MIN_AMOUNT = 1_000L;
     private static final long MOMO_MAX_AMOUNT = 50_000_000L;
     private static final long VNPAY_MAX_AMOUNT = 9_999_999_999L;
+    private static final Set<String> PAYMENT_METHODS = Set.of("COD", "BANKING", "MOMO", "VNPAY");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -49,6 +52,14 @@ public class CheckoutController extends HttpServlet {
 
         if (currentUser == null) {
             response.sendRedirect("login");
+            return;
+        }
+
+        String paymentMethod = request.getParameter("paymentMethod");
+        paymentMethod = paymentMethod == null || paymentMethod.isBlank()
+                ? "COD" : paymentMethod.trim().toUpperCase(Locale.ROOT);
+        if (!PAYMENT_METHODS.contains(paymentMethod)) {
+            rejectCheckout(response, session, "Phương thức thanh toán không hợp lệ. Vui lòng chọn lại.");
             return;
         }
 
@@ -108,11 +119,6 @@ public class CheckoutController extends HttpServlet {
             rejectCheckout(response, session,
                     "Can co email hoac so dien thoai de nhan thong bao don hang. Vui long cap nhat ho so/dia chi.");
             return;
-        }
-
-        String paymentMethod = request.getParameter("paymentMethod");
-        if (paymentMethod == null || paymentMethod.isBlank()) {
-            paymentMethod = "COD";
         }
 
         if ("MOMO".equalsIgnoreCase(paymentMethod)) {
@@ -253,8 +259,8 @@ public class CheckoutController extends HttpServlet {
             session.removeAttribute("voucherMsg");
         }
 
-        // Chỉ bỏ khỏi giỏ các món vừa đặt (ST-16)
-        cartDao.removePurchasedItems(currentUser.getUid(), cart);
+        // Món vừa đặt đã được bỏ khỏi giỏ trong giao dịch tạo đơn (ST-30, ST-04)
+        session.setAttribute("cartCount", cartDao.getCartByUid(currentUser.getUid()).size());
         new OrderNotificationService().notifyOrderPlaced(orderDao.getOrderById(newOrderId));
         response.sendRedirect("order-success?id=" + newOrderId);
     }

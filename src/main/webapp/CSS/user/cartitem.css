@@ -1,3 +1,16 @@
+.cart-wrapper [hidden] {
+    display: none;
+}
+
+body.ym-cart-page .cart-card.is-overstock {
+    border-color: #e74a3b !important;
+    background: #fffdfd !important;
+}
+
+.stock-limit[data-stock-limit] {
+    color: #996700;
+}
+
 .stock-limit {
     font-size: 11px;
     color: #e74a3b;

@@ -15,6 +15,7 @@ import java.util.Random;
 @WebServlet("/forgotPassword")
 public class ForgotPasswordController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final String SENT_MESSAGE = "Neu email co trong he thong, ma OTP da duoc gui den email do.";
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.getRequestDispatcher("/forgot_password.jsp").forward(request, response);
@@ -41,16 +42,25 @@ public class ForgotPasswordController extends HttpServlet {
             }
 
             HttpSession session = request.getSession();
+            ValidateOtpController.clearOtp(session);
+            session.removeAttribute("otpVerified");
             session.setAttribute("otp", otpValue);
+            session.setAttribute("otpCreatedAt", System.currentTimeMillis());
             session.setAttribute("email", email);
             session.setAttribute("resetUsername", u.getUsername());
 
-            request.setAttribute("message", "Ma OTP da duoc gui den email cua ban.");
+            request.setAttribute("message", SENT_MESSAGE);
             request.getRequestDispatcher("/verify_otp.jsp").forward(request, response);
 
         } else {
-            request.setAttribute("message", "Email khong ton tai trong he thong!");
-            request.getRequestDispatcher("/forgot_password.jsp").forward(request, response);
+            // Trả lời giống email có thật để không lộ email nào đã đăng ký
+            HttpSession session = request.getSession();
+            ValidateOtpController.clearOtp(session);
+            session.removeAttribute("otpVerified");
+            session.removeAttribute("email");
+            session.removeAttribute("resetUsername");
+            request.setAttribute("message", SENT_MESSAGE);
+            request.getRequestDispatcher("/verify_otp.jsp").forward(request, response);
         }
     }
 }

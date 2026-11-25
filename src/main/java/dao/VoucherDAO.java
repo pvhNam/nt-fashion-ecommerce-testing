@@ -11,27 +11,29 @@ public class VoucherDAO {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
+    private static final String STARTED = "(start_date IS NULL OR start_date <= CURDATE())";
+    private static final String V_STARTED = "(v.start_date IS NULL OR v.start_date <= CURDATE())";
 
     // Lấy TẤT CẢ Voucher công khai để hiển thị trên trang chủ
     public List<Voucher> getAllVouchers() {
-        List<Voucher> list = new ArrayList<>();
         // Lấy những mã còn hạn sử dụng hoặc không để ngày hết hạn
         String query = "SELECT * FROM vouchers WHERE is_public = TRUE "
-                + "AND (expiry_date >= CURDATE() OR expiry_date IS NULL)";
-        try {
-            conn = DBConnect.getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new Voucher(
-                    rs.getInt("id"),
-                    rs.getString("code"),
-                    rs.getString("description"),
-                    rs.getDouble("discount_amount"),
-                    rs.getString("discount_type"),
-                    rs.getDouble("min_order"),
-                    rs.getDate("expiry_date")
-                ));
+                + "AND (expiry_date >= CURDATE() OR expiry_date IS NULL) AND " + STARTED;
+        return listVouchers(query);
+    }
+
+    public List<Voucher> getAllVouchersForAdmin() {
+        return listVouchers("SELECT * FROM vouchers WHERE expiry_date >= CURDATE() OR expiry_date IS NULL "
+                + "ORDER BY id DESC");
+    }
+
+    private List<Voucher> listVouchers(String query) {
+        List<Voucher> list = new ArrayList<>();
+        try (Connection connection = DBConnect.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet result = statement.executeQuery()) {
+            while (result.next()) {
+                list.add(mapVoucher(result));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,8 +84,8 @@ public class VoucherDAO {
                 + "JOIN user_wallet w ON w.voucher_id = v.id "
                 + "WHERE w.user_id = ? AND w.is_used = FALSE "
                 + "AND UPPER(TRIM(v.code)) = UPPER(?) "
-                + "AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL) "
-                + "ORDER BY w.id LIMIT 1";
+                + "AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL) AND " + V_STARTED
+                + " ORDER BY w.id LIMIT 1";
         return findAvailableVoucher(query, userId, normalizeCode(code));
     }
 
@@ -91,8 +93,8 @@ public class VoucherDAO {
         String query = "SELECT v.* FROM vouchers v "
                 + "JOIN user_wallet w ON w.voucher_id = v.id "
                 + "WHERE w.user_id = ? AND w.is_used = FALSE AND v.id = ? "
-                + "AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL) "
-                + "ORDER BY w.id LIMIT 1";
+                + "AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL) AND " + V_STARTED
+                + " ORDER BY w.id LIMIT 1";
         return findAvailableVoucher(query, userId, voucherId);
     }
 
@@ -118,22 +120,15 @@ public class VoucherDAO {
         List<Voucher> list = new ArrayList<>();
         String query = "SELECT v.* FROM vouchers v " +
                        "JOIN user_wallet w ON v.id = w.voucher_id " +
-                       "WHERE w.user_id = ? AND w.is_used = FALSE AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL)";
+                       "WHERE w.user_id = ? AND w.is_used = FALSE AND (v.expiry_date >= CURDATE() OR v.expiry_date IS NULL) "
+                       + "AND " + V_STARTED;
         try {
             conn = DBConnect.getConnection();
             ps = conn.prepareStatement(query);
             ps.setInt(1, uid);
             rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new Voucher(
-                    rs.getInt("id"),
-                    rs.getString("code"),
-                    rs.getString("description"),
-                    rs.getDouble("discount_amount"),
-                    rs.getString("discount_type"),
-                    rs.getDouble("min_order"),
-                    rs.getDate("expiry_date")
-                ));
+                list.add(mapVoucher(rs));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,7 +191,8 @@ public class VoucherDAO {
     }
  // Thêm voucher
     public boolean insertVoucher(Voucher v) {
-        String query = "INSERT INTO vouchers (code, description, discount_amount, discount_type, min_order, expiry_date) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO vouchers (code, description, discount_amount, discount_type, min_order, expiry_date, "
+                + "start_date, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             conn = DBConnect.getConnection();
             ps = conn.prepareStatement(query);
@@ -206,6 +202,8 @@ public class VoucherDAO {
             ps.setString(4, v.getDiscountType());
             ps.setDouble(5, v.getMinOrder());
             ps.setDate(6, v.getExpiryDate());
+            ps.setDate(7, v.getStartDate());
+            ps.setBoolean(8, v.isPublicVoucher());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -214,7 +212,8 @@ public class VoucherDAO {
     }
     // cập nhật voucher
     public boolean updateVoucher(Voucher v) {
-        String query = "UPDATE vouchers SET code=?, description=?, discount_amount=?, discount_type=?, min_order=?, expiry_date=? WHERE id=?";
+        String query = "UPDATE vouchers SET code=?, description=?, discount_amount=?, discount_type=?, min_order=?, "
+                + "expiry_date=?, start_date=?, is_public=? WHERE id=?";
         try {
             conn = DBConnect.getConnection();
             ps = conn.prepareStatement(query);
@@ -224,7 +223,9 @@ public class VoucherDAO {
             ps.setString(4, v.getDiscountType());
             ps.setDouble(5, v.getMinOrder());
             ps.setDate(6, v.getExpiryDate());
-            ps.setInt(7, v.getId());
+            ps.setDate(7, v.getStartDate());
+            ps.setBoolean(8, v.isPublicVoucher());
+            ps.setInt(9, v.getId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -254,11 +255,7 @@ public class VoucherDAO {
             ps.setInt(1, id);
             rs = ps.executeQuery();
             if (rs.next()) {
-                return new Voucher(
-                    rs.getInt("id"), rs.getString("code"), rs.getString("description"),
-                    rs.getDouble("discount_amount"), rs.getString("discount_type"),
-                    rs.getDouble("min_order"), rs.getDate("expiry_date")
-                );
+                return mapVoucher(rs);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -283,7 +280,7 @@ public class VoucherDAO {
     }
 
     private Voucher mapVoucher(ResultSet result) throws Exception {
-        return new Voucher(
+        Voucher voucher = new Voucher(
                 result.getInt("id"),
                 result.getString("code"),
                 result.getString("description"),
@@ -291,6 +288,9 @@ public class VoucherDAO {
                 result.getString("discount_type"),
                 result.getDouble("min_order"),
                 result.getDate("expiry_date"));
+        voucher.setStartDate(result.getDate("start_date"));
+        voucher.setPublicVoucher(result.getBoolean("is_public"));
+        return voucher;
     }
 
     private String normalizeCode(String code) {

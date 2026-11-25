@@ -1,10 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
+<%@ page import="filter.CsrfFilter, util.I18n"%>
 <%
   Object codeAttr = request.getAttribute("jakarta.servlet.error.status_code");
   int code = codeAttr instanceof Integer ? (Integer) codeAttr : 500;
   String title;
   String detail;
-  if (code == 404) {
+  String home = "Về trang chủ";
+  if (code == 403 && request.getAttribute(CsrfFilter.REJECTED) != null) {
+    title = I18n.t(request, "error.csrf.title");
+    detail = I18n.t(request, "error.csrf.detail");
+    home = I18n.t(request, "error.home");
+  } else if (code == 404) {
     title = "Không tìm thấy trang";
     detail = "Trang bạn tìm không tồn tại hoặc đã bị chuyển đi.";
   } else if (code == 403) {
@@ -41,7 +47,7 @@
     <p class="code"><%= code %></p>
     <h1><%= title %></h1>
     <p><%= detail %></p>
-    <a href="<%= request.getContextPath() %>/home">Về trang chủ</a>
+    <a href="<%= request.getContextPath() %>/home"><%= home %></a>
   </div>
 </body>
 </html>

@@ -44,7 +44,10 @@ public class UpdateOrderController extends HttpServlet {
             newStatus = Order.STATUS_SUCCESS;
         }
 
-        if (newStatus == null || !dao.updateOrderStatusIfCurrent(orderId, order.getStatus(), newStatus)) {
+        boolean changed = Order.STATUS_CANCELLED.equals(newStatus)
+                ? dao.cancelProcessingOrder(orderId, null)
+                : newStatus != null && dao.updateOrderStatusIfCurrent(orderId, order.getStatus(), newStatus);
+        if (!changed) {
             response.sendRedirect("admin-orders?msg=invalid-status");
             return;
         }
