@@ -918,11 +918,13 @@
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-Requested-With': 'XMLHttpRequest',
 				'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
 			},
 			body: 'action=save&code=' + encodeURIComponent(code)
 		})
-				.then(response => response.text())
+				// 403 do sai mã CSRF trả JSON có lý do
+				.then(response => response.status === 403 ? response.json().then(d => d.message) : response.text())
 				.then(data => {
 					let result = data.trim();
 					if (result === "SUCCESS") {

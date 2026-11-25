@@ -10,6 +10,8 @@ public class Voucher {
 	private String discountType;
 	private double minOrder;
 	private Date expiryDate;
+	private Date startDate;
+	private boolean publicVoucher = true;
 
 	public Voucher() {
 	}
@@ -79,5 +81,25 @@ public class Voucher {
 
 	public void setExpiryDate(Date expiryDate) {
 		this.expiryDate = expiryDate;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public boolean isPublicVoucher() {
+		return publicVoucher;
+	}
+
+	public void setPublicVoucher(boolean publicVoucher) {
+		this.publicVoucher = publicVoucher;
+	}
+
+	public boolean isStarted() {
+		return startDate == null || !startDate.toLocalDate().isAfter(java.time.LocalDate.now());
 	}
 }

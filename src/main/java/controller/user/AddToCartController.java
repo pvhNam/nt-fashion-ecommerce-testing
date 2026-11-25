@@ -48,7 +48,7 @@ public class AddToCartController extends HttpServlet {
             String qStr =
                     req.getParameter("quantity");
 
-            if (qStr != null && !qStr.isEmpty()) {
+            if (qStr != null) {
                 quantity = Integer.parseInt(qStr);
             }
 
@@ -110,7 +110,7 @@ public class AddToCartController extends HttpServlet {
             return;
         }
 
-        if (currentQuantity + quantity > availableStock) {
+        if ((long) currentQuantity + quantity > availableStock) {
 
             if (ajax) {
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, false,

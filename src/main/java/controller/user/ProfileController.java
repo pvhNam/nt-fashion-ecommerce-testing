@@ -20,7 +20,7 @@ import java.util.UUID;
 @WebServlet("/profile")
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2,
-    maxFileSize = 1024 * 1024 * 10,
+    maxFileSize = 1024 * 1024 * 50,
     maxRequestSize = 1024 * 1024 * 50
 )
 public class ProfileController extends HttpServlet {
@@ -51,6 +51,9 @@ public class ProfileController extends HttpServlet {
         }
 
         String action = request.getParameter("action");
+        if (action == null && String.valueOf(request.getContentType()).startsWith("multipart/")) {
+            action = "upload-avatar"; // multipart quá lớn thì Tomcat bỏ mọi tham số
+        }
         UserDAO dao = new UserDAO();
 
         if ("upload-avatar".equals(action)) {
