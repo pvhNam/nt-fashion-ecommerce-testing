@@ -4,6 +4,8 @@ import dao.VoucherDAO;
 import model.Voucher;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -35,6 +37,10 @@ public class AdminVoucherController extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        if (!"insert".equals(action) && !"update".equals(action) && !"delete".equals(action)) {
+            response.sendRedirect("admin-vouchers?msg=error_action");
+            return;
+        }
         VoucherDAO vDao = new VoucherDAO();
 
         if ("delete".equals(action)) {
@@ -46,9 +52,26 @@ public class AdminVoucherController extends HttpServlet {
 
         String code = request.getParameter("code");
         String desc = request.getParameter("description");
-        double amount = Double.parseDouble(request.getParameter("discountAmount"));
         String type = request.getParameter("discountType");
-        double minOrder = Double.parseDouble(request.getParameter("minOrder"));
+        if (code == null || code.isBlank()) {
+            response.sendRedirect("admin-vouchers?msg=error_code_required");
+            return;
+        }
+        if (!"FIXED".equals(type) && !"PERCENT".equals(type)) {
+            response.sendRedirect("admin-vouchers?msg=error_discount_type");
+            return;
+        }
+        String amountInput = request.getParameter("discountAmount");
+        String minOrderInput = request.getParameter("minOrder");
+        double amount;
+        double minOrder;
+        try {
+            amount = Double.parseDouble(amountInput == null ? "" : amountInput.trim());
+            minOrder = Double.parseDouble(minOrderInput == null ? "" : minOrderInput.trim());
+        } catch (NumberFormatException e) {
+            response.sendRedirect("admin-vouchers?msg=error_value_range");
+            return;
+        }
 
         if (!Double.isFinite(amount) || amount < 0
                 || ("PERCENT".equals(type) && amount > 100)
@@ -57,11 +80,18 @@ public class AdminVoucherController extends HttpServlet {
             return;
         }
 
-        Date expiry = Date.valueOf(request.getParameter("expiryDate"));
-        String startParam = request.getParameter("startDate");
-        Date start = (startParam == null || startParam.isBlank()) ? null : Date.valueOf(startParam);
-        if (start != null && start.after(expiry)) {
-            response.sendRedirect("admin-vouchers?msg=error_date_range");
+        String expiryInput = request.getParameter("expiryDate");
+        // Require the form's ISO date format within MySQL DATE's supported years.
+        if (expiryInput == null || !expiryInput.matches("[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}")) {
+            response.sendRedirect("admin-vouchers?msg=error_expiry_date");
+            return;
+        }
+
+        Date expiry;
+        try {
+            expiry = Date.valueOf(LocalDate.parse(expiryInput));
+        } catch (DateTimeParseException e) {
+            response.sendRedirect("admin-vouchers?msg=error_expiry_date");
             return;
         }
 
