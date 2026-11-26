@@ -340,6 +340,12 @@
         }
     }
 
+    function syncHeaderNavPill() {
+        var nav = document.getElementById('ym-main-navigation');
+        var active = nav && nav.querySelector(':scope > a.active[data-site-navigation]');
+        if (active) positionHeaderNavPill(nav, active, false);
+    }
+
     function previewHeaderNavigation(target, animate, commit) {
         var nav = document.getElementById('ym-main-navigation');
         if (!nav || !target) return;
@@ -1085,8 +1091,14 @@
     previewLanguageControls(getCurrentLanguage(), false);
     window.addEventListener('resize', function () {
         previewLanguageControls(getCurrentLanguage(), false);
-        var activeNav = document.querySelector('#ym-main-navigation > a.active[data-site-navigation]');
-        if (activeNav) positionHeaderNavPill(document.getElementById('ym-main-navigation'), activeNav, false);
+        syncHeaderNavPill();
     }, { passive: true });
+    var mainNav = document.getElementById('ym-main-navigation');
+    if (mainNav && 'ResizeObserver' in window) {
+        // Tính lại ô vàng khi chữ menu đổi cỡ mà cửa sổ không đổi
+        var navObserver = new ResizeObserver(syncHeaderNavPill);
+        navObserver.observe(mainNav);
+        mainNav.querySelectorAll(':scope > a[data-site-navigation]').forEach(function (anchor) { navObserver.observe(anchor); });
+    }
     hydrateInitialEnglishPage();
 })();

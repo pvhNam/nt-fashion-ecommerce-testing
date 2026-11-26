@@ -31,7 +31,7 @@
                 <li><a href="${pageContext.request.contextPath}/home"><fmt:message key="menu.home" /></a></li>
                 <li><a href="${pageContext.request.contextPath}/collection"><fmt:message key="menu.collection" /> 2026</a></li>
                 <li><a href="${pageContext.request.contextPath}/news"><fmt:message key="menu.news" /></a></li>
-                <li><a href="${pageContext.request.contextPath}/about"><fmt:message key="footer.about_us" /></a></li>
+                <li><a href="${pageContext.request.contextPath}/about"><fmt:message key="menu.products" /></a></li>
             </ul>
         </div>
 

@@ -91,5 +91,16 @@ tasks.register('adminTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {
         includeTags 'admin'
+        excludeTags 'robustness'
+    }
+}
+
+tasks.register('adminRobustnessTest', Test) {
+    group = 'verification'
+    description = 'Runs Admin boundary and invalid-input regression tests against an isolated QA database.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'robustness'
     }
 }

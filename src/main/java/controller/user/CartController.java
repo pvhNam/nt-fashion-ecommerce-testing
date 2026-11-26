@@ -1,6 +1,7 @@
 package controller.user;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -150,6 +151,12 @@ public class CartController extends HttpServlet {
                 session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.not_found"));
                 session.setAttribute("msgType", "error");
                 session.removeAttribute("appliedVoucher");
+            } else if (v == null && !knownVoucher.isStarted()) {
+                session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.not_started",
+                        knownVoucher.getCode(),
+                        knownVoucher.getStartDate().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+                session.setAttribute("msgType", "error");
+                session.removeAttribute("appliedVoucher");
             } else if (v == null) {
                 session.setAttribute("voucherMsg", I18n.t(request, "voucher.msg.unavailable"));
                 session.setAttribute("msgType", "error");
@@ -187,6 +194,15 @@ public class CartController extends HttpServlet {
                 return;
             }
             response.sendRedirect("cart");
+            return;
+        }
+ if (currentUser == null && ("add".equals(action) || "buyNow".equals(action))) {
+            if (ajax) {
+                writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.", true);
+            } else {
+                response.sendRedirect("login");
+            }
             return;
         }
         int requestedQuantity = parseInt(request.getParameter("quantity"),

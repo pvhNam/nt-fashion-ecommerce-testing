@@ -122,6 +122,26 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="vf-row">
+                            <div class="vf-field">
+                                <label>Ngày bắt đầu</label>
+                                <div class="vf-input-wrap">
+                                    <i class="fa-regular fa-calendar-plus"></i>
+                                    <input type="date" name="startDate"
+                                           value="<%= isEdit && v.getStartDate() != null ? v.getStartDate() : "" %>">
+                                </div>
+                                <small class="vf-hint">Để trống thì dùng được ngay</small>
+                            </div>
+                            <div class="vf-field">
+                                <label>Hiển thị</label>
+                                <label class="vf-check">
+                                    <input type="checkbox" name="isPublic" value="1"
+                                           <%= (!isEdit || v.isPublicVoucher()) ? "checked" : "" %>>
+                                    Công khai trên trang chủ
+                                </label>
+                                <small class="vf-hint">Bỏ chọn để tạo voucher riêng, chỉ dùng được khi có trong ví khách</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="vf-actions">

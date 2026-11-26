@@ -27,7 +27,7 @@ public final class PricingService {
                 safeSubtotal,
                 memberDiscount,
                 voucherDiscount,
-                Math.max(0, afterMemberDiscount - voucherDiscount),
+                Math.round(Math.max(0, afterMemberDiscount - voucherDiscount)),
                 safeMemberPercent);
     }
 

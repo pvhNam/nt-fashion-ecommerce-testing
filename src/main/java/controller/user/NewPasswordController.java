@@ -21,6 +21,12 @@ public class NewPasswordController extends HttpServlet {
         HttpSession session = request.getSession();
         String username = (String) session.getAttribute("resetUsername");
 
+        if (username == null || !Boolean.TRUE.equals(session.getAttribute("otpVerified"))) {
+            request.setAttribute("message", "Vui lòng xác thực mã OTP trước khi đặt mật khẩu mới.");
+            request.getRequestDispatcher("/forgot_password.jsp").forward(request, response);
+            return;
+        }
+
         if (newPassword == null || confPassword == null) {
             request.setAttribute("message", "Vui long nhap mat khau!");
             request.getRequestDispatcher("/new_password.jsp").forward(request, response);
@@ -45,6 +51,7 @@ public class NewPasswordController extends HttpServlet {
 
         if (isUpdated) {
             session.removeAttribute("otp");
+            session.removeAttribute("otpVerified");
             session.removeAttribute("resetUsername");
             request.setAttribute("error", "Doi mat khau thanh cong! Hay dang nhap lai.");
             request.getRequestDispatcher("/login.jsp").forward(request, response);
