@@ -43,6 +43,16 @@
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             Ngày hết hạn phải đúng định dạng yyyy-MM-dd, là ngày hợp lệ và có năm từ 1000 đến 9999.
         </div>
+        <% } else if ("error_start_date".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Ngày bắt đầu phải đúng định dạng yyyy-MM-dd, là ngày hợp lệ và có năm từ 1000 đến 9999.
+        </div>
+        <% } else if ("error_date_range".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            Ngày bắt đầu phải bằng hoặc trước ngày hết hạn.
+        </div>
         <% } else if ("error_action".equals(msg)) { %>
         <div class="alert alert-danger" role="alert">
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
