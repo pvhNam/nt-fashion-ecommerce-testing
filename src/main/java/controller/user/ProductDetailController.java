@@ -68,6 +68,8 @@ public class ProductDetailController extends HttpServlet {
             request.setAttribute("reviewsWithComment", reviewsWithComment);
             request.setAttribute("currentReview",
                     currentUser == null ? null : reviewDao.getReviewByUserAndProduct(currentUser.getUid(), pid));
+            request.setAttribute("canReview",
+                    currentUser != null && reviewDao.hasPurchasedProduct(currentUser.getUid(), pid));
             moveFlashMessage(session, request, "reviewSuccess");
             moveFlashMessage(session, request, "reviewError");
 

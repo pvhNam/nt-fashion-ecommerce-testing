@@ -18,6 +18,8 @@ import java.io.IOException;
 public class ProductReviewController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final int MAX_COMMENT_LENGTH = 1000;
+    private static final String NOT_PURCHASED_MESSAGE =
+            "Chỉ khách đã mua và nhận sản phẩm này mới có thể đánh giá.";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -62,6 +64,11 @@ public class ProductReviewController extends HttpServlet {
         }
 
         ProductReviewDAO reviewDao = new ProductReviewDAO();
+        if (!reviewDao.hasPurchasedProduct(currentUser.getUid(), productId)) {
+            redirectWithError(request, response, session, productId, NOT_PURCHASED_MESSAGE);
+            return;
+        }
+
         ProductReview existingReview = reviewDao.getReviewByUserAndProduct(currentUser.getUid(), productId);
         if (reviewDao.saveOrUpdateReview(currentUser.getUid(), productId, rating, comment)) {
             session.setAttribute("reviewSuccess", existingReview == null
