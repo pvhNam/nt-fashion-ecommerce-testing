@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/admin-vouchers")
 public class AdminVoucherController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    // Require ISO dates within MySQL DATE's supported years.
+    private static final String DATE_FORMAT = "[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}";
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -81,8 +83,7 @@ public class AdminVoucherController extends HttpServlet {
         }
 
         String expiryInput = request.getParameter("expiryDate");
-        // Require the form's ISO date format within MySQL DATE's supported years.
-        if (expiryInput == null || !expiryInput.matches("[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}")) {
+        if (expiryInput == null || !expiryInput.matches(DATE_FORMAT)) {
             response.sendRedirect("admin-vouchers?msg=error_expiry_date");
             return;
         }
@@ -93,6 +94,25 @@ public class AdminVoucherController extends HttpServlet {
         } catch (DateTimeParseException e) {
             response.sendRedirect("admin-vouchers?msg=error_expiry_date");
             return;
+        }
+
+        String startInput = request.getParameter("startDate");
+        Date start = null;
+        if (startInput != null && !startInput.isBlank()) {
+            if (!startInput.matches(DATE_FORMAT)) {
+                response.sendRedirect("admin-vouchers?msg=error_start_date");
+                return;
+            }
+            try {
+                start = Date.valueOf(LocalDate.parse(startInput));
+            } catch (DateTimeParseException e) {
+                response.sendRedirect("admin-vouchers?msg=error_start_date");
+                return;
+            }
+            if (start.after(expiry)) {
+                response.sendRedirect("admin-vouchers?msg=error_date_range");
+                return;
+            }
         }
 
         int id = "update".equals(action) ? Integer.parseInt(request.getParameter("id")) : 0;
