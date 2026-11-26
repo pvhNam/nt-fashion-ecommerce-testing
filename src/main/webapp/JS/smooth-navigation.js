@@ -41,7 +41,7 @@
         }
         window.clearTimeout(navigationSafetyTimer);
         bar.classList.remove('is-done');
-        requestAnimationFrame(function () { bar.classList.add('is-active'); });
+        bar.classList.add('is-active');
         if (leaving) {
             document.body.classList.add('ym-page-leaving');
             navigationSafetyTimer = window.setTimeout(finishProgress, 10000);
@@ -56,6 +56,18 @@
         bar.classList.remove('is-active');
         bar.classList.add('is-done');
         progressTimer = window.setTimeout(function () { bar.classList.remove('is-done'); }, 400);
+    }
+
+    function animateContentEntry(content, className) {
+        content.classList.add(className);
+        function finish(event) {
+            if (event.target !== content || event.pseudoElement) return;
+            content.classList.remove(className);
+            content.removeEventListener('animationend', finish);
+            content.removeEventListener('animationcancel', finish);
+        }
+        content.addEventListener('animationend', finish);
+        content.addEventListener('animationcancel', finish);
     }
 
     function toUrl(value) {
@@ -182,7 +194,7 @@
             if (requestId !== adminAjaxSequence) return;
 
             var importedMain = document.importNode(nextMain, true);
-            importedMain.classList.add('ym-admin-content-entering');
+            animateContentEntry(importedMain, 'ym-admin-content-entering');
             currentMain.replaceWith(importedMain);
             if (nextDocument.title) document.title = nextDocument.title;
 
@@ -193,9 +205,6 @@
             }
 
             restoreAdminFocus(importedMain, options.focus);
-            window.requestAnimationFrame(function () {
-                window.requestAnimationFrame(function () { importedMain.classList.remove('ym-admin-content-entering'); });
-            });
             announceAdminUpdate('Nội dung quản trị đã được cập nhật.');
             document.dispatchEvent(new CustomEvent('admin:content-updated', { detail: { url: targetUrl.href } }));
         } catch (error) {
@@ -268,21 +277,26 @@
         });
     }
 
-    function waitForStyle(link) {
-        return new Promise(function (resolve) {
-            var settled = false;
-            function done() {
-                if (settled) return;
-                settled = true;
-                resolve();
+    function waitForStyle(link, signal) {
+        return new Promise(function (resolve, reject) {
+            var timer = window.setTimeout(fail, 10000);
+            function cleanup() {
+                window.clearTimeout(timer);
+                link.removeEventListener('load', loaded);
+                link.removeEventListener('error', fail);
+                signal.removeEventListener('abort', abort);
             }
-            link.addEventListener('load', done, { once: true });
-            link.addEventListener('error', done, { once: true });
-            window.setTimeout(done, 1800);
+            function loaded() { cleanup(); resolve(); }
+            function fail() { cleanup(); reject(new Error('Could not load stylesheet: ' + link.href)); }
+            function abort() { cleanup(); reject(new DOMException('Navigation cancelled', 'AbortError')); }
+            link.addEventListener('load', loaded);
+            link.addEventListener('error', fail);
+            signal.addEventListener('abort', abort, { once: true });
+            if (signal.aborted) abort();
         });
     }
 
-    async function syncSiteStyles(nextDocument, baseUrl, requestId) {
+    async function syncSiteStyles(nextDocument, baseUrl, signal) {
         var desired = new Map();
         nextDocument.head.querySelectorAll('link[rel="stylesheet"]').forEach(function (link) {
             var rawHref = link.getAttribute('href');
@@ -291,7 +305,7 @@
             if (!isPersistentSiteStyle(absolute)) desired.set(absolute, link);
         });
 
-        var existingLinks = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'));
+        var existingLinks = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]:not([data-ym-site-pending-style])'));
         var existingHrefs = new Set(existingLinks.map(function (link) { return link.href; }));
         var additions = [];
         desired.forEach(function (source, href) {
@@ -302,13 +316,26 @@
             });
             link.rel = 'stylesheet';
             link.href = href;
-            link.dataset.ymSitePageStyle = 'true';
+            var media = link.getAttribute('media');
+            link.media = 'not all';
+            link.dataset.ymSitePendingStyle = 'true';
+            additions.push({ link: link, media: media, ready: waitForStyle(link, signal) });
             document.head.appendChild(link);
-            additions.push(waitForStyle(link));
         });
-        await Promise.all(additions);
-        if (requestId !== siteAjaxSequence) return;
+        try {
+            await Promise.all(additions.map(function (entry) { return entry.ready; }));
+            if (signal.aborted) throw new DOMException('Navigation cancelled', 'AbortError');
+        } catch (error) {
+            additions.forEach(function (entry) { entry.link.remove(); });
+            throw error;
+        }
 
+        additions.forEach(function (entry) {
+            if (entry.media === null) entry.link.removeAttribute('media');
+            else entry.link.media = entry.media;
+            delete entry.link.dataset.ymSitePendingStyle;
+            entry.link.dataset.ymSitePageStyle = 'true';
+        });
         existingLinks.forEach(function (link) {
             if (link.dataset.ymSitePageStyle === 'true' && !desired.has(link.href)) link.remove();
         });
@@ -435,8 +462,8 @@
 
         if (siteAjaxController) siteAjaxController.abort();
         siteAjaxController = new AbortController();
+        var signal = siteAjaxController.signal;
         var requestId = ++siteAjaxSequence;
-        currentRoot.classList.add('ym-site-content-loading');
         currentRoot.setAttribute('aria-busy', 'true');
         startProgress(false);
 
@@ -445,7 +472,7 @@
                 method: 'GET',
                 credentials: 'same-origin',
                 headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
-                signal: siteAjaxController.signal
+                signal: signal
             });
             if (!response.ok) throw new Error('HTTP ' + response.status);
             var nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
@@ -458,12 +485,12 @@
             if (getCurrentLanguage() === 'en' && activeLanguageTranslations.length) {
                 prepareTranslatedDocument(nextDocument, activeLanguageTranslations);
             }
-            await syncSiteStyles(nextDocument, response.url || targetUrl.href, requestId);
+            await syncSiteStyles(nextDocument, response.url || targetUrl.href, signal);
             if (requestId !== siteAjaxSequence) return;
 
             var importedRoot = document.importNode(nextRoot, true);
-            importedRoot.classList.add('ym-site-content-entering');
             importedRoot.dataset.slideDirection = options.direction || 'forward';
+            animateContentEntry(importedRoot, 'ym-site-content-entering');
             currentRoot.replaceWith(importedRoot);
             syncHomeMarquee(nextDocument);
             document.body.className = nextDocument.body.className;
@@ -483,15 +510,11 @@
 
             executeSiteScripts(importedRoot, response.url || targetUrl.href);
             window.scrollTo({ top: 0, behavior: 'auto' });
-            window.requestAnimationFrame(function () {
-                window.requestAnimationFrame(function () { importedRoot.classList.remove('ym-site-content-entering'); });
-            });
             announceSiteNavigation();
             document.dispatchEvent(new CustomEvent('ym:sitecontentchange', { detail: { url: targetUrl.href } }));
         } catch (error) {
-            if (error.name !== 'AbortError') {
+            if (error.name !== 'AbortError' && requestId === siteAjaxSequence) {
                 if (currentRoot.isConnected) {
-                    currentRoot.classList.remove('ym-site-content-loading');
                     currentRoot.removeAttribute('aria-busy');
                 }
                 var committed = committedHeaderTarget();

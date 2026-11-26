@@ -188,11 +188,6 @@ body.ym-page-leaving > *:not(#ym-navigation-progress) {
     animation: ym-download-bounce 620ms cubic-bezier(.16, 1, .3, 1);
 }
 
-.ym-admin-ajax-loading {
-    opacity: .58;
-    transition: opacity 180ms ease;
-}
-
 .ym-admin-ajax-loading::after {
     content: "Đang cập nhật dữ liệu...";
     position: fixed;
@@ -228,11 +223,6 @@ body.ym-page-leaving > *:not(#ym-navigation-progress) {
 
 .ym-site-page-content {
     min-height: 35vh;
-    transition: opacity 180ms ease;
-}
-
-.ym-site-page-content.ym-site-content-loading {
-    opacity: .62;
 }
 
 .ym-site-page-content.ym-site-content-entering {
@@ -360,6 +350,11 @@ body.ym-page-leaving > *:not(#ym-navigation-progress) {
     to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes ym-content-fade-in {
+    from { opacity: .65; }
+    to { opacity: 1; }
+}
+
 @media (max-width: 780px) {
     .admin-header-tools,
     .admin-filter-search,
@@ -369,20 +364,35 @@ body.ym-page-leaving > *:not(#ym-navigation-progress) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-        animation-duration: 1ms;
+    ::view-transition-group(root),
+    ::view-transition-old(root) {
+        animation: none;
     }
 
+    ::view-transition-old(root) { mix-blend-mode: normal; }
+
+    ::view-transition-new(root) {
+        animation: ym-content-fade-in 180ms ease-out both;
+        mix-blend-mode: normal;
+    }
+
+    .ym-admin-content-entering,
+    .ym-site-page-content.ym-site-content-entering {
+        animation: ym-content-fade-in 180ms ease-out;
+    }
+
+    #ym-main-navigation.ym-nav-indicator-ready::before,
     #ym-navigation-progress,
+    #ym-navigation-progress.is-done {
+        transition: none;
+    }
+
     .ym-cart.ym-cart-bump,
     .ym-download-started i,
     .ym-admin-ajax-loading::before,
-    .ym-admin-content-entering,
-    .ym-site-content-entering,
     .ym-async-busy::after,
     [data-language-switcher]::before {
         transition: none;
-        animation-duration: 1ms;
+        animation: none;
     }
 }

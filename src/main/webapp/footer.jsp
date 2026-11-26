@@ -32,11 +32,13 @@
                 <li><a href="${pageContext.request.contextPath}/collection"><fmt:message key="menu.collection" /> 2026</a></li>
                 <li><a href="${pageContext.request.contextPath}/news"><fmt:message key="menu.news" /></a></li>
                 <li><a href="${pageContext.request.contextPath}/about"><fmt:message key="menu.products" /></a></li>
+                <li><a href="${pageContext.request.contextPath}/campaigns">Chiến dịch khuyến mãi</a></li>
             </ul>
         </div>
 
         <div class="ym-footer-col">
             <h4><fmt:message key="footer.support" /></h4>
+            <ul class="ym-footer-links"><li><a href="${pageContext.request.contextPath}/contact">Liên hệ cửa hàng</a></li></ul>
             <div class="ym-contact-item">
                 <i class="fa-solid fa-phone"></i>
                 <span>0981 774 313</span>

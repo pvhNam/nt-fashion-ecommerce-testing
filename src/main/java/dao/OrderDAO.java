@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -610,7 +613,10 @@ public class OrderDAO {
     }
 
     public boolean updateOrderStatusIfCurrent(int orderId, String currentStatus, String newStatus) {
-        String sql = "UPDATE orders SET status = ? WHERE id = ? AND status = ?";
+        String sql = "UPDATE orders SET status = ?"
+                + (Order.STATUS_SUCCESS.equals(newStatus)
+                        ? ", delivered_at = COALESCE(delivered_at, UTC_TIMESTAMP())" : "")
+                + " WHERE id = ? AND status = ?";
         try (Connection connection = DBConnect.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, newStatus);
@@ -669,8 +675,17 @@ public class OrderDAO {
         order.setTotalMoney(resultSet.getDouble("total_money"));
         order.setAddress(resultSet.getString("address"));
         order.setStatus(resultSet.getString("status"));
-        order.setCreatedAt(resultSet.getDate("created_at"));
+        order.setCreatedDateTime(resultSet.getObject("created_at", LocalDateTime.class));
         order.setPaymentMethod(resultSet.getString("payment_method"));
+
+        try {
+            LocalDateTime deliveredAt = resultSet.getObject("delivered_at", LocalDateTime.class);
+            if (deliveredAt != null) {
+                order.setDeliveredAt(Timestamp.from(deliveredAt.toInstant(ZoneOffset.UTC)));
+            }
+        } catch (SQLException e) {
+            if (!"S0022".equals(e.getSQLState()) && !"42S22".equals(e.getSQLState())) throw e;
+        }
 
         try {
             order.setContactEmail(resultSet.getString("contact_email"));

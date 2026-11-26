@@ -20,8 +20,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chọn địa chỉ giao hàng</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
-  <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20260822.5" defer></script>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
+  <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
   <style>
     .address-container { max-width: 760px; margin: 50px auto; font-family: sans-serif; }
     .address-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }

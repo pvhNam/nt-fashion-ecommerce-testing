@@ -36,7 +36,8 @@ public class ExportRevenueReportController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ReportPeriod period = ReportPeriod.fromParameters(
-                request.getParameter("period"), request.getParameter("month"), request.getParameter("year"));
+                request.getParameter("period"), request.getParameter("month"), request.getParameter("year"),
+                request.getParameter("date"));
         String scope = normalizeScope(request.getParameter("scope"));
         ReportDAO dao = new ReportDAO();
 

@@ -1,6 +1,8 @@
 package model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class Order {
 	public static final String STATUS_PROCESSING = "Dang xu ly";
@@ -18,7 +20,8 @@ public class Order {
 	private double totalMoney;
 	private String address;
 	private String status;
-	private Date createdAt;
+	private LocalDateTime createdDateTime;
+	private Timestamp deliveredAt;
 	private String userName;
 	private String phoneNumber;
 	private String paymentMethod;
@@ -37,7 +40,7 @@ public class Order {
 		this.totalMoney = totalMoney;
 		this.address = address;
 		this.status = status;
-		this.createdAt = createdAt;
+		setCreatedAt(createdAt);
 	}
 
 	public String getUserName() {
@@ -269,10 +272,26 @@ public class Order {
 	}
 
 	public Date getCreatedAt() {
-		return createdAt;
+		return createdDateTime == null ? null : Date.valueOf(createdDateTime.toLocalDate());
 	}
 
 	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
+		setCreatedDateTime(createdAt == null ? null : createdAt.toLocalDate().atStartOfDay());
+	}
+
+	public LocalDateTime getCreatedDateTime() {
+		return createdDateTime;
+	}
+
+	public void setCreatedDateTime(LocalDateTime createdDateTime) {
+		this.createdDateTime = createdDateTime;
+	}
+
+	public Timestamp getDeliveredAt() {
+		return deliveredAt;
+	}
+
+	public void setDeliveredAt(Timestamp deliveredAt) {
+		this.deliveredAt = deliveredAt;
 	}
 }

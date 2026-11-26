@@ -1,5 +1,8 @@
 package util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,8 +17,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
 /**
- * Tự bổ sung cột/chỉ mục còn thiếu khi web khởi động, để người pull code về không phải chạy tay
- * migrations/005_order_voucher.sql. Chỉ thêm khi chưa có nên chạy lại nhiều lần không sao.
+ * Tự bổ sung cột/chỉ mục còn thiếu khi web khởi động. Chỉ thêm khi chưa có.
  */
 @WebListener
 public class DatabaseUpgradeListener implements ServletContextListener {
@@ -32,7 +34,7 @@ public class DatabaseUpgradeListener implements ServletContextListener {
             }
         } catch (Exception e) {
             sce.getServletContext().log(
-                    "Không tự cập nhật được DB, hãy chạy tay migrations/005_order_voucher.sql", e);
+                    "Không tự cập nhật được DB. Hãy chạy các migration còn thiếu theo README.", e);
         }
     }
 
@@ -53,7 +55,39 @@ public class DatabaseUpgradeListener implements ServletContextListener {
             execute(connection, "ALTER TABLE vouchers ADD COLUMN start_date date DEFAULT NULL AFTER min_order");
             changes.add("cột vouchers.start_date");
         }
+        if (!columnExists(connection, "orders", "delivered_at")) {
+            execute(connection, "ALTER TABLE orders ADD COLUMN delivered_at datetime DEFAULT NULL");
+            changes.add("cột orders.delivered_at");
+        }
+        if (!tableExists(connection, "contact_threads") || !tableExists(connection, "contact_messages")
+                || !tableExists(connection, "promotion_campaigns")) {
+            installContactAndCampaigns(connection);
+            changes.add("các bảng Liên hệ và Chiến dịch còn thiếu");
+        }
         return changes;
+    }
+
+    private static void installContactAndCampaigns(Connection connection) throws SQLException {
+        try (InputStream script = DatabaseUpgradeListener.class.getResourceAsStream(
+                "/db-upgrades/008_contact_and_campaigns.sql")) {
+            if (script == null) throw new SQLException("Không tìm thấy migration 008 trong bản build.");
+            String sql = new String(script.readAllBytes(), StandardCharsets.UTF_8);
+            for (String statement : sql.split(";")) {
+                if (!statement.isBlank()) execute(connection, statement.strip());
+            }
+        } catch (IOException error) {
+            throw new SQLException("Không đọc được migration 008", error);
+        }
+    }
+
+    private static boolean tableExists(Connection connection, String name) throws SQLException {
+        String sql = "SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next();
+            }
+        }
     }
 
     private static boolean columnExists(Connection connection, String table, String column) throws SQLException {

@@ -6,6 +6,11 @@
 	padding: 0 20px;
 }
 
+body.ym-orders-page .page-title.history-title {
+	font-size: clamp(1.6rem, 3.4vw, 2.75rem) !important;
+	margin-bottom: 24px;
+}
+
 /* ===== TAB NAVIGATION ===== */
 .order-tabs {
 	display: flex;
@@ -66,6 +71,45 @@
 	color: #333;
 }
 
+body.ym-orders-page .order-table.history-orders-table {
+	min-width: 0;
+	table-layout: fixed;
+	font-size: 14px;
+}
+
+.history-col-id { width: 8%; }
+.history-col-placed, .history-col-delivered { width: 12%; }
+.history-col-total, .history-col-action { width: 13%; }
+.history-col-status { width: 16%; }
+
+body.ym-orders-page .order-table.history-orders-table :is(th, td) { padding: 12px 10px; }
+body.ym-orders-page .history-orders-table .history-total { text-align: right; }
+.history-cell-label { display: none; }
+
+.history-date-time, .history-amount {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+.history-date-time small {
+	display: block;
+	margin-top: 2px;
+	color: #526177;
+	font-size: 12px;
+}
+
+.history-address-text {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	line-height: 1.45;
+}
+
+.history-status .status-tag { overflow-wrap: anywhere; }
+.history-action .btn-view-detail { white-space: nowrap; }
+
 /* ===== STATUS BADGES ===== */
 .status-tag {
 	display: inline-block;
@@ -88,6 +132,11 @@
 .status-tag.status-success {
 	background-color: #d4edda;
 	color: #155724;
+}
+
+.order-delivery-time {
+	color: #526177;
+	font-variant-numeric: tabular-nums;
 }
 
 .status-tag.status-cancelled {
@@ -126,4 +175,65 @@
 
 .btn-shop-now:hover {
 	background: #cc0000;
+}
+
+@media (max-width: 900px) {
+	body.ym-orders-page .order-tabs {
+		flex-wrap: wrap;
+		gap: 5px;
+	}
+
+	body.ym-orders-page .order-tabs a.tab-item {
+		min-height: 36px;
+		padding-inline: 10px;
+	}
+
+	body.ym-orders-page .order-table.history-orders-table,
+	.history-orders-table tbody { display: block; }
+
+	body.ym-orders-page .history-orders-table { background: transparent; }
+
+	.history-orders-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		clip-path: inset(50%);
+		overflow: hidden;
+	}
+
+	.history-orders-table colgroup { display: none; }
+
+	.history-orders-table tbody tr {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-areas: "id status" "placed delivered" "address address" "total action";
+		align-items: start;
+		gap: 12px;
+		padding: 14px;
+		border: 1px solid #e5e2d9;
+		border-radius: 14px;
+		background: #fff;
+	}
+
+	.history-orders-table tbody tr + tr { margin-top: 10px; }
+
+	body.ym-orders-page .order-table.history-orders-table td { padding: 0; border: 0; min-width: 0; }
+	body.ym-orders-page .history-orders-table .history-total { text-align: left; }
+
+	.history-cell-label {
+		display: block;
+		margin-bottom: 3px;
+		color: #526177;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	.history-id { grid-area: id; }
+	.history-placed { grid-area: placed; }
+	.history-delivered { grid-area: delivered; }
+	.history-address { grid-area: address; }
+	.history-total { grid-area: total; }
+	.history-status { grid-area: status; }
+	body.ym-orders-page .history-orders-table .history-status { text-align: right; }
+	.history-action { grid-area: action; justify-self: end; align-self: end; }
 }

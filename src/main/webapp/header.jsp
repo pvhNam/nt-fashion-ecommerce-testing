@@ -8,9 +8,9 @@
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20260831.1">
 <meta name="csrf-token" content="${csrfToken}">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/user-pages.css?v=20260831.1">
-<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261124.2" defer></script>
+<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
 
 <header class="ym-header" id="ym-site-header"
 		data-current-lang="${sessionScope.lang == 'en' ? 'en' : 'vi'}">
