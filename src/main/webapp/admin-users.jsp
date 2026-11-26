@@ -5,6 +5,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quản Lý Khách Hàng | Admin</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -33,7 +34,7 @@
             </div>
         <% } %>
 
-        <div class="card-box">
+        <div class="card-box admin-table-scroll" role="region" aria-label="Danh sách khách hàng" tabindex="0">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -77,7 +78,7 @@
                     </tr>
                     <% } } else { %>
                     <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px; color: #888;">
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #888;">
                             <i class="fa-solid fa-user-slash" style="font-size: 30px; margin-bottom: 10px;"></i><br>
                             Không tìm thấy khách hàng nào phù hợp.
                         </td>

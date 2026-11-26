@@ -1,7 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Order, util.Html"%>
-<%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.DecimalFormat, java.text.DecimalFormatSymbols, java.util.Locale"%>
+<%@ page import="java.time.format.DateTimeFormatter"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -13,7 +16,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/admin/Admin.css">
-<link rel="stylesheet" href="CSS/admin/admin-dashboard.css">
+<link rel="stylesheet" href="CSS/admin/admin-dashboard.css?v=20261126">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -25,10 +28,12 @@
     <main class="main-content">
 
         <div class="content-header">
-            <h1 class="page-title">Tổng quan Dashboard</h1>
+            <h1 class="page-title">Tổng quan</h1>
             <div class="user-info">
-                <i class="fa-solid fa-user-shield"></i>
-                <span><c:out value="${empty sessionScope.user.fullname ? sessionScope.user.username : sessionScope.user.fullname}" /> · ${sessionScope.user.isAdmin == 2 ? 'Staff' : 'Admin'}</span>
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                <c:set var="dashboardRole" value="${sessionScope.user.isAdmin == 2 ? 'Staff' : 'Admin'}" />
+                <c:set var="dashboardName" value="${empty sessionScope.user.fullname ? sessionScope.user.username : sessionScope.user.fullname}" />
+                <span><c:out value="${empty dashboardName ? dashboardRole : dashboardName}" /><c:if test="${not empty dashboardName and fn:toLowerCase(fn:trim(dashboardName)) ne fn:toLowerCase(dashboardRole)}"> · ${dashboardRole}</c:if></span>
             </div>
         </div>
 
@@ -41,72 +46,63 @@
             int countSuccess   = request.getAttribute("countSuccess")   != null ? (int) request.getAttribute("countSuccess")   : 0;
             int countShipping  = request.getAttribute("countShipping")  != null ? (int) request.getAttribute("countShipping")  : 0;
 
-            // Format tiền tệ & Thời gian
-            DecimalFormat df = new DecimalFormat("#,### VNĐ");
+            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN"));
+            DecimalFormat number = new DecimalFormat("#,##0", symbols);
+            DecimalFormat df = new DecimalFormat("#,##0 '₫'", symbols);
+            DateTimeFormatter orderDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         %>
 
-        <div class="stats-cards">
-            <a href="admin-orders" class="stat-link">
-                <div class="card-stat blue">
-                    <div class="stat-info">
-                        <h3><%= totalOrders %></h3>
-                        <p>Tổng đơn hàng</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
-                </div>
-            </a>
+        <section class="dashboard-stats" aria-label="Thống kê đơn hàng">
+            <div class="stats-cards">
+                <a href="admin-orders" class="card-stat stat-orders">
+                    <span class="stat-info">
+                        <span class="stat-label">Tổng đơn hàng</span>
+                        <strong class="stat-value"><%= number.format(totalOrders) %></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-cart-shopping"></i></span>
+                </a>
 
-            <%-- Báo cáo doanh thu chỉ Admin vào được; Staff bấm thẻ này thì mở các đơn giao thành công --%>
-            <a href="${sessionScope.user.isAdmin == 1 ? 'admin-revenue-report' : 'admin-orders?filter=success'}" class="stat-link">
-                <div class="card-stat green">
-                    <div class="stat-info">
-                        <h3 style="color: var(--success);"><%= df.format(totalRevenue) %></h3>
-                        <p>Doanh thu thực</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
-                </div>
-            </a>
+                <a href="${sessionScope.user.isAdmin == 1 ? 'admin-revenue-report' : 'admin-orders?filter=success'}" class="card-stat stat-revenue">
+                    <span class="stat-info">
+                        <span class="stat-label">Doanh thu thực</span>
+                        <strong class="stat-value"><%= number.format(totalRevenue) %> <span class="stat-unit">₫</span></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-sack-dollar"></i></span>
+                </a>
 
-            <a href="admin-orders?filter=processing" class="stat-link">
-                <div class="card-stat orange">
-                    <div class="stat-info">
-                        <h3><%= countProcessing %></h3>
-                        <p>Đang chờ xử lý</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
-                </div>
-            </a>
+                <a href="admin-orders?filter=processing" class="card-stat stat-processing">
+                    <span class="stat-info">
+                        <span class="stat-label">Đang chờ xử lý</span>
+                        <strong class="stat-value"><%= number.format(countProcessing) %></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+                </a>
 
-            <a href="admin-orders?filter=cancel" class="stat-link">
-                <div class="card-stat red">
-                    <div class="stat-info">
-                        <h3><%= countCancel %></h3>
-                        <p>Đơn bị hủy</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
-                </div>
-            </a>
+                <a href="admin-orders?filter=shipping" class="card-stat stat-shipping">
+                    <span class="stat-info">
+                        <span class="stat-label">Đang giao hàng</span>
+                        <strong class="stat-value"><%= number.format(countShipping) %></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-truck-fast"></i></span>
+                </a>
 
-            <a href="admin-orders?filter=shipping" class="stat-link">
-                <div class="card-stat teal">
-                    <div class="stat-info">
-                        <h3><%= countShipping %></h3>
-                        <p>Đang giao hàng</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
-                </div>
-            </a>
+                <a href="admin-orders?filter=success" class="card-stat stat-success">
+                    <span class="stat-info">
+                        <span class="stat-label">Giao thành công</span>
+                        <strong class="stat-value"><%= number.format(countSuccess) %></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+                </a>
 
-            <a href="admin-orders?filter=success" class="stat-link">
-                <div class="card-stat purple">
-                    <div class="stat-info">
-                        <h3><%= countSuccess %></h3>
-                        <p>Giao thành công</p>
-                    </div>
-                    <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-                </div>
-            </a>
-        </div>
+                <a href="admin-orders?filter=cancel" class="card-stat stat-cancelled">
+                    <span class="stat-info">
+                        <span class="stat-label">Đơn bị hủy</span>
+                        <strong class="stat-value"><%= number.format(countCancel) %></strong>
+                    </span>
+                    <span class="stat-icon" aria-hidden="true"><i class="fa-solid fa-ban"></i></span>
+                </a>
+            </div>
+        </section>
 
         <%-- ===== BIỂU ĐỒ TRÒN TRẠNG THÁI ĐƠN HÀNG ===== --%>
         <div class="charts-section">
@@ -175,23 +171,31 @@
         </div>
         </c:if>
 
-        <div class="table-container">
+        <section class="table-container">
             <div class="table-header-box">
-                <h3 style="margin: 0; font-size: 18px; color: var(--dark);">
-                    <i class="fa-solid fa-list-ul" style="margin-right: 10px;"></i> Đơn hàng gần đây
-                </h3>
+                <h2 id="recent-orders-title"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> Đơn hàng gần đây</h2>
             </div>
 
-            <table class="admin-table">
+            <div class="admin-table-scroll recent-orders-scroll" role="region" aria-labelledby="recent-orders-title" tabindex="0">
+            <table class="admin-table recent-orders-table">
+                <colgroup>
+                    <col class="recent-order-id">
+                    <col class="recent-order-customer">
+                    <col class="recent-order-date">
+                    <col>
+                    <col class="recent-order-total">
+                    <col class="recent-order-status">
+                    <col class="recent-order-actions">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th>Mã Đơn</th>
-                        <th>Khách Hàng</th>
-                        <th>Ngày Đặt</th>
-                        <th>Địa Chỉ</th>
-                        <th>Tổng Tiền</th>
-                        <th>Trạng Thái</th>
-                        <th>Thao Tác</th>
+                        <th scope="col">Mã đơn</th>
+                        <th scope="col">Khách hàng</th>
+                        <th scope="col">Ngày đặt</th>
+                        <th scope="col">Địa chỉ</th>
+                        <th scope="col" class="recent-order-total">Tổng tiền</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -208,16 +212,20 @@
                             } else { st = "Không xác định"; }
                     %>
                     <tr>
-                        <td><strong>#<%=o.getId()%></strong></td>
+                        <td class="recent-order-id"><strong>#<%=o.getId()%></strong></td>
                         <td>
                             <div style="font-weight: 500;"><%=Html.escape(o.getUserName())%></div>
                             <small style="color: #888;"><%=Html.escape(o.getPhoneNumber())%></small>
                         </td>
-                        <td><%=o.getCreatedAt()%></td>
-                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <td class="recent-order-date">
+                            <% if (o.getCreatedAt() != null) { %>
+                            <time datetime="<%=o.getCreatedAt()%>"><%=orderDate.format(o.getCreatedAt().toLocalDate())%></time>
+                            <% } else { %>—<% } %>
+                        </td>
+                        <td class="recent-order-address">
                             <%=Html.escape(o.getAddress())%>
                         </td>
-                        <td class="money"><%=df.format(o.getTotalMoney())%></td>
+                        <td class="recent-order-total"><%=df.format(o.getTotalMoney())%></td>
                         <td><span class="badge <%=badgeClass%>"><%=Html.escape(st)%></span></td>
                         <td>
                             <div class="action-group">
@@ -245,7 +253,8 @@
                     <% } %>
                 </tbody>
             </table>
-        </div>
+            </div>
+        </section>
     </main>
 
 <script>

@@ -22,7 +22,6 @@
 
 .im-banner h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
 .im-banner p { margin: 0; color: #666; font-size: 14px; }
-.im-banner img { width: 60px; height: 60px; border-radius: 5px; object-fit: cover; }
 
 .form-group { margin-bottom: 20px; }
 
@@ -49,6 +48,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+}
+
+@media (max-width: 620px) {
+    .import-wrapper { padding: 16px; }
+    .import-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .im-banner { gap: 12px; overflow-wrap: anywhere; }
 }
 
 /* Size selector (Radio → Chip) */

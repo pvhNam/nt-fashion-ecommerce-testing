@@ -5,6 +5,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chi Tiết Kho Hàng | Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -37,7 +38,12 @@
     </div>
 
     <div class="variant-header">
-        <img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'" alt="Product Image">
+        <span class="admin-product-thumb" role="img" aria-label="Ảnh sản phẩm">
+            <i class="fa-regular fa-image" aria-hidden="true"></i>
+            <% if (p.getImage() != null && !p.getImage().isBlank()) { %>
+            <img src="<%=Html.escape(p.getImage())%>" alt="" onerror="this.hidden = true">
+            <% } %>
+        </span>
         <div class="v-info">
             <h2><%=Html.escape(p.getPdescription())%></h2>
             <p><strong>Mã SP:</strong> #<%=p.getPid()%></p>

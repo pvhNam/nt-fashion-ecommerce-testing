@@ -1,17 +1,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Order, util.Html"%>
 <%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.DecimalFormatSymbols, java.time.format.DateTimeFormatter, java.util.Locale"%>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quản Lý Đơn Hàng | Admin</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/admin/Admin.css">
-<link rel="stylesheet" href="CSS/admin/AdminOrder.css">
+<link rel="stylesheet" href="CSS/admin/AdminOrder.css?v=20261125.2">
 </head>
 <body>
 
@@ -22,6 +24,10 @@
     <main class="main-content">
         <%
             String filterParam = (String) request.getAttribute("filter");
+            List<Order> list = (List<Order>) request.getAttribute("listOrders");
+            DecimalFormat money = new DecimalFormat("#,##0 '₫'",
+                    DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN")));
+            DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/uuuu");
         %>
         <div class="content-header">
             <h1 class="page-title">Quản Lý Đơn Hàng</h1>
@@ -70,7 +76,7 @@
             <span class="filter-tag" style="border-color: <%=filterColor%>; color: <%=filterColor%>;">
                 <i class="fa-solid fa-filter"></i>
                 Lọc: <strong><%=filterName%></strong>
-                &nbsp;|&nbsp; <%=((java.util.List)request.getAttribute("listOrders")).size()%> don
+                · <%=list == null ? 0 : list.size()%> đơn
             </span>
             <a href="admin-orders" class="btn-clear-filter" data-admin-ajax-link>
                 <i class="fa-solid fa-xmark"></i> Xem tất cả
@@ -79,23 +85,32 @@
         <% } %>
 
         <div class="card-box">
-            <table class="admin-table">
+            <div class="admin-table-scroll order-table-scroll" role="region" aria-label="Danh sách đơn hàng" tabindex="0">
+            <table class="admin-table order-table">
+                <colgroup>
+                    <col class="order-col-id">
+                    <col class="order-col-customer">
+                    <col class="order-col-date">
+                    <col>
+                    <col class="order-col-total">
+                    <col class="order-col-payment">
+                    <col class="order-col-status">
+                    <col class="order-col-actions">
+                </colgroup>
                 <thead>
                     <tr>
-						<th>Mã Đơn</th>
-						<th>Khách Hàng</th>
-						<th>Ngày Đặt</th>
-						<th>Địa Chỉ</th>
-						<th>Tổng Tiền</th>
-						<th>Trạng Thái</th>
-						<th>Hành Động</th>
+                        <th scope="col">Mã đơn</th>
+                        <th scope="col">Khách hàng</th>
+                        <th scope="col">Ngày đặt</th>
+                        <th scope="col">Địa chỉ</th>
+                        <th scope="col" class="order-total">Tổng tiền</th>
+                        <th scope="col">Thanh toán</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <%
-                    List<Order> list = (List<Order>) request.getAttribute("listOrders");
-                    DecimalFormat df = new DecimalFormat("#,### VND");
-
                     if (list != null && !list.isEmpty()) {
                         for (Order order : list) {
                     %>
@@ -103,23 +118,29 @@
                         <td><strong>#<%=order.getId()%></strong></td>
 
                         <td>
-                            <div style="font-weight: 500;"><%=Html.escape(order.getUserName())%></div>
-                            <small style="color: #888;"><%=Html.escape(order.getPhoneNumber())%></small>
+                            <div class="order-customer"><%=Html.escape(order.getUserName())%></div>
+                            <small class="order-phone"><%=Html.escape(order.getPhoneNumber())%></small>
                         </td>
 
-                        <td><%=order.getCreatedAt()%></td>
-
-                        <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%=Html.escape(order.getAddress())%>">
-                            <%=Html.escape(order.getAddress())%>
+                        <td class="order-date">
+                            <% if (order.getCreatedAt() != null) { %>
+                            <time datetime="<%=order.getCreatedAt()%>"><%=date.format(order.getCreatedAt().toLocalDate())%></time>
+                            <% } else { %>—<% } %>
                         </td>
 
-                        <td class="money"><%=df.format(order.getTotalMoney())%></td>
-                        <td><%=Html.escape(order.getPaymentMethod())%></td>
+                        <td class="order-address">
+                            <span title="<%=Html.escape(order.getAddress())%>"><%=Html.escape(order.getAddress())%></span>
+                        </td>
+
+                        <td class="order-total"><%=money.format(order.getTotalMoney())%></td>
+                        <td><%=order.getPaymentMethod() == null || order.getPaymentMethod().isBlank()
+                                ? "—" : Html.escape(order.getPaymentMethod())%></td>
                         <td><span class="badge <%=order.getAdminBadgeClass()%>"><%=order.getDisplayStatus()%></span></td>
 
                         <td>
                             <div class="action-group">
-                                <a href="order-detail?id=<%=order.getId()%>" class="btn-action btn-view" title="Xem chi tiet">
+                                <a href="order-detail?id=<%=order.getId()%>" class="btn-action btn-view"
+                                   aria-label="Xem chi tiết đơn #<%=order.getId()%>" title="Xem chi tiết">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
 
@@ -128,7 +149,8 @@
                                     <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="ship">
-                                    <button type="submit" class="btn-action btn-ship" title="Chuyen sang dang giao hang">
+                                    <button type="submit" class="btn-action btn-ship"
+                                            aria-label="Chuyển đơn #<%=order.getId()%> sang đang giao" title="Chuyển sang đang giao">
                                         <i class="fa-solid fa-truck"></i>
                                     </button>
                                 </form>
@@ -139,8 +161,9 @@
                                     <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="cancel">
-                                    <button type="submit" class="btn-action btn-cancel" title="Huy don hang"
-                                            onclick="return confirm('Ban co chac chan muon huy don hang nay?')">
+                                    <button type="submit" class="btn-action btn-cancel"
+                                            aria-label="Hủy đơn #<%=order.getId()%>" title="Hủy đơn hàng"
+                                            onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </form>
@@ -151,7 +174,8 @@
                                     <input type="hidden" name="csrfToken" value="${csrfToken}">
                                     <input type="hidden" name="id" value="<%=order.getId()%>">
                                     <input type="hidden" name="action" value="success">
-                                    <button type="submit" class="btn-action btn-success" title="Xac nhan giao thanh cong">
+                                    <button type="submit" class="btn-action btn-success"
+                                            aria-label="Xác nhận giao thành công đơn #<%=order.getId()%>" title="Xác nhận giao thành công">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
                                 </form>
@@ -166,12 +190,13 @@
                     <tr>
                         <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
                             <i class="fa-solid fa-box-open" style="font-size: 40px; margin-bottom: 10px; display: block;"></i>
-                            Chưa có đơn hàng nào trong hệ thống.
+                            <%=filterName == null ? "Chưa có đơn hàng nào trong hệ thống." : "Không có đơn hàng phù hợp với bộ lọc."%>
                         </td>
                     </tr>
                     <% } %>
                 </tbody>
             </table>
+            </div>
         </div>
     </main>
 </body>

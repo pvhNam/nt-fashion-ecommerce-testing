@@ -9,7 +9,7 @@
 /* --- VOUCHER GRID --- */
 .voucher-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
     gap: 22px;
 }
 
@@ -35,6 +35,8 @@
 .vc-top {
     padding: 20px 22px;
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: space-between;
     align-items: center;
     color: white;
@@ -42,6 +44,7 @@
 
 .vc-code {
     display: flex;
+    min-width: 0;
     align-items: center;
     gap: 10px;
     font-size: 18px;
@@ -49,7 +52,8 @@
     letter-spacing: 1.5px;
     text-transform: uppercase;
 }
-.vc-code i { font-size: 16px; opacity: 0.8; }
+.vc-code i { font-size: 16px; opacity: 0.8; flex-shrink: 0; }
+.vc-code span { overflow-wrap: anywhere; }
 
 .vc-discount {
     font-size: 26px;
@@ -102,10 +106,12 @@
     margin-top: 1px;
 }
 .vc-info-row strong { color: #333; }
+.vc-info-row span { min-width: 0; overflow-wrap: anywhere; }
 
 /* --- ACTIONS --- */
 .vc-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-top: 14px;
     padding-top: 14px;
@@ -113,7 +119,9 @@
 }
 
 .vc-btn {
-    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -125,6 +133,9 @@
     text-decoration: none;
     transition: all 0.2s;
 }
+
+.vc-actions form { margin: 0; }
+button.vc-btn { border: 0; cursor: pointer; font-family: inherit; }
 
 .vc-edit {
     background: #e8f0fe;

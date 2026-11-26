@@ -14,7 +14,6 @@
     --stock-ink: #18212f;
     --stock-muted: #687386;
     --stock-line: #e5e9f0;
-    max-width: calc(100% - var(--sidebar-width));
 }
 
 .stock-page-header {
@@ -678,7 +677,7 @@
 }
 
 .meta-grid {
-    grid-template-columns: 180px minmax(220px, 1fr) minmax(260px, 1.3fr);
+    grid-template-columns: minmax(0, 180px) minmax(0, 1fr) minmax(0, 1.3fr);
 }
 
 .items-heading {
@@ -755,6 +754,7 @@
 }
 
 .product-line {
+    container-type: inline-size;
     overflow: hidden;
     border: 1px solid #dfe4eb;
     border-radius: 10px;
@@ -797,7 +797,7 @@
 
 .line-fields {
     display: grid;
-    grid-template-columns: minmax(220px, 2fr) minmax(125px, 1fr) minmax(150px, 1.15fr) 105px 145px;
+    grid-template-columns: minmax(0, 1fr);
     align-items: end;
     gap: 12px;
     padding: 15px;
@@ -813,9 +813,49 @@
 
 .line-fields .field input,
 .line-fields .field select {
-    min-height: 41px;
+    min-height: 42px;
     padding: 9px 10px;
     font-size: 12px;
+}
+
+.line-fields .input-with-unit {
+    display: flex;
+    align-items: center;
+    border: 1px solid #cfd6e1;
+    border-radius: 8px;
+}
+
+.line-fields .input-with-unit:focus-within {
+    border-color: var(--stock-green);
+    box-shadow: 0 0 0 3px rgba(18, 128, 92, .12);
+}
+
+.line-fields .input-with-unit input {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    border: 0;
+    box-shadow: none;
+}
+
+.line-fields .input-with-unit em {
+    position: static;
+    transform: none;
+    padding-inline: 9px;
+    border-inline-start: 1px solid var(--stock-line);
+}
+
+@container (min-width: 28rem) {
+    .line-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .line-fields .product-field { grid-column: 1 / -1; }
+}
+
+@container (min-width: 52rem) {
+    .line-fields {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.25fr)
+            minmax(0, .95fr) minmax(0, 1.3fr);
+    }
+    .line-fields .product-field { grid-column: auto; }
 }
 
 .line-preview {
@@ -832,6 +872,7 @@
 .variant-preview-tags {
     display: flex;
     flex: 1;
+    min-width: 0;
     flex-wrap: wrap;
     gap: 6px;
 }
@@ -843,6 +884,7 @@
     color: #286148;
     font-size: 10px;
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .variant-preview-tags .more-tag {
@@ -889,16 +931,6 @@
 
 .export-receipt:hover {
     background: #d8f0e2;
-}
-
-@media (max-width: 1450px) {
-    .line-fields {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .line-fields .product-field {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 1180px) {
@@ -973,12 +1005,7 @@
         grid-template-columns: 1fr;
     }
 
-    .meta-grid,
-    .line-fields {
-        grid-template-columns: 1fr;
-    }
-
-    .line-fields .product-field,
+    .meta-grid { grid-template-columns: minmax(0, 1fr); }
     .meta-grid .note-field {
         grid-column: auto;
     }

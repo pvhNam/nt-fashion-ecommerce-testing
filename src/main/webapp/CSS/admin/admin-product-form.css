@@ -95,3 +95,9 @@
 }
 
 .btn-submit:hover { background: #2e59d9; }
+
+@media (max-width: 620px) {
+    .form-wrapper { padding: 16px; }
+    .form-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .extra-img-row input { min-width: 0; }
+}

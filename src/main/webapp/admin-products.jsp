@@ -1,17 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Product, util.Html"%>
-<%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.DecimalFormat, java.text.DecimalFormatSymbols, java.util.Locale"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quản Lý Sản Phẩm | Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="CSS/admin/Admin.css">
-    <link rel="stylesheet" href="CSS/admin/AdminProduct.css">
+    <link rel="stylesheet" href="CSS/admin/AdminProduct.css?v=20261126">
 </head>
 <body>
 
@@ -19,7 +20,7 @@
     <jsp:param name="pageName" value="products" />
 </jsp:include>
 
-<main class="main-content">
+<main class="main-content products-page">
     <div class="content-header">
         <h1 class="page-title">Quản Lý Sản Phẩm</h1>
         <div class="admin-header-tools">
@@ -29,11 +30,11 @@
                        placeholder="Tìm tên hoặc mã sản phẩm..." aria-label="Tìm sản phẩm" data-admin-live-search>
                 <button type="submit" title="Tìm kiếm"><i class="fa-solid fa-arrow-right"></i></button>
             </form>
-            <a href="admin-stock-import" class="btn-add-new" style="text-decoration: none; background: #12805c; color: white; padding: 10px 15px; border-radius: 5px; font-weight: 600;">
-                <i class="fa-solid fa-truck-ramp-box" style="margin-right: 8px;"></i> Đặt hàng nhập kho
+            <a href="admin-stock-import" class="btn-add-new product-header-import">
+                <i class="fa-solid fa-truck-ramp-box" aria-hidden="true"></i> Đặt hàng nhập kho
             </a>
-            <a href="admin-products?type=add" class="btn-add-new" style="text-decoration: none; background: #28a745; color: white; padding: 10px 15px; border-radius: 5px; font-weight: 600;">
-                <i class="fa-solid fa-plus" style="margin-right: 8px;"></i> Thêm sản phẩm mới
+            <a href="admin-products?type=add" class="btn-add-new">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm sản phẩm mới
             </a>
         </div>
     </div>
@@ -53,71 +54,78 @@
         else if(msg.contains("error")) { alertClass = "alert-danger"; text = "Có lỗi xảy ra!"; }
         else if(msg.equals("imported")) text = "Đã nhập hàng vào kho thành công!";
     %>
-    <div class="alert <%=alertClass%>" style="padding: 10px; margin-bottom: 15px; background: #d4edda; color: #155724; border-radius: 5px; border-left: 4px solid #28a745;">
-        <i class="fa-solid fa-circle-check"></i> <%= text %>
+    <div class="alert <%=alertClass%>" role="<%="alert-danger".equals(alertClass) ? "alert" : "status"%>">
+        <i class="fa-solid <%="alert-danger".equals(alertClass) ? "fa-circle-exclamation" : "fa-circle-check"%>" aria-hidden="true"></i> <%= text %>
     </div>
     <% } %>
 
     <div class="card-box">
-        <table class="admin-table">
+        <div class="admin-table-scroll product-table-scroll" role="region" aria-label="Danh sách sản phẩm" tabindex="0">
+        <table class="admin-table product-table">
             <thead>
             <tr>
-                <th style="width: 50px;">ID</th>
-                <th style="width: 80px;">Hình ảnh</th>
-                <th>Tên Sản Phẩm</th>
-                <th>Giá Bán</th>
-                <th>Tồn Kho</th>
-                <th>Hành Động</th>
+                <th scope="col" class="product-col-id">Mã SP</th>
+                <th scope="col" class="product-col-image">Hình ảnh</th>
+                <th scope="col">Tên sản phẩm</th>
+                <th scope="col" class="product-col-price">Giá bán</th>
+                <th scope="col" class="product-col-stock">Tồn kho</th>
+                <th scope="col" class="product-col-actions">Thao tác</th>
             </tr>
             </thead>
             <tbody>
             <%
                 List<Product> list = (List<Product>) request.getAttribute("listP");
-                DecimalFormat df = new DecimalFormat("#,### VNĐ");
+                DecimalFormat df = new DecimalFormat("#,##0 '₫'",
+                        DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN")));
 
                 if (list != null && !list.isEmpty()) {
                     for (Product p : list) {
             %>
             <tr>
                 <td><strong>#<%=p.getPid()%></strong></td>
-                <td><img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'" class="product-img" alt="Ảnh SP" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #eee;"></td>
+                <td>
+                    <span class="admin-product-thumb" role="img" aria-label="Ảnh sản phẩm">
+                        <i class="fa-regular fa-image" aria-hidden="true"></i>
+                        <% if (p.getImage() != null && !p.getImage().isBlank()) { %>
+                        <img src="<%=Html.escape(p.getImage())%>" alt="" onerror="this.hidden = true">
+                        <% } %>
+                    </span>
+                </td>
 
-                <td style="font-weight: 500;">
-                    <!-- LINK CHUYỂN SANG TRANG CHI TIẾT BIẾN THỂ -->
+                <td>
                     <a href="admin-variants?pid=<%=p.getPid()%>"
-                       style="color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;"
-                       onmouseover="this.style.color='#2e59d9'" onmouseout="this.style.color='var(--primary)'" title="Xem chi tiết kho theo màu sắc, size">
+                       class="product-name" title="Xem chi tiết kho theo màu và kích cỡ">
                         <%=Html.escape(p.getPdescription())%>
-                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 13px; color: #17a2b8;"></i>
+                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                     </a>
                 </td>
 
-                <td class="price-text"><%=df.format(p.getPrice())%></td>
-                <td>
-                    <span class="stock-badge" style="background: #e2e6ea; color: #333; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 13px;">
+                <td class="product-col-price"><%=df.format(p.getPrice())%></td>
+                <td class="product-col-stock">
+                    <span class="stock-badge">
                         <%=p.getStockquantyti()%>
                     </span>
                 </td>
                 <td>
                     <div class="action-group">
-                        <!-- NÚT CHUYỂN SANG TRANG NHẬP KHO -->
-                        <a href="admin-stock-import?pid=<%=p.getPid()%>" class="btn-icon btn-import" style="background:#1cc88a; color:white; padding:6px 10px; border-radius:4px;" title="Nhập thêm hàng">
-                            <i class="fa-solid fa-box-open"></i>
+                        <a href="admin-stock-import?pid=<%=p.getPid()%>" class="btn-icon btn-import"
+                           title="Nhập thêm hàng" aria-label="Nhập thêm hàng cho sản phẩm #<%=p.getPid()%>">
+                            <i class="fa-solid fa-box-open" aria-hidden="true"></i>
                         </a>
 
-                        <!-- NÚT CHUYỂN SANG TRANG SỬA SẢN PHẨM -->
-                        <a href="admin-products?type=edit&pid=<%=p.getPid()%>" class="btn-icon btn-edit" style="background:#f6c23e; color:white; padding:6px 10px; border-radius:4px;" title="Sửa thông tin">
-                            <i class="fa-solid fa-pen"></i>
+                        <a href="admin-products?type=edit&pid=<%=p.getPid()%>" class="btn-icon btn-edit"
+                           title="Sửa thông tin" aria-label="Sửa thông tin sản phẩm #<%=p.getPid()%>">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </a>
 
-                        <form action="admin-products" method="post" style="display:inline;margin:0"
+                        <form action="admin-products" method="post"
                               onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="pid" value="<%=p.getPid()%>">
-                            <button type="submit" class="btn-icon btn-delete" title="Xóa"
-                                    style="background:#e74a3b; color:white; padding:6px 10px; border-radius:4px; border:none; cursor:pointer;">
-                                <i class="fa-solid fa-trash"></i>
+                            <button type="submit" class="btn-icon btn-delete" title="Xóa sản phẩm"
+                                    aria-label="Xóa sản phẩm #<%=p.getPid()%>">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
                             </button>
                         </form>
                     </div>
@@ -128,6 +136,7 @@
             <% } %>
             </tbody>
         </table>
+        </div>
     </div>
 </main>
 </body>

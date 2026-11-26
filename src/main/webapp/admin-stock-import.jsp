@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${ctx}/CSS/admin/Admin.css">
-    <link rel="stylesheet" href="${ctx}/CSS/admin/admin-stock-import.css?v=20260826.2">
+    <link rel="stylesheet" href="${ctx}/CSS/admin/admin-stock-import.css?v=20261126">
 </head>
 <body>
 <jsp:include page="sidebarAdmin.jsp">
@@ -145,7 +145,7 @@
                                         <input type="number" name="quantity" class="line-quantity" min="1" max="1000000" step="1" value="1" required>
                                     </label>
                                     <label class="field cost-field">
-                                        <span>Giá nhập/1 SP <b>*</b></span>
+                                        <span>Giá nhập / SP <b>*</b></span>
                                         <div class="input-with-unit">
                                             <input type="number" name="unitCost" class="line-cost" min="1" max="999999999" step="1" placeholder="0" required>
                                             <em>VNĐ</em>
@@ -218,7 +218,7 @@
                             <input type="number" name="quantity" class="line-quantity" min="1" max="1000000" step="1" value="1" required>
                         </label>
                         <label class="field cost-field">
-                            <span>Giá nhập/1 SP <b>*</b></span>
+                                <span>Giá nhập / SP <b>*</b></span>
                             <div class="input-with-unit">
                                 <input type="number" name="unitCost" class="line-cost" min="1" max="999999999" step="1" placeholder="0" required>
                                 <em>VNĐ</em>
