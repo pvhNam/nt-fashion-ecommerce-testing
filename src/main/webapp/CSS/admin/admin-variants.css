@@ -10,16 +10,14 @@
     margin-bottom: 25px;
 }
 
-.variant-header img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #eee;
-}
-
 .v-info h2 { margin: 0 0 10px 0; color: var(--dark); font-size: 22px; }
 .v-info p { margin: 5px 0; color: #555; font-size: 15px; }
+
+@media (max-width: 620px) {
+    .variant-header { padding: 16px; gap: 12px; flex-wrap: wrap; }
+    .variant-header .admin-product-thumb { --thumb-size: 76px; }
+    .v-info { min-width: 0; overflow-wrap: anywhere; }
+}
 
 .form-inline {
     margin: 0;

@@ -4,6 +4,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Phiếu Nhập Kho | Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -34,7 +35,12 @@
                 <h3><%=Html.escape(p.getPdescription())%></h3>
                 <p>Mã SP: <strong>#<%=p.getPid()%></strong> | Đang tồn kho: <strong style="color:var(--danger);"><%=p.getStockquantyti()%> cái</strong></p>
             </div>
-            <img src="<%=Html.escape(p.getImage())%>" onerror="this.src='img/no-image.png'">
+            <span class="admin-product-thumb" role="img" aria-label="Ảnh sản phẩm">
+                <i class="fa-regular fa-image" aria-hidden="true"></i>
+                <% if (p.getImage() != null && !p.getImage().isBlank()) { %>
+                <img src="<%=Html.escape(p.getImage())%>" alt="" onerror="this.hidden = true">
+                <% } %>
+            </span>
         </div>
 
         <form action="admin-products" method="post">

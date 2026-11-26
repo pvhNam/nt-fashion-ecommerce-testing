@@ -1,2 +1,93 @@
-/* AdminProduct.css — product-specific styles only
-   (layout, table, badge, button shared styles are in Admin.css) */
+.products-page .admin-header-tools .btn-add-new {
+    box-sizing: border-box;
+    min-height: 42px;
+    padding: 8px 14px;
+    border: 1px solid #12805c;
+    border-radius: 9px;
+    background: #12805c;
+    color: #fff;
+    line-height: 1.25;
+}
+
+.products-page .admin-header-tools .product-header-import {
+    background: #fff;
+    color: #0d6246;
+}
+
+.products-page .admin-header-tools .btn-add-new:hover {
+    background: #0b6247;
+    color: #fff;
+    transform: none;
+}
+
+.product-table-scroll { overflow-x: auto; }
+
+.product-table-scroll .product-table {
+    min-width: 40rem;
+    margin-top: 0;
+    table-layout: fixed;
+}
+
+.product-table thead th,
+.product-table tbody td { padding-inline: 10px; }
+
+.product-table .product-col-id { width: 4.5rem; }
+.product-table .product-col-image { width: 5.25rem; }
+.product-table .product-col-price { width: 8rem; text-align: right; }
+.product-table .product-col-stock { width: 6rem; text-align: center; }
+.product-table .product-col-actions { width: 9rem; }
+.product-table td.product-col-price {
+    color: #334155;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.product-name {
+    color: #3456b7;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.product-name:hover { text-decoration: underline; }
+.product-name i { margin-inline-start: 4px; font-size: 11px; }
+
+.product-table .action-group { align-items: center; }
+.product-table .action-group form { display: flex; margin: 0; }
+
+.product-table .btn-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--product-action-border);
+    border-radius: 7px;
+    background: var(--product-action-bg);
+    color: var(--product-action-color);
+    line-height: 1;
+}
+
+.product-table .btn-icon:hover { border-color: currentColor; transform: none; box-shadow: none; }
+.product-table .btn-icon:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.product-table .btn-import {
+    --product-action-border: #b9dfce;
+    --product-action-bg: #effaf5;
+    --product-action-color: #106747;
+}
+
+.product-table .btn-edit {
+    --product-action-border: #c5d4f9;
+    --product-action-bg: #eef3ff;
+    --product-action-color: #294caa;
+}
+
+.product-table .btn-delete {
+    --product-action-border: #f2c5c3;
+    --product-action-bg: #fff2f1;
+    --product-action-color: #a33232;
+}

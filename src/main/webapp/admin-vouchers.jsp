@@ -1,15 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Voucher, util.Html"%>
-<%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.DecimalFormat, java.text.DecimalFormatSymbols, java.util.Locale"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quản lý Voucher | Fashion Store</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/admin/Admin.css">
-<link rel="stylesheet" href="CSS/admin/admin-vouchers.css">
+<link rel="stylesheet" href="CSS/admin/admin-vouchers.css?v=20261125">
 </head>
 <body>
     <jsp:include page="sidebarAdmin.jsp">
@@ -25,7 +26,7 @@
                 List<Voucher> listV = (List<Voucher>) request.getAttribute("listVouchers");
                 int total = (listV != null) ? listV.size() : 0;
                 %>
-                <p class="voucher-subtitle"><%= total %> voucher đang hoạt động</p>
+                <p class="voucher-subtitle"><%= total %> voucher</p>
             </div>
             <a href="admin-vouchers?action=add" class="btn-add-new">
                 <i class="fa-solid fa-plus"></i> Thêm Voucher
@@ -75,13 +76,15 @@
         <% } %>
 
         <%
-        DecimalFormat df = new DecimalFormat("#,### VNĐ");
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN"));
+        DecimalFormat df = new DecimalFormat("#,##0 '₫'", symbols);
+        DecimalFormat percent = new DecimalFormat("0.##'%'", symbols);
         if (listV != null && !listV.isEmpty()) {
         %>
         <div class="voucher-grid">
             <% for (Voucher v : listV) {
                 boolean isPercent = "PERCENT".equals(v.getDiscountType());
-                String discountLabel = isPercent ? (int)v.getDiscountAmount() + "%" : df.format(v.getDiscountAmount());
+                String discountLabel = isPercent ? percent.format(v.getDiscountAmount()) : df.format(v.getDiscountAmount());
                 String cardAccent = isPercent ? "accent-purple" : "accent-green";
             %>
             <div class="voucher-card <%=cardAccent%>">
@@ -110,7 +113,7 @@
                     </div>
                     <div class="vc-info-row">
                         <i class="fa-regular fa-calendar-xmark"></i>
-                        <span>Hết hạn: <strong><%=v.getExpiryDate()%></strong></span>
+                        <span>Hết hạn: <strong><%=v.getExpiryDate() == null ? "Không giới hạn" : v.getExpiryDate()%></strong></span>
                     </div>
                     <% if (v.getStartDate() != null) { %>
                     <div class="vc-info-row">
@@ -129,12 +132,12 @@
                         <a href="admin-vouchers?action=edit&id=<%=v.getId()%>" class="vc-btn vc-edit">
                             <i class="fa-solid fa-pen"></i> Sửa
                         </a>
-                        <form action="admin-vouchers" method="post" style="display:inline;margin:0"
+                        <form action="admin-vouchers" method="post"
                               onsubmit="return confirm('Xóa voucher <%=Html.js(v.getCode())%>?')">
                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<%=v.getId()%>">
-                            <button type="submit" class="vc-btn vc-delete" style="border:none;cursor:pointer;font:inherit">
+                            <button type="submit" class="vc-btn vc-delete">
                                 <i class="fa-solid fa-trash"></i> Xóa
                             </button>
                         </form>

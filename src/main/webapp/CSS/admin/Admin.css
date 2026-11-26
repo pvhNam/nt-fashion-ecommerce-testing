@@ -33,6 +33,8 @@ body {
 .main-content {
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
+    min-width: 0;
+    box-sizing: border-box;
     padding: 30px;
 }
 
@@ -40,6 +42,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px 20px;
+    flex-wrap: wrap;
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 2px solid #e3e6f0;
@@ -72,6 +76,22 @@ body {
     padding: 25px;
     overflow-x: auto;
     margin-bottom: 25px;
+}
+
+.admin-table-scroll:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+@media (max-width: 620px) {
+    .main-content { padding: 16px; }
+    .content-header { margin-bottom: 16px; }
+    .page-title { font-size: 21px; }
+    .card-box { padding: 12px; }
+    .content-header .admin-header-tools { justify-content: flex-start; }
+    .content-header .search-box { width: 100%; box-sizing: border-box; }
+    .admin-table tbody td,
+    .admin-table thead th { padding: 12px; }
 }
 
 /* --- TABLE --- */
@@ -205,6 +225,35 @@ body {
     border: 1px solid #eee;
 }
 
+.admin-product-thumb {
+    --thumb-size: 50px;
+    position: relative;
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    overflow: hidden;
+    vertical-align: middle;
+    border: 1px solid #e3e6f0;
+    border-radius: 6px;
+    color: #64748b;
+    background: #eef2f7;
+}
+
+.admin-product-thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    object-fit: cover;
+}
+
+.variant-header .admin-product-thumb { --thumb-size: 120px; }
+.im-banner .admin-product-thumb { --thumb-size: 60px; }
+
 /* --- STOCK BADGE --- */
 .stock-badge {
     background-color: #e3f2fd;
@@ -237,65 +286,6 @@ body {
     color: #7f1d1d;
     border-left: 5px solid var(--danger);
 }
-
-/* --- STATS CARDS (shared structure) --- */
-.stats-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.card-stat {
-    background: white;
-    padding: 22px;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border-left: 5px solid transparent;
-    overflow: hidden;
-}
-
-.card-stat:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
-}
-
-.stat-link { text-decoration: none; display: block; }
-.stat-link .card-stat { position: relative; overflow: hidden; }
-.stat-link .card-stat::after {
-    content: '\f0a9';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    position: absolute;
-    bottom: 10px;
-    right: 14px;
-    font-size: 11px;
-    color: #ccc;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 0.2s, transform 0.2s;
-}
-.stat-link:hover .card-stat::after { opacity: 1; transform: translateX(0); }
-
-.card-stat.blue   { border-left-color: var(--primary); }
-.card-stat.blue .stat-icon   { color: var(--primary);  background: #e8f0fe; }
-.card-stat.green  { border-left-color: var(--success); }
-.card-stat.green .stat-icon  { color: var(--success);  background: #e0fdf4; }
-.card-stat.orange { border-left-color: var(--warning); }
-.card-stat.orange .stat-icon { color: var(--warning);  background: #fff8e1; }
-.card-stat.red    { border-left-color: var(--danger); }
-.card-stat.red .stat-icon    { color: var(--danger);   background: #fce8e6; }
-.card-stat.teal   { border-left-color: #36b9cc; }
-.card-stat.teal .stat-icon   { color: #36b9cc;         background: #d8f4f8; }
-
-.stat-info h3 { font-size: 28px; font-weight: 800; margin: 0; color: #333; }
-.stat-info p { margin: 5px 0 0; color: #888; font-size: 12px; text-transform: uppercase; font-weight: 600; }
-.stat-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-
 
 /* =========================================================
    LỆNH GHI ĐÈ (OVERRIDE): XÓA SẠCH HOLOGRAM TRÊN TOÀN ADMIN

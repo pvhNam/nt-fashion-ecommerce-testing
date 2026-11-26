@@ -1,5 +1,61 @@
 /* AdminOrder.css — order management specific styles */
 
+.order-table-scroll {
+    overflow-x: auto;
+}
+
+.order-table-scroll .order-table {
+    min-width: 54rem;
+    margin-top: 0;
+    table-layout: fixed;
+}
+
+.order-table .order-col-id { width: 4.25rem; }
+.order-table .order-col-customer { width: 12%; }
+.order-table .order-col-date { width: 6.5rem; }
+.order-table .order-col-total { width: 7.25rem; }
+.order-table .order-col-payment { width: 5.5rem; }
+.order-table .order-col-status { width: 9.5rem; }
+.order-table .order-col-actions { width: 8.5rem; }
+
+.order-table thead th,
+.order-table tbody td {
+    padding-inline: 10px;
+    overflow-wrap: anywhere;
+}
+
+.order-table thead th,
+.order-table .badge {
+    white-space: normal;
+}
+
+.order-table .order-customer {
+    font-weight: 600;
+}
+
+.order-table .order-phone {
+    color: #64748b;
+}
+
+.order-table .order-date,
+.order-table .order-total {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.order-table .order-total {
+    text-align: right;
+}
+
+.order-table td.order-total {
+    font-weight: 700;
+    color: #334155;
+}
+
+.order-table .action-group {
+    flex-wrap: wrap;
+}
+
 .filter-bar {
     display: flex;
     align-items: center;
