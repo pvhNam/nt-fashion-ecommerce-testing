@@ -14,6 +14,14 @@
     String keyword = (String) request.getAttribute("keyword");
     String generatedAt = (String) request.getAttribute("generatedAt");
     String errorMessage = (String) request.getAttribute("errorMessage");
+    boolean daily = ReportPeriod.DAY.equals(period.getType());
+    String reportDate = daily ? period.getStartDate().toString() : "";
+    int maxReportYear = java.time.LocalDate.now().getYear() + 1;
+    String filterLabel = "Tất cả mặt hàng";
+    if ("sold".equals(filter)) filterLabel = "Đã bán trong kỳ";
+    else if ("unsold".equals(filter)) filterLabel = "Chưa bán trong kỳ";
+    else if ("inventory".equals(filter)) filterLabel = "Còn tồn kho";
+    else if ("low_stock".equals(filter)) filterLabel = "Sắp hết hàng";
     DecimalFormat money = new DecimalFormat("#,##0 đ");
     DecimalFormat number = new DecimalFormat("#,##0");
 %>
@@ -26,7 +34,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="CSS/admin/Admin.css">
-    <link rel="stylesheet" href="CSS/admin/admin-revenue-report.css">
+    <link rel="stylesheet" href="CSS/admin/admin-revenue-report.css?v=20261126.1">
 </head>
 <body class="revenue-report-page">
 <jsp:include page="sidebarAdmin.jsp">
@@ -39,10 +47,18 @@
             <a class="report-breadcrumb" href="admin"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
             <p class="report-eyebrow">Phân tích kinh doanh</p>
             <h1>Báo cáo doanh thu &amp; tồn kho</h1>
+            <p class="report-print-context">Kỳ báo cáo: <strong><%= period.getDisplayLabel() %></strong></p>
         </div>
-        <div class="report-generated">
-            <i class="fa-regular fa-clock"></i>
-            <span>Cập nhật<br><strong><%= generatedAt %></strong></span>
+        <div class="report-header-actions">
+            <div class="report-generated">
+                <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                <span>Cập nhật<br><strong><%= generatedAt %></strong></span>
+            </div>
+            <% if (errorMessage == null) { %>
+            <button type="button" class="report-print-button" onclick="if (!this.closest('main').hasAttribute('aria-busy')) window.print()">
+                <i class="fa-solid fa-print" aria-hidden="true"></i> In báo cáo
+            </button>
+            <% } %>
         </div>
     </header>
 
@@ -64,8 +80,12 @@
             <span class="period-result"><%= period.getDisplayLabel() %></span>
         </div>
 
-        <form action="admin-revenue-report" method="get" class="period-form" data-admin-ajax>
+        <form action="admin-revenue-report" method="get" class="period-form<%= daily ? " period-form--daily" : "" %>" data-admin-ajax>
             <div class="period-segments" role="radiogroup" aria-label="Loại kỳ báo cáo">
+                <label>
+                    <input type="radio" name="period" value="day" <%= daily ? "checked" : "" %> data-admin-auto-submit>
+                    <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> Theo ngày</span>
+                </label>
                 <label>
                     <input type="radio" name="period" value="month" <%= ReportPeriod.MONTH.equals(period.getType()) ? "checked" : "" %> data-admin-auto-submit>
                     <span><i class="fa-regular fa-calendar-days"></i> Theo tháng</span>
@@ -79,6 +99,14 @@
                     <span><i class="fa-regular fa-calendar-check"></i> Theo năm</span>
                 </label>
             </div>
+            <% if (daily) { %>
+            <input type="hidden" name="month" value="<%= period.getMonth() %>">
+            <input type="hidden" name="year" value="<%= period.getYear() %>">
+            <label class="report-field report-date-field">
+                <span>Ngày báo cáo</span>
+                <input type="date" name="date" value="<%= reportDate %>" min="2000-01-01" max="<%= maxReportYear %>-12-31" required>
+            </label>
+            <% } else { %>
             <label class="report-field">
                 <span>Tháng kết thúc</span>
                 <select name="month" data-admin-auto-submit>
@@ -89,8 +117,9 @@
             </label>
             <label class="report-field report-year-field">
                 <span>Năm</span>
-                <input type="number" name="year" min="2000" max="<%= java.time.LocalDate.now().getYear() + 1 %>" value="<%= period.getYear() %>" required data-admin-auto-submit>
+                <input type="number" name="year" min="2000" max="<%= maxReportYear %>" value="<%= period.getYear() %>" required data-admin-auto-submit>
             </label>
+            <% } %>
             <button type="submit" class="report-primary-button">
                 <i class="fa-solid fa-filter"></i> Xem báo cáo
             </button>
@@ -129,7 +158,8 @@
                 %>
                 <div class="revenue-bar-item">
                     <div class="bar-label">
-                        <span><%= topItem.getProductName() %></span>
+                        <% pageContext.setAttribute("topProductName", topItem.getProductName()); %>
+                        <span><c:out value="${topProductName}" /></span>
                         <strong><%= money.format(topItem.getRevenue()) %></strong>
                     </div>
                     <div class="bar-track"><span style="width:<%= Math.max(3, width) %>%"></span></div>
@@ -151,6 +181,7 @@
                 <input type="hidden" name="period" value="<%= period.getType() %>">
                 <input type="hidden" name="month" value="<%= period.getMonth() %>">
                 <input type="hidden" name="year" value="<%= period.getYear() %>">
+                <% if (daily) { %><input type="hidden" name="date" value="<%= reportDate %>"><% } %>
                 <label class="report-field">
                     <span>Nội dung cần xuất</span>
                     <select name="scope">
@@ -177,10 +208,18 @@
             <span class="result-count"><%= items == null ? 0 : items.size() %> kết quả</span>
         </div>
 
+        <p class="report-print-context report-detail-context">
+            Chi tiết: <strong><%= filterLabel %></strong>
+            <% if (keyword != null && !keyword.isEmpty()) { %>
+            · Từ khóa: <c:out value="${keyword}" />
+            <% } %>
+        </p>
+
         <form action="admin-revenue-report" method="get" class="report-search-form" data-admin-ajax>
             <input type="hidden" name="period" value="<%= period.getType() %>">
             <input type="hidden" name="month" value="<%= period.getMonth() %>">
             <input type="hidden" name="year" value="<%= period.getYear() %>">
+            <% if (daily) { %><input type="hidden" name="date" value="<%= reportDate %>"><% } %>
             <label class="report-search-field">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="search" name="q" value="<c:out value='${keyword}' />" placeholder="Tìm mã, tên hoặc danh mục..." data-admin-live-search>
@@ -197,7 +236,7 @@
             </label>
             <button type="submit" class="report-secondary-button">Lọc dữ liệu</button>
             <% if ((keyword != null && !keyword.isEmpty()) || !"all".equals(filter)) { %>
-            <a class="clear-filter-button" data-admin-ajax-link href="admin-revenue-report?period=<%= period.getType() %>&month=<%= period.getMonth() %>&year=<%= period.getYear() %>">Xóa lọc</a>
+            <a class="clear-filter-button" data-admin-ajax-link href="admin-revenue-report?period=<%= period.getType() %>&amp;month=<%= period.getMonth() %>&amp;year=<%= period.getYear() %><%= daily ? "&amp;date=" + reportDate : "" %>">Xóa lọc</a>
             <% } %>
         </form>
 
