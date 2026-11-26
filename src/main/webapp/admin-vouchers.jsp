@@ -73,6 +73,10 @@
         <div class="alert alert-danger" role="alert">
             Mã voucher đã tồn tại. Vui lòng chọn mã khác.
         </div>
+        <% } else if ("error_edit_id".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">ID voucher không hợp lệ.</div>
+        <% } else if ("error_edit_not_found".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">Không tìm thấy voucher cần sửa.</div>
         <% } else if ("error_save".equals(msg)) { %>
         <div class="alert alert-danger" role="alert">
             Không thể lưu voucher. Vui lòng thử lại.
