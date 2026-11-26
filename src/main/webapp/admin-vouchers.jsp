@@ -69,6 +69,14 @@
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             Vui lòng chọn loại giảm giá Tiền mặt hoặc Phần trăm.
         </div>
+        <% } else if ("error_duplicate_code".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            Mã voucher đã tồn tại. Vui lòng chọn mã khác.
+        </div>
+        <% } else if ("error_save".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">
+            Không thể lưu voucher. Vui lòng thử lại.
+        </div>
         <% } else if ("success".equals(msg) || "deleted".equals(msg)) { %>
         <div class="alert alert-success">
             <i class="fa-solid fa-circle-check"></i> Thao tác thành công!

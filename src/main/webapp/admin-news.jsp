@@ -27,6 +27,13 @@
             </a>
         </div>
 
+        <% String msg = request.getParameter("msg"); %>
+        <% if ("error_edit_id".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">Mã bài viết không hợp lệ.</div>
+        <% } else if ("error_edit_not_found".equals(msg)) { %>
+        <div class="alert alert-danger" role="alert">Không tìm thấy bài viết cần sửa.</div>
+        <% } %>
+
         <div class="card-box admin-table-scroll" role="region" aria-label="Danh sách bài viết" tabindex="0">
             <table class="admin-table">
                 <thead>

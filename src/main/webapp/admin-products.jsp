@@ -51,7 +51,20 @@
             alertClass = "alert-danger";
             text = "Không thể cập nhật sản phẩm. Thay đổi sản phẩm và ảnh phụ chưa được lưu.";
         }
+        else if(msg.equals("error_delete_referenced")) {
+            alertClass = "alert-danger";
+            text = "Không thể xóa vì sản phẩm đang được sử dụng, ví dụ trong giỏ hàng.";
+        }
+        else if(msg.equals("error_delete_not_found") || msg.equals("error_delete_id")) {
+            alertClass = "alert-danger";
+            text = "Không tìm thấy sản phẩm cần xóa.";
+        }
+        else if(msg.equals("error_delete")) {
+            alertClass = "alert-danger";
+            text = "Không thể xóa sản phẩm. Vui lòng thử lại.";
+        }
         else if(msg.contains("error")) { alertClass = "alert-danger"; text = "Có lỗi xảy ra!"; }
+        else if(msg.equals("deleted")) text = "Đã xóa sản phẩm.";
         else if(msg.equals("imported")) text = "Đã nhập hàng vào kho thành công!";
     %>
     <div class="alert <%=alertClass%>" role="<%="alert-danger".equals(alertClass) ? "alert" : "status"%>">
