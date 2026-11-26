@@ -297,15 +297,30 @@ public class ProductDAO {
         }
     }
 
-    // Xóa sản phẩm
-    public void deleteProduct(int pid) {
+    public enum DeleteResult {
+        DELETED, NOT_FOUND, REFERENCED, FAILED
+    }
+
+    // MySQL rejects a parent-row delete when a foreign key still references it.
+    private static final int MYSQL_ROW_IS_REFERENCED = 1451;
+
+    public DeleteResult deleteProduct(int pid) {
         String sql = "DELETE FROM product WHERE pid=?";
-        try {
-            Connection conn = DBConnect.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, pid);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+        try (Connection conn = DBConnect.getConnection()) {
+            if (conn == null) {
+                return DeleteResult.FAILED;
+            }
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, pid);
+                return ps.executeUpdate() > 0 ? DeleteResult.DELETED : DeleteResult.NOT_FOUND;
+            }
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_ROW_IS_REFERENCED) {
+                return DeleteResult.REFERENCED;
+            }
+            e.printStackTrace();
+            return DeleteResult.FAILED;
+        }
     }
 
     // Cập nhật số lượng của 1 biến thể cụ thể

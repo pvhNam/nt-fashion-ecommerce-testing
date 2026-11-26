@@ -78,13 +78,24 @@ public class AdminProductController extends HttpServlet {
                 response.sendRedirect("admin-products?msg=error_permission");
                 return;
             }
+            int pid;
             try {
-                int pid = Integer.parseInt(request.getParameter("pid"));
-                dao.deleteProduct(pid);
-                response.sendRedirect("admin-products?msg=deleted");
-            } catch (Exception e) {
-                response.sendRedirect("admin-products?msg=error");
+                pid = Integer.parseInt(request.getParameter("pid"));
+            } catch (NumberFormatException e) {
+                response.sendRedirect("admin-products?msg=error_delete_id");
+                return;
             }
+            if (pid <= 0) {
+                response.sendRedirect("admin-products?msg=error_delete_id");
+                return;
+            }
+            String message = switch (dao.deleteProduct(pid)) {
+                case DELETED -> "deleted";
+                case NOT_FOUND -> "error_delete_not_found";
+                case REFERENCED -> "error_delete_referenced";
+                case FAILED -> "error_delete";
+            };
+            response.sendRedirect("admin-products?msg=" + message);
             return;
         }
 
