@@ -48,22 +48,22 @@
 					<fmt:message key="shop.filter_price" />
 				</h3>
 				<ul class="filter-list">
-					<li><a href="about?price=all${fn:escapeXml(baseParams)}"
+					<li><a href="about?price=all${fn:escapeXml(priceParams)}"
 						class="${priceFilter == null || priceFilter == 'all' ? 'active' : ''}">
 							<i class="fa-solid fa-circle-check"></i> <fmt:message
 								key="shop.price_all" />
 					</a></li>
-					<li><a href="about?price=under500${fn:escapeXml(baseParams)}"
+					<li><a href="about?price=under500${fn:escapeXml(priceParams)}"
 						class="${priceFilter == 'under500' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_under500" />
 					</a></li>
-					<li><a href="about?price=500to1000${fn:escapeXml(baseParams)}"
+					<li><a href="about?price=500to1000${fn:escapeXml(priceParams)}"
 						class="${priceFilter == '500to1000' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_500_1000" />
 					</a></li>
-					<li><a href="about?price=above1000${fn:escapeXml(baseParams)}"
+					<li><a href="about?price=above1000${fn:escapeXml(priceParams)}"
 						class="${priceFilter == 'above1000' ? 'active' : ''}"> <i
 							class="fa-solid fa-tag"></i> <fmt:message
 								key="shop.price_above1000" />
@@ -76,10 +76,11 @@
 					<fmt:message key="shop.category" />
 				</h3>
 				<ul class="filter-list">
-					<li><a href="about?category=áo nam${fn:escapeXml(baseParams)}" class="${categoryFilter == null || categoryFilter == 'all' ? '' : (categoryFilter == 'áo nam' ? 'active' : '')}">Áo nam</a></li>
-					<li><a href="about?category=quần nam${fn:escapeXml(baseParams)}" class="${categoryFilter == 'quần nam' ? 'active' : ''}">Quần nam</a></li>
-					<li><a href="about?category=phụ kiện${fn:escapeXml(baseParams)}" class="${categoryFilter == 'phụ kiện' ? 'active' : ''}">Phụ kiện</a></li>
-					<li><a href="about?category=bộ sưu tập 2026${fn:escapeXml(baseParams)}" class="${categoryFilter == 'bộ sưu tập 2026' ? 'active' : ''}">Bộ sưu tập 2026</a></li>
+					<li><a href="about?category=all${fn:escapeXml(categoryParams)}" class="${categoryFilter == null || categoryFilter == 'all' ? 'active' : ''}"><fmt:message key="shop.price_all" /></a></li>
+					<li><a href="about?category=áo nam${fn:escapeXml(categoryParams)}" class="${categoryFilter == null || categoryFilter == 'all' ? '' : (categoryFilter == 'áo nam' ? 'active' : '')}">Áo nam</a></li>
+					<li><a href="about?category=quần nam${fn:escapeXml(categoryParams)}" class="${categoryFilter == 'quần nam' ? 'active' : ''}">Quần nam</a></li>
+					<li><a href="about?category=phụ kiện${fn:escapeXml(categoryParams)}" class="${categoryFilter == 'phụ kiện' ? 'active' : ''}">Phụ kiện</a></li>
+					<li><a href="about?category=bộ sưu tập 2026${fn:escapeXml(categoryParams)}" class="${categoryFilter == 'bộ sưu tập 2026' ? 'active' : ''}">Bộ sưu tập 2026</a></li>
 				</ul>
 			</div>
 		</aside>
@@ -94,6 +95,9 @@
 				<form action="about" method="get" class="sort-box">
 					<c:if test="${not empty priceFilter}">
 						<input type="hidden" name="price" value="<c:out value='${priceFilter}' />">
+					</c:if>
+					<c:if test="${not empty categoryFilter}">
+						<input type="hidden" name="category" value="<c:out value='${categoryFilter}' />">
 					</c:if>
 					<c:if test="${not empty txtSearch}">
 						<input type="hidden" name="txt" value="<c:out value='${txtSearch}' />">

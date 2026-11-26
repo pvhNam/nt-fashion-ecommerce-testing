@@ -43,6 +43,12 @@ public class AboutController extends HttpServlet {
 			allProducts = (List<Product>) attrList;
 		} else if (category != null && !"all".equals(category) && !category.trim().isEmpty()) {
 			allProducts = pdao.getProductsByCategory(category);
+			if (txtSearch != null && !txtSearch.trim().isEmpty()) {
+				// có cả danh mục và từ khóa: giữ sản phẩm khớp cả hai
+				java.util.Set<Integer> found = new java.util.HashSet<>();
+				for (Product p : pdao.searchProduct(txtSearch)) found.add(p.getPid());
+				allProducts.removeIf(p -> !found.contains(p.getPid()));
+			}
 		} else if (txtSearch != null && !txtSearch.trim().isEmpty()) {
 			allProducts = pdao.searchProduct(txtSearch);
 		} else {
@@ -103,6 +109,13 @@ public class AboutController extends HttpServlet {
 		if (priceFilter != null) pageParams += "&price=" + URLEncoder.encode(priceFilter, "UTF-8");
 		if (sortType != null) pageParams += "&sort=" + URLEncoder.encode(sortType, "UTF-8");
 		if (category != null) pageParams += "&category=" + URLEncoder.encode(category, "UTF-8");
+
+		// link mỗi nhóm lọc giữ các lựa chọn của nhóm khác
+		String sortPart = sortType != null && !sortType.isEmpty() ? "&sort=" + URLEncoder.encode(sortType, "UTF-8") : "";
+		String pricePart = priceFilter != null && !priceFilter.isEmpty() ? "&price=" + URLEncoder.encode(priceFilter, "UTF-8") : "";
+		String catPart = category != null && !category.isEmpty() ? "&category=" + URLEncoder.encode(category, "UTF-8") : "";
+		request.setAttribute("priceParams", baseParams + catPart + sortPart);
+		request.setAttribute("categoryParams", baseParams + pricePart + sortPart);
 
 		// Set attributes cho JSP
 		request.setAttribute("pageProducts", pageProducts);
