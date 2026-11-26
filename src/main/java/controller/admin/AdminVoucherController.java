@@ -119,11 +119,13 @@ public class AdminVoucherController extends HttpServlet {
         Voucher v = new Voucher(id, code, desc, amount, type, minOrder, expiry);
         v.setStartDate(start);
         v.setPublicVoucher(request.getParameter("isPublic") != null);
-        if ("insert".equals(action)) {
-            vDao.insertVoucher(v);
-        } else if ("update".equals(action)) {
-            vDao.updateVoucher(v);
-        }
-        response.sendRedirect("admin-vouchers?msg=success");
+        VoucherDAO.SaveResult result = "insert".equals(action)
+                ? vDao.insertVoucher(v) : vDao.updateVoucher(v);
+        String message = switch (result) {
+            case SAVED -> "success";
+            case DUPLICATE_CODE -> "error_duplicate_code";
+            case FAILED -> "error_save";
+        };
+        response.sendRedirect("admin-vouchers?msg=" + message);
     }
 }

@@ -3,11 +3,17 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import model.Voucher;
 
 public class VoucherDAO {
+    public enum SaveResult {
+        SAVED, DUPLICATE_CODE, FAILED
+    }
+
+    private static final int MYSQL_DUPLICATE_KEY = 1062;
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -190,47 +196,57 @@ public class VoucherDAO {
         return false;
     }
  // Thêm voucher
-    public boolean insertVoucher(Voucher v) {
+    public SaveResult insertVoucher(Voucher v) {
         String query = "INSERT INTO vouchers (code, description, discount_amount, discount_type, min_order, expiry_date, "
                 + "start_date, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            conn = DBConnect.getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, v.getCode());
-            ps.setString(2, v.getDescription());
-            ps.setDouble(3, v.getDiscountAmount());
-            ps.setString(4, v.getDiscountType());
-            ps.setDouble(5, v.getMinOrder());
-            ps.setDate(6, v.getExpiryDate());
-            ps.setDate(7, v.getStartDate());
-            ps.setBoolean(8, v.isPublicVoucher());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+        try (Connection connection = DBConnect.getConnection()) {
+            if (connection == null) {
+                return SaveResult.FAILED;
+            }
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                bindVoucher(statement, v);
+                return statement.executeUpdate() > 0 ? SaveResult.SAVED : SaveResult.FAILED;
+            }
+        } catch (SQLException e) {
+            return classifySaveError(e);
         }
-        return false;
     }
     // cập nhật voucher
-    public boolean updateVoucher(Voucher v) {
+    public SaveResult updateVoucher(Voucher v) {
         String query = "UPDATE vouchers SET code=?, description=?, discount_amount=?, discount_type=?, min_order=?, "
                 + "expiry_date=?, start_date=?, is_public=? WHERE id=?";
-        try {
-            conn = DBConnect.getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, v.getCode());
-            ps.setString(2, v.getDescription());
-            ps.setDouble(3, v.getDiscountAmount());
-            ps.setString(4, v.getDiscountType());
-            ps.setDouble(5, v.getMinOrder());
-            ps.setDate(6, v.getExpiryDate());
-            ps.setDate(7, v.getStartDate());
-            ps.setBoolean(8, v.isPublicVoucher());
-            ps.setInt(9, v.getId());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+        try (Connection connection = DBConnect.getConnection()) {
+            if (connection == null) {
+                return SaveResult.FAILED;
+            }
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                bindVoucher(statement, v);
+                statement.setInt(9, v.getId());
+                return statement.executeUpdate() > 0 ? SaveResult.SAVED : SaveResult.FAILED;
+            }
+        } catch (SQLException e) {
+            return classifySaveError(e);
         }
-        return false;
+    }
+
+    private void bindVoucher(PreparedStatement statement, Voucher v) throws SQLException {
+        statement.setString(1, v.getCode());
+        statement.setString(2, v.getDescription());
+        statement.setDouble(3, v.getDiscountAmount());
+        statement.setString(4, v.getDiscountType());
+        statement.setDouble(5, v.getMinOrder());
+        statement.setDate(6, v.getExpiryDate());
+        statement.setDate(7, v.getStartDate());
+        statement.setBoolean(8, v.isPublicVoucher());
+    }
+
+    private SaveResult classifySaveError(SQLException e) {
+        // Voucher writes leave the primary key unchanged. MySQL enforces uniqueness of code.
+        if (e.getErrorCode() == MYSQL_DUPLICATE_KEY) {
+            return SaveResult.DUPLICATE_CODE;
+        }
+        e.printStackTrace();
+        return SaveResult.FAILED;
     }
     // xóa voucher
     public boolean deleteVoucher(int id) {
