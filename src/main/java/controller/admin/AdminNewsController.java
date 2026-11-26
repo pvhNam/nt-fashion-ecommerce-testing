@@ -20,8 +20,22 @@ public class AdminNewsController extends HttpServlet {
         NewsDAO dao = new NewsDAO();
 
         if ("edit".equals(type)) {
-            int id = Integer.parseInt(request.getParameter("id"));
+            int id;
+            try {
+                id = Integer.parseInt(request.getParameter("id"));
+            } catch (NumberFormatException e) {
+                response.sendRedirect("admin-news?msg=error_edit_id");
+                return;
+            }
+            if (id <= 0) {
+                response.sendRedirect("admin-news?msg=error_edit_id");
+                return;
+            }
             News n = dao.getNewsById(id);
+            if (n == null) {
+                response.sendRedirect("admin-news?msg=error_edit_not_found");
+                return;
+            }
             request.setAttribute("n", n);
             request.getRequestDispatcher("/admin-edit-news.jsp").forward(request, response);
         } else {
