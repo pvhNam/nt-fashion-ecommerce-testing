@@ -1,5 +1,6 @@
 package dao;
 
+import model.Order;
 import model.Product;
 import model.ProductReview;
 
@@ -58,6 +59,27 @@ public class ProductReviewDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean hasPurchasedProduct(int userId, int productId) {
+        String sql = "SELECT 1 FROM orders o "
+                + "JOIN order_details od ON od.order_id = o.id "
+                + "WHERE o.user_id = ? AND od.product_id = ? "
+                + "AND (o.status = ? OR LOWER(o.status) IN ('success', 'completed')) "
+                + "LIMIT 1";
+
+        try (Connection connection = DBConnect.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, userId);
+            statement.setInt(2, productId);
+            statement.setString(3, Order.STATUS_SUCCESS);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean saveOrUpdateReview(int userId, int productId, int rating, String comment) {
