@@ -24,7 +24,7 @@
 <body class="<%=admin ? "workspace-admin" : "workspace-public"%>">
 <% if (admin) { %>
 <jsp:include page="/sidebarAdmin.jsp"><jsp:param name="pageName" value="contact" /></jsp:include>
-<% } else { %><jsp:include page="/header.jsp" /><% } %>
+<% } else { %><jsp:include page="/header.jsp"><jsp:param name="page" value="contact" /></jsp:include><% } %>
 <main class="<%=admin ? "main-content" : "workspace-main"%>">
     <header class="workspace-heading">
         <h1><%=admin ? "Hộp thư liên hệ" : "Liên hệ Nam Thành"%></h1>
@@ -46,6 +46,7 @@
                 <% for (ContactDAO.Thread item : threads) { %>
                 <li><a href="<%=route%>?id=<%=item.id()%>"<%=thread != null && item.id() == thread.id() ? " aria-current=\"page\"" : ""%>>
                     <strong><%=Html.escape(item.subject())%></strong>
+                    <span class="workspace-badge"><%=item.answered() ? "Đã phản hồi" : "Chờ cửa hàng phản hồi"%></span>
                     <small><%=admin ? Html.escape(item.customer()) + " · " : ""%><%=timestamp.format(item.updatedAt())%></small>
                 </a></li>
                 <% } %>

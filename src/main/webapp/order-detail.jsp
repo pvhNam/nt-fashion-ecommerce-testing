@@ -100,6 +100,9 @@
         <div class="total-row"><fmt:message key="order.total" />: <%=df.format(order.getTotalMoney())%></div>
 
         <div class="action-buttons">
+            <% if (Boolean.TRUE.equals(request.getAttribute("hasCustomerInvoice"))) { %>
+            <a href="order-invoice?id=<%=order.getId()%>" class="btn-back-link">Xem hóa đơn</a>
+            <% } %>
             <a href="<%= backLink %>" class="btn-back-link">
                 <i class="fa-solid fa-arrow-left"></i> <fmt:message key="order.back" />
             </a>

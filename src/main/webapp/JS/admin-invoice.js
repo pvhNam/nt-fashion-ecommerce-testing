@@ -2,9 +2,10 @@ const invoiceForm = document.getElementById('invoice-form');
 if (invoiceForm) {
     const kind = invoiceForm.elements.kind;
     const fields = ['buyer', 'tax', 'address'];
-    const personal = {buyer: invoiceForm.elements.buyer.value, address: invoiceForm.elements.address.value, tax: ''};
+    const personal = {buyer: invoiceForm.dataset.personalName, address: invoiceForm.dataset.personalAddress, tax: ''};
     const company = {buyer: '', address: '', tax: ''};
-    let details = personal;
+    let details = kind.value === 'company' ? company : personal;
+    for (const field of fields) details[field] = invoiceForm.elements[field].value;
 
     function renderInvoice() {
         const isCompany = kind.value === 'company';
@@ -27,6 +28,7 @@ if (invoiceForm) {
     });
     invoiceForm.addEventListener('input', renderInvoice);
     invoiceForm.addEventListener('submit', event => {
+        if (event.submitter?.value !== 'print') return;
         event.preventDefault();
         for (const field of fields) invoiceForm.elements[field].value = invoiceForm.elements[field].value.trim();
         if (invoiceForm.reportValidity()) {
@@ -35,5 +37,5 @@ if (invoiceForm) {
         }
     });
     renderInvoice();
-    invoiceForm.querySelector('button[type="submit"]').disabled = false;
+    invoiceForm.querySelector('button[value="print"]').disabled = false;
 }

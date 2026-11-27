@@ -71,6 +71,7 @@
 .invoice-table th { background: #f2f5fa; }
 .invoice-total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .invoice-total strong { font-size: 18px; }
+.invoice-customer-layout { max-width: 900px; margin-inline: auto; }
 
 @media (max-width: 1050px) {
     .workspace-columns, .invoice-layout { grid-template-columns: minmax(0, 1fr); }
@@ -78,8 +79,8 @@
 
 @media print {
     .invoice-page { display: block; page: sales-invoice; background: #fff; }
-    .invoice-page :is(.sidebar, .workspace-controls, #ym-navigation-progress) { display: none; }
-    .invoice-page .main-content { margin: 0; padding: 0; width: 100%; }
+    .invoice-page :is(.sidebar, .ym-header, .ym-footer, .workspace-controls, #ym-navigation-progress) { display: none; }
+    .invoice-page :is(.main-content, .workspace-main) { margin: 0; padding: 0; width: 100%; }
     .invoice-layout { display: block; }
     .invoice-paper { padding: 0; border: 0; box-shadow: none; }
     .invoice-table-wrap { overflow: visible; }

@@ -3,6 +3,8 @@ package controller.admin;
 import dao.CampaignDAO;
 import dao.CampaignDAO.Campaign;
 import dao.VoucherDAO;
+import model.User;
+import util.AdminAccess;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -47,7 +49,20 @@ public class CampaignController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!"/admin-campaigns".equals(request.getServletPath())) {
-            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            User user = AdminAccess.currentUser(request);
+            if (user == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+            try {
+                int id = optionalId(request, "campaignId");
+                String outcome = new CampaignDAO().claimVoucher(id, user.getUid());
+                response.sendRedirect(request.getContextPath() + "/campaigns?claim=" + outcome);
+            } catch (IllegalArgumentException error) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            } catch (SQLException error) {
+                throw new ServletException("Không lưu được voucher chiến dịch", error);
+            }
             return;
         }
         try {

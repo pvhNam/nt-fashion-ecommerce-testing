@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ContactDAO {
-    public record Thread(int id, String subject, String customer, LocalDateTime updatedAt) {}
+    public record Thread(int id, String subject, String customer, LocalDateTime updatedAt, boolean answered) {}
     public record Message(boolean fromAdmin, String body, LocalDateTime createdAt) {}
 
     public List<Thread> list(int ownerId, boolean admin) throws SQLException {
-        String sql = "SELECT t.id, t.subject, t.updated_at, u.fullname FROM contact_threads t "
+        String sql = "SELECT t.id, t.subject, t.updated_at, u.fullname, "
+                + "(SELECT m.from_admin FROM contact_messages m WHERE m.thread_id=t.id ORDER BY m.id DESC LIMIT 1) AS answered "
+                + "FROM contact_threads t "
                 + "JOIN users u ON u.uid = t.user_id " + (admin ? "" : "WHERE t.user_id = ? ")
                 + "ORDER BY t.updated_at DESC, t.id DESC";
         try (Connection connection = connect(); PreparedStatement query = connection.prepareStatement(sql)) {
@@ -18,7 +20,8 @@ public class ContactDAO {
             try (ResultSet result = query.executeQuery()) {
                 List<Thread> threads = new ArrayList<>();
                 while (result.next()) threads.add(new Thread(result.getInt("id"), result.getString("subject"),
-                        result.getString("fullname"), result.getObject("updated_at", LocalDateTime.class)));
+                        result.getString("fullname"), result.getObject("updated_at", LocalDateTime.class),
+                        result.getBoolean("answered")));
                 return threads;
             }
         }

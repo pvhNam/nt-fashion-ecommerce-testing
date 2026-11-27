@@ -4,7 +4,7 @@
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20260831.1">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20261126.1">
 
 <footer class="ym-footer">
     <div class="ym-footer-inner">

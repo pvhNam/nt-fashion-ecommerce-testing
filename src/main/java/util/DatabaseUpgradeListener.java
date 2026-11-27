@@ -61,22 +61,26 @@ public class DatabaseUpgradeListener implements ServletContextListener {
         }
         if (!tableExists(connection, "contact_threads") || !tableExists(connection, "contact_messages")
                 || !tableExists(connection, "promotion_campaigns")) {
-            installContactAndCampaigns(connection);
+            runPackagedMigration(connection, "008_contact_and_campaigns.sql");
             changes.add("các bảng Liên hệ và Chiến dịch còn thiếu");
+        }
+        if (!tableExists(connection, "order_invoices")) {
+            runPackagedMigration(connection, "009_customer_invoices.sql");
+            changes.add("bảng order_invoices");
         }
         return changes;
     }
 
-    private static void installContactAndCampaigns(Connection connection) throws SQLException {
+    private static void runPackagedMigration(Connection connection, String migration) throws SQLException {
         try (InputStream script = DatabaseUpgradeListener.class.getResourceAsStream(
-                "/db-upgrades/008_contact_and_campaigns.sql")) {
-            if (script == null) throw new SQLException("Không tìm thấy migration 008 trong bản build.");
+                "/db-upgrades/" + migration)) {
+            if (script == null) throw new SQLException("Không tìm thấy migration " + migration + " trong bản build.");
             String sql = new String(script.readAllBytes(), StandardCharsets.UTF_8);
             for (String statement : sql.split(";")) {
                 if (!statement.isBlank()) execute(connection, statement.strip());
             }
         } catch (IOException error) {
-            throw new SQLException("Không đọc được migration 008", error);
+            throw new SQLException("Không đọc được migration " + migration, error);
         }
     }
 

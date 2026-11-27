@@ -6,7 +6,7 @@
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20260831.1">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/modern-shell.css?v=20261126.1">
 <meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/user-pages.css?v=20260831.1">
@@ -28,6 +28,8 @@
 			<a href="${pageContext.request.contextPath}/collection" class="${param.page == 'collection' ? 'active' : ''}" data-prefetch data-site-navigation data-page="collection"><fmt:message key="menu.collection" /></a>
 			<a href="${pageContext.request.contextPath}/about" class="${param.page == 'about' ? 'active' : ''}" data-prefetch data-site-navigation data-page="about"><fmt:message key="menu.products" /></a>
 			<a href="${pageContext.request.contextPath}/news" class="${param.page == 'news' ? 'active' : ''}" data-prefetch data-site-navigation data-page="news"><fmt:message key="menu.news" /></a>
+			<a href="${pageContext.request.contextPath}/campaigns" class="${param.page == 'campaigns' ? 'active' : ''}" data-page="campaigns">Khuyến mãi</a>
+			<a href="${pageContext.request.contextPath}/contact" class="${param.page == 'contact' ? 'active' : ''}" data-page="contact">Liên hệ</a>
 
 			<div class="ym-mobile-tools">
 				<form action="${pageContext.request.contextPath}/search" method="get" class="ym-search" role="search">

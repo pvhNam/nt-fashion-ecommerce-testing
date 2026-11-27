@@ -23,10 +23,16 @@
 <body class="<%=admin ? "workspace-admin" : "workspace-public"%>">
 <% if (admin) { %>
 <jsp:include page="/sidebarAdmin.jsp"><jsp:param name="pageName" value="campaigns" /></jsp:include>
-<% } else { %><jsp:include page="/header.jsp" /><% } %>
+<% } else { %><jsp:include page="/header.jsp"><jsp:param name="page" value="campaigns" /></jsp:include><% } %>
 <main class="<%=admin ? "main-content" : "workspace-main"%>">
     <header class="workspace-heading"><h1>Chiến dịch khuyến mãi</h1></header>
     <% if (admin && "1".equals(request.getParameter("saved"))) { %><p class="workspace-notice" role="status">Đã lưu chiến dịch.</p><% } %>
+    <% if (!admin) {
+        String claim = request.getParameter("claim");
+        if ("saved".equals(claim)) { %><p class="workspace-notice" role="status">Đã lưu mã vào ví voucher.</p><% }
+        else if ("exists".equals(claim)) { %><p class="workspace-notice" role="status">Mã này đã có trong ví của bạn.</p><% }
+        else if ("unavailable".equals(claim)) { %><p class="workspace-notice" role="status">Mã ưu đãi hiện không còn khả dụng.</p><% }
+    } %>
     <div class="<%=admin ? "workspace-columns campaign-admin-columns" : "campaign-public-grid"%>">
         <% if (admin) { %>
         <section class="workspace-card">
@@ -64,6 +70,15 @@
                 <h2><%=Html.escape(campaign.title())%></h2>
                 <p><%=Html.escape(campaign.description())%></p>
                 <% if (campaign.voucherCode() != null) { %><div class="campaign-code">Mã ưu đãi <strong><%=Html.escape(campaign.voucherCode())%></strong></div><% } %>
+                <% if (!admin && campaign.voucherCode() != null) { %>
+                    <% if (session.getAttribute("user") == null) { %><a class="workspace-link" href="<%=base%>/login">Đăng nhập để nhận mã</a><% } else { %>
+                    <form method="post" action="<%=base%>/campaigns">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
+                        <input type="hidden" name="campaignId" value="<%=campaign.id()%>">
+                        <button class="workspace-button" type="submit">Nhận voucher</button>
+                    </form>
+                    <% } %>
+                <% } %>
                 <% if (admin) { %><a class="workspace-link" href="<%=base%>/admin-campaigns?id=<%=campaign.id()%>">Chỉnh sửa chiến dịch</a><% } %>
             </article>
             <% } %>
