@@ -41,6 +41,18 @@ public class DatabaseUpgradeListener implements ServletContextListener {
     /** Thêm những gì còn thiếu; trả về danh sách đã thêm (rỗng nếu DB đã đủ). */
     public static List<String> upgrade(Connection connection) throws SQLException {
         List<String> changes = new ArrayList<>();
+        if (!tableExists(connection, "custom_collections") || !tableExists(connection, "custom_collection_products")) {
+            runPackagedMigration(connection, "010_custom_collections.sql");
+            changes.add("các bảng bộ sưu tập tự tạo");
+        }
+        if (!tableExists(connection, "hidden_collections")) {
+            runPackagedMigration(connection, "012_collection_visibility.sql");
+            changes.add("bảng hidden_collections");
+        }
+        if (!tableExists(connection, "collection_descriptions")) {
+            runPackagedMigration(connection, "013_collection_descriptions.sql");
+            changes.add("bảng collection_descriptions");
+        }
         // ST-16, IS-05: đơn nhớ voucher đã giữ để trả về ví khi thanh toán thất bại/hết hạn
         if (!columnExists(connection, "orders", "voucher_id")) {
             execute(connection, "ALTER TABLE orders ADD COLUMN voucher_id int DEFAULT NULL");

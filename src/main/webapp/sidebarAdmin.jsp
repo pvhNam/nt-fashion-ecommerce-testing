@@ -11,7 +11,7 @@ User currUser = (User) session.getAttribute("user");
 int role = currUser != null ? currUser.getIsAdmin() : 0;
 %>
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/sidebar.css?v=20261125">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/sidebar.css?v=20261128.2">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/admin-pagination.css?v=20261128">
 <meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
