@@ -198,6 +198,8 @@ Trong cấu hình chạy Tomcat, đặt các biến môi trường:
 | `DB_USER` | `root` |
 | `DB_PASSWORD` | *(mật khẩu MySQL của bạn)* |
 
+`DB_USER` và `DB_PASSWORD` là bắt buộc vì mã nguồn không còn tài khoản dự phòng; không đặt `DB_URL` thì dùng `jdbc:mysql://localhost:3306/ltweb`. Mật khẩu người dùng băm bằng PBKDF2 có muối; tài khoản cũ còn mã MD5 vẫn đăng nhập được và tự chuyển sang mã mới ở lần đăng nhập kế tiếp.
+
 Với database demo mới: đăng ký một tài khoản thử, đặt `is_admin = 1` cho đúng tài khoản đó trong bảng `users`, rồi đăng nhập lại. Thêm sản phẩm và nhập tồn kho trước khi thử luồng đặt hàng.
 
 ### 3. Chạy trên cổng 8080

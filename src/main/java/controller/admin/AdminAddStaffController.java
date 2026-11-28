@@ -2,7 +2,7 @@ package controller.admin;
 
 import dao.UserDAO;
 import model.User;
-import util.MD5;
+import util.PasswordHasher;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -37,7 +37,7 @@ public class AdminAddStaffController extends HttpServlet {
             return;
         }
 
-        String hashedPass = MD5.getMd5(password);
+        String hashedPass = PasswordHasher.hash(password);
         boolean isSuccess = dao.registerStaff(username, hashedPass, email, fullname, phone);
 
         if (isSuccess) {

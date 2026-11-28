@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import model.User;
 import dao.UserDAO;
 import util.I18n;
-import util.MD5;
 import java.io.IOException;
 
 @WebServlet("/login")
@@ -24,9 +23,8 @@ public class LoginController extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        String hashedPassword = MD5.getMd5(password);
         UserDAO dao = new UserDAO();
-        User loginUser = dao.login(username, hashedPassword);
+        User loginUser = dao.login(username, password);
 
         if (loginUser != null) {
             HttpSession session = request.getSession();

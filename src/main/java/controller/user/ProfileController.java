@@ -11,7 +11,7 @@ import jakarta.servlet.http.Part;
 import model.User;
 import dao.LoyaltyDAO;
 import dao.UserDAO;
-import util.MD5;
+import util.PasswordHasher;
 import util.PasswordPolicy;
 import java.io.File;
 import java.io.IOException;
@@ -119,11 +119,10 @@ public class ProfileController extends HttpServlet {
                 // IS-08: cùng quy định với đăng ký và đặt lại mật khẩu
                 request.setAttribute("errPass", PasswordPolicy.MESSAGE);
             } else {
-                String oldPassHash = MD5.getMd5(oldPass);
-                if (!oldPassHash.equals(currentUser.getPasswordHash())) {
+                if (!PasswordHasher.verify(oldPass, currentUser.getPasswordHash())) {
                     request.setAttribute("errPass", "Mật khẩu hiện tại không đúng.");
                 } else {
-                    String newPassHash = MD5.getMd5(newPass);
+                    String newPassHash = PasswordHasher.hash(newPass);
                     boolean isChanged = dao.changePassword(currentUser.getUsername(), newPassHash);
                     if (isChanged) {
                         currentUser.setPasswordHash(newPassHash);

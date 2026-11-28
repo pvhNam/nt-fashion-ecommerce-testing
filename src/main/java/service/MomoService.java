@@ -19,14 +19,17 @@ public class MomoService {
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 
     private final String partnerCode = readSetting("momo.partnerCode", "MOMO_PARTNER_CODE", "MOMO");
-    private final String accessKey = readSetting("momo.accessKey", "MOMO_ACCESS_KEY", "F8BBA842ECF85");
-    private final String secretKey = readSetting("momo.secretKey", "MOMO_SECRET_KEY", "K951B6PE1waDMi640xX08PD3vg6EkVlz");
+    private final String accessKey = readSetting("momo.accessKey", "MOMO_ACCESS_KEY", null);
+    private final String secretKey = readSetting("momo.secretKey", "MOMO_SECRET_KEY", null);
     private final String endpoint = readSetting("momo.endpoint", "MOMO_ENDPOINT",
             "https://test-payment.momo.vn/v2/gateway/api/create");
     private final OkHttpClient client = new OkHttpClient();
 
     public String createPayment(long amount, String orderId, String orderInfo, String redirectUrl, String ipnUrl,
             String extraData) throws Exception {
+        if (!isConfigured()) {
+            throw new IllegalStateException("Chưa cấu hình MOMO_ACCESS_KEY và MOMO_SECRET_KEY.");
+        }
         String requestType = "payWithMethod";
         String requestId = UUID.randomUUID().toString();
         String safeExtraData = extraData == null ? "" : extraData;
@@ -101,7 +104,7 @@ public class MomoService {
     }
 
     public boolean isValidCallbackSignature(JSONObject callbackData) throws Exception {
-        if (callbackData == null) {
+        if (callbackData == null || !isConfigured()) {
             return false;
         }
 
@@ -126,6 +129,10 @@ public class MomoService {
 
         String expectedSignature = hmacSha256(rawSignature, secretKey);
         return expectedSignature.equals(providedSignature) && partnerCode.equals(callbackData.optString("partnerCode", ""));
+    }
+
+    private boolean isConfigured() {
+        return accessKey != null && secretKey != null;
     }
 
     private String readSetting(String propertyKey, String envKey, String defaultValue) {

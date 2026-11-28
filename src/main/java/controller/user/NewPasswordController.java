@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import dao.UserDAO;
-import util.MD5;
+import util.PasswordHasher;
 import util.PasswordPolicy;
 import java.io.IOException;
 
@@ -45,7 +45,7 @@ public class NewPasswordController extends HttpServlet {
             return;
         }
 
-        String hashedPassword = MD5.getMd5(newPassword);
+        String hashedPassword = PasswordHasher.hash(newPassword);
         UserDAO dao = new UserDAO();
         boolean isUpdated = dao.changePassword(username, hashedPassword);
 
