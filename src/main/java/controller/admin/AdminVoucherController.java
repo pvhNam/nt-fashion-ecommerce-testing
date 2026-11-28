@@ -25,11 +25,25 @@ public class AdminVoucherController extends HttpServlet {
 
         if (action == null) {
             List<Voucher> list = vDao.getAllVouchersForAdmin();
-            request.setAttribute("listVouchers", list);
+            request.setAttribute("listVouchers", AdminPagination.page(request, list));
             request.getRequestDispatcher("/admin-vouchers.jsp").forward(request, response);
         } else if (action.equals("edit")) {
-            int id = Integer.parseInt(request.getParameter("id"));
+            int id;
+            try {
+                id = Integer.parseInt(request.getParameter("id"));
+            } catch (NumberFormatException e) {
+                response.sendRedirect("admin-vouchers?msg=error_edit_id");
+                return;
+            }
+            if (id <= 0) {
+                response.sendRedirect("admin-vouchers?msg=error_edit_id");
+                return;
+            }
             Voucher v = vDao.getVoucherById(id);
+            if (v == null) {
+                response.sendRedirect("admin-vouchers?msg=error_edit_not_found");
+                return;
+            }
             request.setAttribute("voucher", v);
             request.getRequestDispatcher("/admin-voucher-form.jsp").forward(request, response);
         } else if (action.equals("add")) {

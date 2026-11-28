@@ -31,6 +31,7 @@ public class AdminCollectionController extends HttpServlet {
             ProductDAO productDAO = new ProductDAO();
             List<Product> products = search == null || search.isBlank()
                     ? productDAO.getAllProducts() : productDAO.searchProduct(search.trim());
+            products = AdminPagination.page(request, products, "search");
             for (Product product : products) product.setCollectionThemes(assignments.getOrDefault(product.getPid(), Set.of()));
             request.setAttribute("products", products);
             request.setAttribute("collectionCounts", dao.getCounts());
@@ -62,6 +63,7 @@ public class AdminCollectionController extends HttpServlet {
         String search = request.getParameter("search");
         response.sendRedirect(request.getContextPath() + "/admin-collections?msg=" + message
                 + "&search=" + URLEncoder.encode(search == null ? "" : search, StandardCharsets.UTF_8)
+                + "&page=" + AdminPagination.requestedPage(request)
                 + (productId > 0 ? "#product-" + productId : ""));
     }
 }

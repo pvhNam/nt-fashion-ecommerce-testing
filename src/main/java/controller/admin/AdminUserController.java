@@ -32,7 +32,7 @@ public class AdminUserController extends HttpServlet {
             list.removeIf(u -> u.getIsAdmin() != 0);
         }
 
-        request.setAttribute("listUsers", list);
+        request.setAttribute("listUsers", AdminPagination.page(request, list, "search"));
         request.getRequestDispatcher("/admin-users.jsp").forward(request, response);
     }
 }

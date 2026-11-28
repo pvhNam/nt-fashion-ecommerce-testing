@@ -150,6 +150,7 @@
             </tbody>
         </table>
         </div>
+        <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
     </div>
 </main>
 </body>

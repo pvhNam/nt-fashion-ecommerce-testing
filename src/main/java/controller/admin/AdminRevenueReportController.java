@@ -56,7 +56,7 @@ public class AdminRevenueReportController extends HttpServlet {
         request.setAttribute("period", period);
         request.setAttribute("summary", summary);
         request.setAttribute("allItems", allItems);
-        request.setAttribute("items", displayedItems);
+        request.setAttribute("items", AdminPagination.page(request, displayedItems, "period", "month", "year", "filter", "q"));
         request.setAttribute("topItems", topItems);
         request.setAttribute("maxRevenue", maxRevenue);
         request.setAttribute("filter", filter);

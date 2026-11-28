@@ -82,6 +82,7 @@
                 </tbody>
             </table>
         </div>
+        <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
 
         <% } else { %>
             <div class="alert alert-danger">Không tìm thấy thông tin khách hàng!</div>

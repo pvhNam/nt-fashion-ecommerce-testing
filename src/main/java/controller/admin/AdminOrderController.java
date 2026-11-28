@@ -56,7 +56,7 @@ public class AdminOrderController extends HttpServlet {
         }
 
         request.setAttribute("filter", filter);
-        request.setAttribute("listOrders", listOrders);
+        request.setAttribute("listOrders", AdminPagination.page(request, listOrders, "filter"));
         request.getRequestDispatcher("/admin-orders.jsp").forward(request, response);
     }
 }

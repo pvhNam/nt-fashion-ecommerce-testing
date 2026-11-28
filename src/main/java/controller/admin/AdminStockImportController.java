@@ -39,7 +39,7 @@ public class AdminStockImportController extends HttpServlet {
         }
 
         request.setAttribute("products", products);
-        request.setAttribute("recentReceipts", inventoryDAO.getRecentReceipts(30));
+        request.setAttribute("recentReceipts", AdminPagination.page(request, inventoryDAO.getRecentReceipts(30), "pid"));
         request.setAttribute("selectedProductId", selectedProductId);
         request.setAttribute("today", LocalDate.now());
         request.getRequestDispatcher("/admin-stock-import.jsp").forward(request, response);

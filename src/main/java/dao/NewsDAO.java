@@ -30,7 +30,7 @@ public class NewsDAO {
 	//Lấy tất cả tin tức
 	public List<News> getAllNews() {
 		List<News> list = new ArrayList<>();
-		String sql = "SELECT * FROM news ORDER BY created_at DESC";
+		String sql = "SELECT * FROM news ORDER BY created_at DESC, id DESC";
 		try {
 			conn = DBConnect.getConnection();
 			ps = conn.prepareStatement(sql);

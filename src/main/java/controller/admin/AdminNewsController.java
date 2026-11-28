@@ -40,7 +40,7 @@ public class AdminNewsController extends HttpServlet {
             request.getRequestDispatcher("/admin-edit-news.jsp").forward(request, response);
         } else {
             List<News> list = dao.getAllNews();
-            request.setAttribute("listN", list);
+            request.setAttribute("listN", AdminPagination.page(request, list));
             request.getRequestDispatcher("/admin-news.jsp").forward(request, response);
         }
     }

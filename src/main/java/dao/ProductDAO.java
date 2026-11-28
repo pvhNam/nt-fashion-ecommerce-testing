@@ -57,7 +57,7 @@ public class ProductDAO {
     // Lấy tất cả sản phẩm
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM product";
+        String sql = "SELECT * FROM product ORDER BY pid";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -77,7 +77,7 @@ public class ProductDAO {
     // TÌM KIẾM SẢN PHẨM THEO TÊN
     public List<Product> searchProduct(String keyword) {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM product WHERE name LIKE ?";
+        String sql = "SELECT * FROM product WHERE name LIKE ? ORDER BY pid";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%"); // Tìm gần đúng
