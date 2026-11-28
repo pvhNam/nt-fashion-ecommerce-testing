@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.User;
-import util.MD5;
+import util.PasswordHasher;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Random;
+import java.util.UUID;
 
 @WebServlet("/google-callback")
 public class GoogleCallbackController extends HttpServlet {
@@ -142,7 +143,7 @@ public class GoogleCallbackController extends HttpServlet {
                     tries++;
                 }
 
-				String password = MD5.getMd5(email + System.currentTimeMillis());
+				String password = PasswordHasher.hash(UUID.randomUUID().toString());
                 dao.register(username, password, email, name != null ? name : username, "");
                 u = dao.checkEmailExist(email);
             }

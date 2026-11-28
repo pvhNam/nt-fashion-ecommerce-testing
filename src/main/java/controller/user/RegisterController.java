@@ -3,7 +3,7 @@ package controller.user;
 import java.io.IOException;
 import dao.UserDAO;
 import util.InputValidator;
-import util.MD5;
+import util.PasswordHasher;
 import util.PasswordPolicy;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -60,7 +60,7 @@ public class RegisterController extends HttpServlet {
             return;
         }
 
-        dao.register(username, MD5.getMd5(pass), email, fullname, phone);
+        dao.register(username, PasswordHasher.hash(pass), email, fullname, phone);
         response.sendRedirect("login");
     }
 }

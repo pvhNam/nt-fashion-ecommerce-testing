@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import model.User;
+import util.PasswordHasher;
 
 public class UserDAO {
     Connection conn = null;
@@ -14,27 +15,48 @@ public class UserDAO {
 
     // LOGIN
     public User login(String username, String password) {
-        String query = "SELECT * FROM users WHERE username = ? AND password = ?";
-        try {
-            conn = new DBConnect().getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, username);
-            ps.setString(2, password);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return new User(
-                    rs.getInt("uid"), 
-                    rs.getString("username"), 
-                    rs.getString("password"),
-                    rs.getString("email"), 
-                    rs.getString("fullname"), 
-                    rs.getString("phonenumber"),
-                    rs.getString("avatar"),
-                    rs.getInt("is_admin") 
-                );
+        String query = "SELECT * FROM users WHERE username = ?";
+        try (Connection connection = DBConnect.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    String stored = result.getString("password");
+                    if (!PasswordHasher.verify(password, stored)) {
+                        continue;
+                    }
+                    User user = new User(
+                        result.getInt("uid"),
+                        result.getString("username"),
+                        stored,
+                        result.getString("email"),
+                        result.getString("fullname"),
+                        result.getString("phonenumber"),
+                        result.getString("avatar"),
+                        result.getInt("is_admin")
+                    );
+                    if (PasswordHasher.needsRehash(stored)) {
+                        String upgraded = PasswordHasher.hash(password);
+                        if (updatePasswordHash(connection, user.getUid(), upgraded)) {
+                            user.setPasswordHash(upgraded);
+                        }
+                    }
+                    return user;
+                }
             }
         } catch (Exception e) { e.printStackTrace(); }
         return null;
+    }
+
+    private boolean updatePasswordHash(Connection connection, int uid, String hash) {
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE users SET password = ? WHERE uid = ?")) {
+            statement.setString(1, hash);
+            statement.setInt(2, uid);
+            return statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // REGISTER 
@@ -238,7 +260,7 @@ public class UserDAO {
             conn = new DBConnect().getConnection();
             ps = conn.prepareStatement(query);
             ps.setString(1, username);
-            ps.setString(2, pass); // Chú ý: password truyền vào đây phải được MD5 từ Controller
+            ps.setString(2, pass); // pass đã băm bằng PasswordHasher
             ps.setString(3, email);
             ps.setString(4, fullname);
             ps.setString(5, phone);

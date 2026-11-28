@@ -50,7 +50,7 @@ public class AdminStaffController extends HttpServlet {
 
         if ("changepass".equals(type)) {
             String uname = request.getParameter("uname");
-            String newPass = util.MD5.getMd5(request.getParameter("newpass"));
+            String newPass = util.PasswordHasher.hash(request.getParameter("newpass"));
             dao.changePassword(uname, newPass);
             response.sendRedirect("admin-staffs?msg=pass_changed");
             return;
