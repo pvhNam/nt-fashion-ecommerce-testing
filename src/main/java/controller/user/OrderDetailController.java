@@ -1,7 +1,9 @@
 package controller.user;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
+import dao.InvoiceDAO;
 import dao.OrderDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -43,6 +45,13 @@ public class OrderDetailController extends HttpServlet {
             }
             request.setAttribute("order", order);
             request.setAttribute("orderDetails", new OrderDAO().getDetails(order.getId()));
+            if (!adminOrStaff && order.isSuccessStatus()) {
+                try {
+                    request.setAttribute("hasCustomerInvoice", new InvoiceDAO().find(order.getId()) != null);
+                } catch (SQLException error) {
+                    getServletContext().log("Không kiểm tra được hóa đơn của đơn " + order.getId(), error);
+                }
+            }
         } catch (NumberFormatException e) {
             response.sendRedirect("order-history");
             return;

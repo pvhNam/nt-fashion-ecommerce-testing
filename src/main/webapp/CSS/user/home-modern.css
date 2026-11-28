@@ -1527,7 +1527,7 @@ body.ym-home-page::selection {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .ym-home-page *,
+    .ym-home-page :not(.ym-site-page-content),
     .ym-home-page *::before,
     .ym-home-page *::after {
         scroll-behavior: auto !important;

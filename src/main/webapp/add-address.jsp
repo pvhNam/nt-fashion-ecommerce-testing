@@ -30,8 +30,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= formTitle %></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
-  <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20260822.5" defer></script>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
+  <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
   <style>
     .form-container { max-width: 500px; margin: 40px auto; font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .form-group { margin-bottom: 15px; }

@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.Order, model.User, util.Html"%>
-<%@ page import="java.text.DecimalFormat"%>
+<%@ page import="java.text.DecimalFormat, java.text.DecimalFormatSymbols, java.time.LocalDateTime, java.time.format.DateTimeFormatter, java.util.Locale"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
@@ -14,7 +14,7 @@
     <title><fmt:message key="history.page_title" /> | Fashion Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/style.css" />
-    <link rel="stylesheet" href="CSS/user/oder-history.css" />
+    <link rel="stylesheet" href="CSS/user/oder-history.css?v=20261126.1" />
 </head>
 <body class="ym-user-page ym-orders-page">
 <header>
@@ -22,7 +22,7 @@
 </header>
 
 <div class="history-container">
-    <h1 class="page-title" style="text-align: left; font-size: 24px;">
+    <h1 class="page-title history-title">
         <fmt:message key="history.heading" />
     </h1>
 
@@ -30,7 +30,9 @@
         List<Order> list = (List<Order>) request.getAttribute("listOrders");
         String activeTab = request.getParameter("tab");
         if (activeTab == null || activeTab.isEmpty()) activeTab = "all";
-        DecimalFormat df = new DecimalFormat("#,### VNĐ");
+        DecimalFormat df = new DecimalFormat("#,##0 '₫'", DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN")));
+        DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter hour = DateTimeFormatter.ofPattern("HH:mm");
     %>
 
     <!-- Tab navigation -->
@@ -101,18 +103,28 @@
     <%
     } else {
     %>
-    <table class="order-table">
-        <thead>
-        <tr>
-            <th><fmt:message key="history.id" /></th>
-            <th><fmt:message key="history.date" /></th>
-            <th><fmt:message key="history.address" /></th>
-            <th><fmt:message key="history.total" /></th>
-            <th><fmt:message key="history.status" /></th>
-            <th><fmt:message key="history.action" /></th>
+    <table class="order-table history-orders-table" role="table">
+        <colgroup>
+            <col class="history-col-id">
+            <col class="history-col-placed">
+            <col class="history-col-delivered">
+            <col>
+            <col class="history-col-total">
+            <col class="history-col-status">
+            <col class="history-col-action">
+        </colgroup>
+        <thead role="rowgroup">
+        <tr role="row">
+            <th role="columnheader" scope="col"><fmt:message key="history.id" /></th>
+            <th role="columnheader" scope="col"><fmt:message key="history.date" /></th>
+            <th role="columnheader" scope="col"><fmt:message key="order.delivered_at" /></th>
+            <th role="columnheader" scope="col"><fmt:message key="history.address" /></th>
+            <th role="columnheader" scope="col" class="history-total"><fmt:message key="history.total" /></th>
+            <th role="columnheader" scope="col"><fmt:message key="history.status" /></th>
+            <th role="columnheader" scope="col"><fmt:message key="history.action" /></th>
         </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
         <%
             for (Order o : filteredList) {
                 String statusClass;
@@ -129,13 +141,35 @@
                     statusClass = "status-processing";
                 }
         %>
-        <tr>
-            <td>#<%=o.getId()%></td>
-            <td><%=o.getCreatedAt()%></td>
-            <td><%=Html.escape(o.getAddress())%></td>
-            <td style="font-weight: bold; color: #d00;"><%=df.format(o.getTotalMoney())%></td>
-            <td><span class="status-tag <%=statusClass%>"><% String statusKey = o.getStatusKey(); if (statusKey != null) { %><fmt:message key="<%=statusKey%>" /><% } else { %><%=Html.escape(o.getDisplayStatus())%><% } %></span></td>
-            <td>
+        <tr role="row">
+            <td role="cell" class="history-id"><strong>#<%=o.getId()%></strong></td>
+            <td role="cell" class="history-placed">
+                <span class="history-cell-label" aria-hidden="true"><fmt:message key="history.date" /></span>
+                <% LocalDateTime placedAt = o.getCreatedDateTime(); if (placedAt != null) { %>
+                <time class="history-date-time" datetime="<%=placedAt%>"><%=date.format(placedAt)%><small><%=hour.format(placedAt)%></small></time>
+                <% } else { %>—<% } %>
+            </td>
+            <td role="cell" class="history-delivered">
+                <span class="history-cell-label" aria-hidden="true"><fmt:message key="order.delivered_at" /></span>
+                <% if (o.isSuccessStatus()) { %>
+                <span class="order-delivery-time">
+                    <% if (o.getDeliveredAt() != null) { %>
+                    <time class="history-date-time" datetime="<%=o.getDeliveredAt().toInstant()%>"><fmt:formatDate value="<%=o.getDeliveredAt()%>" pattern="dd/MM/yyyy" timeZone="Asia/Ho_Chi_Minh" /><small><fmt:formatDate value="<%=o.getDeliveredAt()%>" pattern="HH:mm" timeZone="Asia/Ho_Chi_Minh" /></small></time>
+                    <% } else { %><fmt:message key="order.delivered_at_unrecorded" /><% } %>
+                </span>
+                <% } else { %>—<% } %>
+            </td>
+            <% String address = Html.escape(o.getAddress()); %>
+            <td role="cell" class="history-address">
+                <span class="history-cell-label" aria-hidden="true"><fmt:message key="history.address" /></span>
+                <span class="history-address-text" title="<%=address%>"><%=address.isBlank() ? "—" : address%></span>
+            </td>
+            <td role="cell" class="history-total">
+                <span class="history-cell-label" aria-hidden="true"><fmt:message key="history.total" /></span>
+                <strong class="history-amount"><%=df.format(o.getTotalMoney())%></strong>
+            </td>
+            <td role="cell" class="history-status"><span class="status-tag <%=statusClass%>"><% String statusKey = o.getStatusKey(); if (statusKey != null) { %><fmt:message key="<%=statusKey%>" /><% } else { %><%=Html.escape(o.getDisplayStatus())%><% } %></span></td>
+            <td role="cell" class="history-action">
                 <a href="order-detail?id=<%=o.getId()%>" class="btn-view-detail">
                     <fmt:message key="history.view_detail" />
                 </a>

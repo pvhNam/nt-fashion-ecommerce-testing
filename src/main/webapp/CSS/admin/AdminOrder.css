@@ -1,20 +1,20 @@
 /* AdminOrder.css — order management specific styles */
 
 .order-table-scroll {
-    overflow-x: auto;
+    container: admin-orders / inline-size;
 }
 
 .order-table-scroll .order-table {
-    min-width: 54rem;
     margin-top: 0;
     table-layout: fixed;
 }
 
-.order-table .order-col-id { width: 4.25rem; }
+.order-table .order-col-id { width: 4.75rem; }
 .order-table .order-col-customer { width: 12%; }
-.order-table .order-col-date { width: 6.5rem; }
-.order-table .order-col-total { width: 7.25rem; }
-.order-table .order-col-payment { width: 5.5rem; }
+.order-table .order-col-date,
+.order-table .order-col-delivery { width: 6.5rem; }
+.order-table .order-col-total { width: 8rem; }
+.order-table .order-col-payment { width: 6.5rem; }
 .order-table .order-col-status { width: 9.5rem; }
 .order-table .order-col-actions { width: 8.5rem; }
 
@@ -24,7 +24,6 @@
     overflow-wrap: anywhere;
 }
 
-.order-table thead th,
 .order-table .badge {
     white-space: normal;
 }
@@ -33,14 +32,40 @@
     font-weight: 600;
 }
 
-.order-table .order-phone {
-    color: #64748b;
+.order-table .order-customer,
+.order-table .order-address-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    line-height: 1.45;
 }
 
-.order-table .order-date,
+.order-table .order-phone {
+    display: block;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.order-table .order-delivery-time {
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+}
+
+.order-table .order-date-time,
 .order-table .order-total {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+}
+
+.order-date-time small {
+    display: block;
+    margin-top: 2px;
+    color: #475569;
+    font-size: 12px;
 }
 
 .order-table .order-total {
@@ -54,6 +79,64 @@
 
 .order-table .action-group {
     flex-wrap: wrap;
+}
+
+.order-cell-label { display: none; }
+
+@container admin-orders (max-width: 62rem) {
+    .order-table-scroll .order-table,
+    .order-table tbody { display: block; }
+
+    .order-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        clip-path: inset(50%);
+        overflow: hidden;
+    }
+
+    .order-table colgroup { display: none; }
+
+    .order-table .order-entry {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "id status"
+            "customer customer"
+            "placed delivered"
+            "address address"
+            "total payment"
+            "actions actions";
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid #e3e8f1;
+        border-radius: 10px;
+    }
+
+    .order-table .order-entry + .order-entry { margin-top: 10px; }
+    .order-table .order-entry td { min-width: 0; padding: 0; border: 0; }
+
+    .order-cell-label {
+        display: block;
+        margin-bottom: 3px;
+        color: #526177;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .order-table .order-id { grid-area: id; }
+    .order-table .order-customer-cell { grid-area: customer; }
+    .order-table .order-date { grid-area: placed; }
+    .order-table .order-delivery-date { grid-area: delivered; }
+    .order-table .order-address { grid-area: address; }
+    .order-table .order-total { grid-area: total; text-align: left; }
+    .order-table .order-payment { grid-area: payment; }
+    .order-table .order-status { grid-area: status; text-align: right; }
+    .order-table .order-actions { grid-area: actions; }
+    .order-table .order-actions .action-group { justify-content: flex-end; }
+
+    .order-table .order-empty-row,
+    .order-table .order-empty-row td { display: block; }
 }
 
 .filter-bar {

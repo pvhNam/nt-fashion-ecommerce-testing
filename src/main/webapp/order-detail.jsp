@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, dao.OrderDAO, model.OrderDetail, model.Order, model.User, java.text.DecimalFormat, util.Html"%>
+<%@ page import="java.time.format.DateTimeFormatter"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="${sessionScope.lang != null ? sessionScope.lang : 'vi'}" />
 <fmt:setBundle basename="resources.messages" />
@@ -49,7 +50,20 @@
 
         <div class="customer-info">
             <div class="info-row"><strong><fmt:message key="order.receiver" />:</strong> <%=Html.escape(order.getUserName())%></div>
-            <div class="info-row"><strong><fmt:message key="order.date" />:</strong> <%=order.getCreatedAt()%></div>
+            <div class="info-row">
+                <strong><fmt:message key="order.date" />:</strong>
+                <% if (order.getCreatedDateTime() != null) { %>
+                <time datetime="<%=order.getCreatedDateTime()%>"><%=DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(order.getCreatedDateTime())%></time>
+                <% } else { %>—<% } %>
+            </div>
+            <% if (order.isSuccessStatus()) { %>
+            <div class="info-row">
+                <strong><fmt:message key="order.delivered_at" />:</strong>
+                <% if (order.getDeliveredAt() != null) { %>
+                <time datetime="<%=order.getDeliveredAt().toInstant()%>"><fmt:formatDate value="<%=order.getDeliveredAt()%>" pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" /></time>
+                <% } else { %><fmt:message key="order.delivered_at_unrecorded" /><% } %>
+            </div>
+            <% } %>
             <div class="info-row"><strong>Thanh toan:</strong> <%=Html.escape(order.getPaymentMethod())%></div>
             <div class="info-row" style="grid-column: span 2;"><strong><fmt:message key="order.address" />:</strong> <%=Html.escape(order.getAddress())%></div>
         </div>
@@ -86,6 +100,9 @@
         <div class="total-row"><fmt:message key="order.total" />: <%=df.format(order.getTotalMoney())%></div>
 
         <div class="action-buttons">
+            <% if (Boolean.TRUE.equals(request.getAttribute("hasCustomerInvoice"))) { %>
+            <a href="order-invoice?id=<%=order.getId()%>" class="btn-back-link">Xem hóa đơn</a>
+            <% } %>
             <a href="<%= backLink %>" class="btn-back-link">
                 <i class="fa-solid fa-arrow-left"></i> <fmt:message key="order.back" />
             </a>

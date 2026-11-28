@@ -490,7 +490,7 @@
 		.btn-cancel:hover { background: var(--ym-black); color: var(--ym-white); }
 		.modal-buy-btn:hover { background: var(--ym-white); color: var(--ym-black); }
 	</style>
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/home-modern.css?v=20260831.3">
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/user/home-modern.css?v=20261126.2">
 </head>
 
 <body class="ym-home-page">

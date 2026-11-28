@@ -1,32 +1,91 @@
-/* admin-edit-news.css — edit news specific styles only
-   (layout and body styles are in Admin.css) */
-
-.form-container {
-    max-width: 700px;
-    margin: 30px auto;
-    padding: 30px;
-    background: white;
-    border-radius: var(--radius);
+.news-edit-form {
+    max-width: 58rem;
+    margin-inline: auto;
+    margin-bottom: 24px;
+    background: #fff;
+    border: 1px solid #dfe5f0;
+    border-radius: 12px;
     box-shadow: var(--shadow);
+    overflow: hidden;
 }
 
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
-.form-group input,
-.form-group textarea {
-    width: 100%; padding: 10px;
-    border: 1px solid #ccc; border-radius: 6px;
-    box-sizing: border-box; font-size: 14px;
-    font-family: 'Inter', sans-serif;
+.news-edit-fields {
+    display: grid;
+    gap: 20px;
+    padding: clamp(16px, 3vw, 28px);
 }
-.form-group input:focus,
-.form-group textarea:focus { border-color: var(--primary); outline: none; }
 
-.btn-submit {
-    background: var(--primary); color: white;
-    padding: 12px; border: none; width: 100%;
-    cursor: pointer; border-radius: 6px;
-    font-size: 15px; font-weight: 600;
-    transition: background 0.2s;
+.news-edit-field { min-width: 0; }
+
+.news-edit-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
 }
-.btn-submit:hover { background: #2e59d9; }
+
+.news-edit-field :is(input, textarea) {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fafbfe;
+    color: #1e293b;
+    font: inherit;
+    line-height: 1.5;
+}
+
+.news-edit-field textarea { resize: vertical; }
+
+.news-edit-field :is(input, textarea):focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+    background: #fff;
+}
+
+.news-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px clamp(16px, 3vw, 28px);
+    border-top: 1px solid #e3e8f1;
+    background: #f8f9fc;
+}
+
+.news-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 9px 17px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: 600 14px/1.4 Inter, system-ui, sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.news-edit-cancel {
+    color: #334155;
+    background: #fff;
+    border-color: #cbd5e1;
+}
+
+.news-edit-cancel:hover { background: #edf1f8; }
+.news-edit-save { color: #fff; background: #3458bf; }
+.news-edit-save:hover { background: #2647a6; }
+
+.news-edit-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+@media (max-width: 420px) {
+    .news-edit-button { flex: 1 1 auto; }
+}

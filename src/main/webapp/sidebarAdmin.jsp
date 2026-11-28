@@ -11,11 +11,11 @@ User currUser = (User) session.getAttribute("user");
 int role = currUser != null ? currUser.getIsAdmin() : 0;
 %>
 
-<link rel="stylesheet" href="CSS/admin/sidebar.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/sidebar.css?v=20261125">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/admin-pagination.css">
 <meta name="csrf-token" content="${csrfToken}">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
-<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261027.1" defer></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
+<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
 
 <div class="sidebar">
 	<div class="sidebar-brand">
@@ -23,7 +23,7 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 		ADMIN PANEL
 	</div>
 
-	<div class="sidebar-menu">
+	<nav class="sidebar-menu" aria-label="Menu quản trị">
 		<a href="admin"
 			class="menu-item <%=activePage.equals("dashboard") ? "active" : ""%>">
 			<i class="fa-solid fa-chart-pie"></i> Tổng quan
@@ -71,15 +71,23 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 			class="menu-item <%=activePage.equals("vouchers") ? "active" : ""%>">
 			<i class="fa-solid fa-ticket"></i> Quản lý Voucher
 		</a>
+		<a href="admin-invoice" class="menu-item <%=activePage.equals("invoice") ? "active" : ""%>">
+			<i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Hóa đơn đơn hàng
+		</a>
+		<a href="admin-campaigns" class="menu-item <%=activePage.equals("campaigns") ? "active" : ""%>">
+			<i class="fa-solid fa-bullhorn" aria-hidden="true"></i> Chiến dịch khuyến mãi
+		</a>
+		<a href="admin-contact" class="menu-item <%=activePage.equals("contact") ? "active" : ""%>">
+			<i class="fa-solid fa-envelope" aria-hidden="true"></i> Hộp thư liên hệ
+		</a>
 		<%
 		}
 		%>
-	</div>
+	</nav>
 
-	<div class="sidebar-footer" style="margin-top: auto; padding: 20px;">
-		<a href="logout"
-			style="color: #ccc; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: 0.3s;">
-			<i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+	<div class="sidebar-footer">
+		<a href="logout">
+			<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất
 		</a>
 	</div>
 </div>

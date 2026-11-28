@@ -17,8 +17,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/style.css" />
 <link rel="stylesheet" href="CSS/user/order-success.css" />
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
-<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20260822.5" defer></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
+<script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
 </head>
 <body class="ym-user-page ym-success-page">
     <jsp:include page="header.jsp" />

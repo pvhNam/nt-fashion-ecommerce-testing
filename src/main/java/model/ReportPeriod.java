@@ -2,8 +2,11 @@ package model;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public final class ReportPeriod {
+    public static final String DAY = "day";
     public static final String MONTH = "month";
     public static final String SIX_MONTHS = "six_months";
     public static final String YEAR = "year";
@@ -28,7 +31,17 @@ public final class ReportPeriod {
     }
 
     public static ReportPeriod fromParameters(String typeValue, String monthValue, String yearValue) {
+        return fromParameters(typeValue, monthValue, yearValue, null);
+    }
+
+    public static ReportPeriod fromParameters(String typeValue, String monthValue, String yearValue, String dateValue) {
         LocalDate today = LocalDate.now();
+        if (DAY.equals(typeValue)) {
+            LocalDate day = parseDate(dateValue, today);
+            String label = "Ngày " + day.format(DateTimeFormatter.ofPattern("dd/MM/uuuu"));
+            return new ReportPeriod(DAY, day.getMonthValue(), day.getYear(), day, day.plusDays(1),
+                    label, "Ngay_" + day);
+        }
         int month = parseBounded(monthValue, today.getMonthValue(), 1, 12);
         int year = parseBounded(yearValue, today.getYear(), 2000, today.getYear() + 1);
         String type = SIX_MONTHS.equals(typeValue) || YEAR.equals(typeValue) ? typeValue : MONTH;
@@ -60,6 +73,16 @@ public final class ReportPeriod {
             return Math.max(minimum, Math.min(maximum, parsed));
         } catch (Exception ignored) {
             return fallback;
+        }
+    }
+
+    private static LocalDate parseDate(String value, LocalDate today) {
+        if (value == null || value.isBlank()) return today;
+        try {
+            LocalDate day = LocalDate.parse(value);
+            return day.getYear() >= 2000 && day.getYear() <= today.getYear() + 1 ? day : today;
+        } catch (DateTimeParseException ignored) {
+            return today;
         }
     }
 

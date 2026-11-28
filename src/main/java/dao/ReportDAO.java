@@ -244,8 +244,9 @@ public class ReportDAO {
 
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, Timestamp.valueOf(startDate.atStartOfDay()));
-            ps.setTimestamp(2, Timestamp.valueOf(endDateExclusive.atStartOfDay()));
+            // orders.created_at is DATETIME, so the boundaries must not shift between time zones.
+            ps.setObject(1, startDate.atStartOfDay());
+            ps.setObject(2, endDateExclusive.atStartOfDay());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     ProductRevenueItem item = new ProductRevenueItem();
@@ -289,8 +290,8 @@ public class ReportDAO {
                 + COMPLETED_ORDER_CONDITION;
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, Timestamp.valueOf(startDate.atStartOfDay()));
-            ps.setTimestamp(2, Timestamp.valueOf(endDateExclusive.atStartOfDay()));
+            ps.setObject(1, startDate.atStartOfDay());
+            ps.setObject(2, endDateExclusive.atStartOfDay());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) summary.completedOrders = rs.getInt(1);
             }

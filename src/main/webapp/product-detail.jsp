@@ -210,7 +210,7 @@
 
         <div class="review-compose-card">
             <c:choose>
-                <c:when test="${not empty sessionScope.user}">
+                <c:when test="${not empty sessionScope.user and canReview}">
                     <form action="product-review" method="post" class="review-form">
                         <input type="hidden" name="pid" value="${p.pid}">
                         <input type="hidden" name="csrfToken" value="${csrfToken}">
@@ -258,6 +258,16 @@
                             </button>
                         </div>
                     </form>
+                </c:when>
+                <c:when test="${not empty sessionScope.user}">
+                    <div class="review-login-callout">
+                        <span class="review-login-icon"><i class="fa-solid fa-bag-shopping"></i></span>
+                        <div>
+                            <span class="review-login-kicker">Đánh giá từ người mua</span>
+                            <h3>Mua sản phẩm để đánh giá</h3>
+                            <p>Chỉ khách đã mua và nhận sản phẩm này mới có thể đánh giá.</p>
+                        </div>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <div class="review-login-callout">

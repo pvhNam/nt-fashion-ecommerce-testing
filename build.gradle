@@ -68,6 +68,12 @@ tasks.named('war') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+tasks.named('processResources') {
+    from(files('migrations/008_contact_and_campaigns.sql', 'migrations/009_customer_invoices.sql')) {
+        into 'db-upgrades'
+    }
+}
+
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     maxParallelForks = 1

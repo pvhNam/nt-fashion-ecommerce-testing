@@ -26,7 +26,8 @@ public class AdminRevenueReportController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         ReportPeriod period = ReportPeriod.fromParameters(
-                request.getParameter("period"), request.getParameter("month"), request.getParameter("year"));
+                request.getParameter("period"), request.getParameter("month"), request.getParameter("year"),
+                request.getParameter("date"));
         String filter = normalizeFilter(request.getParameter("filter"));
         String keyword = request.getParameter("q") == null ? "" : request.getParameter("q").trim();
 
