@@ -1,9 +1,12 @@
 package controller.admin;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
+import dao.CategoryDAO;
 import dao.ProductDAO;
 import model.Product;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,19 +29,20 @@ public class AdminProductController extends HttpServlet {
         ProductDAO dao = new ProductDAO();
 
         if ("add".equals(type)) {
-            request.getRequestDispatcher("/admin-product-form.jsp").forward(request, response);
+            showProductForm(request, response);
             return;
         }
 
         if ("edit".equals(type)) {
+            int pid;
             try {
-                int pid = Integer.parseInt(request.getParameter("pid"));
-                Product p = dao.getProductById(pid);
-                request.setAttribute("product", p);
-                request.getRequestDispatcher("/admin-product-form.jsp").forward(request, response);
-            } catch (Exception e) {
+                pid = Integer.parseInt(request.getParameter("pid"));
+            } catch (NumberFormatException e) {
                 response.sendRedirect("admin-products?msg=error");
+                return;
             }
+            request.setAttribute("product", dao.getProductById(pid));
+            showProductForm(request, response);
             return;
         }
 
@@ -64,6 +68,24 @@ public class AdminProductController extends HttpServlet {
         request.setAttribute("listProducts", list);
         request.setAttribute("listP", list);
         request.getRequestDispatcher("/admin-products.jsp").forward(request, response);
+    }
+
+    private void showProductForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        loadCategories(request, response, getServletContext());
+        request.getRequestDispatcher("/admin-product-form.jsp").forward(request, response);
+    }
+
+    static void loadCategories(HttpServletRequest request, HttpServletResponse response,
+            ServletContext context) {
+        try {
+            request.setAttribute("categories", new CategoryDAO().findAll());
+        } catch (SQLException error) {
+            context.log("Unable to load product categories", error);
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            request.setAttribute("categoriesUnavailable", true);
+            request.setAttribute("categories", List.of());
+        }
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -124,6 +146,10 @@ public class AdminProductController extends HttpServlet {
             String[] extraImages = request.getParameterValues("extraImages");
             if (!validImages(image, extraImages)) {
                 response.sendRedirect("admin-products?msg=error_image");
+                return;
+            }
+            if (!new CategoryDAO().exists(cateId)) {
+                response.sendRedirect("admin-products?msg=error_category");
                 return;
             }
 

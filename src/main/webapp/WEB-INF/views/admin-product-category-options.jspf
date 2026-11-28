@@ -1,0 +1,6 @@
+<option value="">
+    ${categoriesUnavailable ? 'Không tải được danh mục' : (empty categories ? 'Chưa có danh mục' : 'Chọn danh mục')}
+</option>
+<c:forEach var="category" items="${categories}">
+    <option value="${category.id}" ${not empty product and product.cid eq category.id ? 'selected' : ''}><c:out value="${category.name}" /></option>
+</c:forEach>

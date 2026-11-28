@@ -47,6 +47,10 @@
             alertClass = "alert-danger";
             text = "Dữ liệu không hợp lệ. Giá phải là số hữu hạn không âm; tồn kho phải là số nguyên từ 0 đến 2147483647. Vui lòng kiểm tra các trường bắt buộc.";
         }
+        else if(msg.equals("error_category")) {
+            alertClass = "alert-danger";
+            text = "Danh mục đã chọn không tồn tại. Vui lòng chọn lại danh mục.";
+        }
         else if(msg.equals("error_update")) {
             alertClass = "alert-danger";
             text = "Không thể cập nhật sản phẩm. Thay đổi sản phẩm và ảnh phụ chưa được lưu.";

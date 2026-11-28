@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.time.LocalDate"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${categories == null}"><jsp:forward page="/admin-add-product" /></c:if>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -200,11 +202,9 @@
                 <div class="form-card">
                     <div class="card-section-title"><i class="fa-solid fa-layer-group"></i> Danh mục</div>
                     <div class="field-group" style="margin-bottom:0;">
-                        <label>Loại sản phẩm <span class="req">*</span></label>
-                        <select name="cateId" class="select-styled">
-                            <option value="1">👕 Áo</option>
-                            <option value="2">👖 Quần</option>
-                            <option value="3">👜 Phụ kiện</option>
+                        <label for="productCategory">Loại sản phẩm <span class="req">*</span></label>
+                        <select id="productCategory" name="cateId" class="select-styled" required ${empty categories ? 'disabled' : ''}>
+                            <%@ include file="/WEB-INF/views/admin-product-category-options.jspf" %>
                         </select>
                     </div>
                 </div>
@@ -220,7 +220,7 @@
                 <div class="form-card action-card">
                     <div class="card-section-title"><i class="fa-solid fa-floppy-disk"></i> Xác nhận nhập</div>
                     <p class="action-note">Kiểm tra kỹ thông tin trước khi xác nhận nhập hàng vào hệ thống.</p>
-                    <button type="submit" class="btn-submit-product">
+                    <button type="submit" class="btn-submit-product" ${empty categories ? 'disabled' : ''}>
                         <i class="fa-solid fa-truck-ramp-box"></i> Xác Nhận Nhập Hàng
                     </button>
                     <a href="admin-products" class="btn-cancel-product">

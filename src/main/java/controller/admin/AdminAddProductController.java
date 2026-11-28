@@ -1,6 +1,7 @@
 package controller.admin;
 
 import java.io.IOException;
+import dao.CategoryDAO;
 import dao.ProductDAO;
 import model.Product;
 import jakarta.servlet.ServletException;
@@ -13,6 +14,12 @@ import util.InputValidator;
 @WebServlet("/admin-add-product")
 public class AdminAddProductController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        AdminProductController.loadCategories(request, response, getServletContext());
+        request.getRequestDispatcher("/admin-add-product.jsp").forward(request, response);
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -28,6 +35,10 @@ public class AdminAddProductController extends HttpServlet {
             String image = request.getParameter("image");
             if (!InputValidator.isSafeImageUrl(image)) {
                 response.sendRedirect("admin-products?msg=error_image");
+                return;
+            }
+            if (!new CategoryDAO().exists(cateId)) {
+                response.sendRedirect("admin-products?msg=error_category");
                 return;
             }
 

@@ -1,5 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.Product, util.Html"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${categories == null}">
+    <jsp:forward page="/admin-products"><jsp:param name="type" value="add" /></jsp:forward>
+</c:if>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,11 +50,9 @@
                     <input type="number" name="price" step="0.01" required value="<%= isEdit ? p.getPrice() : "" %>">
                 </div>
                 <div class="form-group">
-                    <label>Danh mục *</label>
-                    <select name="cateId">
-                        <option value="1" <%= (isEdit && p.getCid()==1) ? "selected" : "" %>>1 - Năng động (Áo thun, Short...)</option>
-                        <option value="2" <%= (isEdit && p.getCid()==2) ? "selected" : "" %>>2 - Công sở (Sơ mi, Quần tây...)</option>
-                        <option value="3" <%= (isEdit && p.getCid()==3) ? "selected" : "" %>>3 - Dạ hội (Đầm, Suit...)</option>
+                    <label for="productCategory">Danh mục *</label>
+                    <select id="productCategory" name="cateId" required ${empty categories ? 'disabled' : ''}>
+                        <%@ include file="/WEB-INF/views/admin-product-category-options.jspf" %>
                     </select>
                 </div>
             </div>
@@ -99,7 +101,7 @@
                 </button>
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn-submit" ${empty categories ? 'disabled' : ''}>
                 <i class="fa-solid fa-floppy-disk"></i> Lưu Dữ Liệu Sản Phẩm
             </button>
         </form>
