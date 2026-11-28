@@ -76,7 +76,7 @@
             <span class="filter-tag" style="border-color: <%=filterColor%>; color: <%=filterColor%>;">
                 <i class="fa-solid fa-filter"></i>
                 Lọc: <strong><%=filterName%></strong>
-                · <%=list == null ? 0 : list.size()%> đơn
+                · ${adminTotalRows} đơn
             </span>
             <a href="admin-orders" class="btn-clear-filter" data-admin-ajax-link>
                 <i class="fa-solid fa-xmark"></i> Xem tất cả
@@ -197,6 +197,7 @@
                 </tbody>
             </table>
             </div>
+            <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
         </div>
     </main>
 </body>

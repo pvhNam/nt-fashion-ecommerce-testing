@@ -148,7 +148,7 @@ public class UserDAO {
     //  GET ALL USERS
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        String query = "SELECT * FROM users";
+        String query = "SELECT * FROM users ORDER BY uid";
         try {
             conn = new DBConnect().getConnection();
             ps = conn.prepareStatement(query);
@@ -167,7 +167,8 @@ public class UserDAO {
     // SEARCH USERS 
     public List<User> searchUsers(String keyword) {
         List<User> list = new ArrayList<>();
-        String query = "SELECT * FROM users WHERE username LIKE ? OR fullname LIKE ? OR email LIKE ? OR phonenumber LIKE ?";
+        String query = "SELECT * FROM users WHERE username LIKE ? OR fullname LIKE ? OR email LIKE ? OR phonenumber LIKE ? "
+                + "ORDER BY uid";
         try {
             conn = new DBConnect().getConnection();
             ps = conn.prepareStatement(query);

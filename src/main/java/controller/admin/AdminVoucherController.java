@@ -25,7 +25,7 @@ public class AdminVoucherController extends HttpServlet {
 
         if (action == null) {
             List<Voucher> list = vDao.getAllVouchersForAdmin();
-            request.setAttribute("listVouchers", list);
+            request.setAttribute("listVouchers", AdminPagination.page(request, list));
             request.getRequestDispatcher("/admin-vouchers.jsp").forward(request, response);
         } else if (action.equals("edit")) {
             int id;

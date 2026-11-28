@@ -240,7 +240,7 @@ public class ReportDAO {
                 "  WHERE o.created_at >= ? AND o.created_at < ? AND " + COMPLETED_ORDER_CONDITION +
                 "  GROUP BY d.product_id" +
                 ") s ON s.product_id = p.pid " +
-                "ORDER BY revenue DESC, p.name ASC";
+                "ORDER BY revenue DESC, p.name ASC, p.pid ASC";
 
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

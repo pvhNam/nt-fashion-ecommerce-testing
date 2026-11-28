@@ -94,6 +94,7 @@
                         <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="action" value="update-qty">
                         <input type="hidden" name="pid" value="<%=p.getPid()%>">
+                        <input type="hidden" name="page" value="${adminPage}">
                         <input type="hidden" name="vid" value="<%=v.getId()%>">
                         <input type="number" name="newQty" value="<%=v.getStockQuantity()%>" class="variant-qty-input" min="0" max="2147483647" step="1" required>
                         <button type="submit" class="btn-icon btn-icon-save" title="Lưu thay đổi số lượng">
@@ -107,6 +108,7 @@
                         <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="action" value="delete-variant">
                         <input type="hidden" name="pid" value="<%=p.getPid()%>">
+                        <input type="hidden" name="page" value="${adminPage}">
                         <input type="hidden" name="vid" value="<%=v.getId()%>">
                         <button type="submit" class="btn-icon btn-icon-delete" title="Xóa phân loại này">
                             <i class="fa-solid fa-trash"></i>
@@ -134,6 +136,7 @@
             <% } %>
             </tbody>
         </table>
+        <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
         <% } else { %>
         <div class="empty-variants">
             <i class="fa-solid fa-box-open"></i>

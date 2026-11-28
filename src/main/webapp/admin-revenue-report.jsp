@@ -174,7 +174,7 @@
                 <span class="card-kicker">Chi tiết mặt hàng</span>
                 <h2>Đã bán, chưa bán và tồn kho</h2>
             </div>
-            <span class="result-count"><%= items == null ? 0 : items.size() %> kết quả</span>
+            <span class="result-count">${adminTotalRows} kết quả</span>
         </div>
 
         <form action="admin-revenue-report" method="get" class="report-search-form" data-admin-ajax>
@@ -267,6 +267,7 @@
                 </tbody>
             </table>
         </div>
+        <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
         <footer class="report-table-note">
             <span><i class="fa-solid fa-circle-info"></i> Doanh thu chỉ tính các đơn có trạng thái giao thành công.</span>
             <span><i class="fa-solid fa-triangle-exclamation"></i> <%= summary.getLowStockProducts() %> mặt hàng chỉ còn từ 1–5 sản phẩm.</span>

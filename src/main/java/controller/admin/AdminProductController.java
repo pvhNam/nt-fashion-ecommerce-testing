@@ -60,6 +60,7 @@ public class AdminProductController extends HttpServlet {
             list = dao.getAllProducts();
         }
 
+        list = AdminPagination.page(request, list, "search");
         request.setAttribute("listProducts", list);
         request.setAttribute("listP", list);
         request.getRequestDispatcher("/admin-products.jsp").forward(request, response);

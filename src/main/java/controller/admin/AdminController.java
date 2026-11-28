@@ -42,7 +42,7 @@ public class AdminController extends HttpServlet {
             }
         }
 
-        request.setAttribute("listOrders", list);
+        request.setAttribute("listOrders", AdminPagination.page(request, list));
         request.setAttribute("totalOrders", list != null ? list.size() : 0);
         request.setAttribute("totalRevenue", totalRevenue);
         request.setAttribute("countSuccess", countSuccess);

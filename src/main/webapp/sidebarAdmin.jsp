@@ -12,6 +12,7 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 %>
 
 <link rel="stylesheet" href="CSS/admin/sidebar.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/admin-pagination.css">
 <meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20260822.4">
 <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261027.1" defer></script>

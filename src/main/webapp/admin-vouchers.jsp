@@ -24,9 +24,8 @@
                 <h1 class="page-title">Quản lý Mã Giảm Giá</h1>
                 <%
                 List<Voucher> listV = (List<Voucher>) request.getAttribute("listVouchers");
-                int total = (listV != null) ? listV.size() : 0;
                 %>
-                <p class="voucher-subtitle"><%= total %> voucher</p>
+                <p class="voucher-subtitle">${adminTotalRows} voucher</p>
             </div>
             <a href="admin-vouchers?action=add" class="btn-add-new">
                 <i class="fa-solid fa-plus"></i> Thêm Voucher
@@ -158,6 +157,7 @@
             </div>
             <% } %>
         </div>
+        <jsp:include page="/WEB-INF/views/admin-pagination.jsp" />
 
         <% } else { %>
         <div class="empty-state">

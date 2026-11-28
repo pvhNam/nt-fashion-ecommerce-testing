@@ -31,7 +31,7 @@ public class AdminStaffController extends HttpServlet {
         if (list != null) {
             list.removeIf(u -> u.getIsAdmin() != 2);
         }
-        request.setAttribute("listStaffs", list);
+        request.setAttribute("listStaffs", AdminPagination.page(request, list, "search"));
         request.getRequestDispatcher("/admin-staffs.jsp").forward(request, response);
     }
 

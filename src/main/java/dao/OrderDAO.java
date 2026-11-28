@@ -24,7 +24,7 @@ public class OrderDAO {
 
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> list = new ArrayList<>();
-        String sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC, id DESC";
         try {
             conn = new DBConnect().getConnection();
             ps = conn.prepareStatement(sql);
@@ -43,7 +43,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT o.*, u.fullname, u.phonenumber, u.email AS user_email FROM orders o "
                 + "JOIN users u ON o.user_id = u.uid "
-                + "ORDER BY o.created_at DESC";
+                + "ORDER BY o.created_at DESC, o.id DESC";
         try {
             conn = new DBConnect().getConnection();
             ps = conn.prepareStatement(sql);
