@@ -67,7 +67,7 @@
         </div>
 
         <% if (variants != null && !variants.isEmpty()) { %>
-        <table class="admin-table">
+        <table data-admin-datatable class="admin-table">
             <thead>
             <tr>
                 <th>Màu Sắc</th>

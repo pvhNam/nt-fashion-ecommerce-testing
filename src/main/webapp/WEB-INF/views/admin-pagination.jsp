@@ -3,7 +3,9 @@
 <c:if test="${adminPageCount > 1}">
     <c:set var="firstNearby" value="${adminPage - 2 > 1 ? adminPage - 2 : 1}" />
     <c:set var="lastNearby" value="${adminPage + 2 < adminPageCount ? adminPage + 2 : adminPageCount}" />
-    <nav class="admin-pagination" aria-label="Phân trang danh sách">
+    <c:url var="jumpPageUrl" value="${adminPagePath}" />
+    <nav class="admin-pagination" aria-label="Phân trang danh sách"
+         data-page-start="${adminFirstRow - 1}" data-page-length="${adminPageSize}" data-total-rows="${adminTotalRows}">
         <span class="admin-pagination-summary">Hiển thị ${adminFirstRow}–${adminLastRow} / ${adminTotalRows}</span>
         <ul>
             <c:if test="${adminPage > 1}">
@@ -19,7 +21,9 @@
                     <c:param name="page" value="1" />
                 </c:url>
                 <li><a href="<c:out value='${firstPageUrl}' />" aria-label="Trang 1">1</a></li>
-                <c:if test="${firstNearby > 2}"><li aria-hidden="true">…</li></c:if>
+                <c:if test="${firstNearby > 2}">
+                    <li><%@ include file="admin-pagination-jump.jspf" %></li>
+                </c:if>
             </c:if>
             <c:forEach var="pageNumber" begin="${firstNearby}" end="${lastNearby}">
                 <c:choose>
@@ -36,7 +40,9 @@
                 </c:choose>
             </c:forEach>
             <c:if test="${lastNearby < adminPageCount}">
-                <c:if test="${lastNearby < adminPageCount - 1}"><li aria-hidden="true">…</li></c:if>
+                <c:if test="${lastNearby < adminPageCount - 1}">
+                    <li><%@ include file="admin-pagination-jump.jspf" %></li>
+                </c:if>
                 <c:url var="lastPageUrl" value="${adminPagePath}">
                     <c:forEach var="filter" items="${adminPageFilters}"><c:param name="${filter.key}" value="${filter.value}" /></c:forEach>
                     <c:param name="page" value="${adminPageCount}" />
@@ -51,5 +57,6 @@
                 <li><a href="<c:out value='${nextPageUrl}' />" rel="next">Sau</a></li>
             </c:if>
         </ul>
+        <template data-page-jump><%@ include file="admin-pagination-jump.jspf" %></template>
     </nav>
 </c:if>

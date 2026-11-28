@@ -44,7 +44,7 @@
             <h3 style="color: #28a745; margin-top: 0; margin-bottom: 15px;">
                 <i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng (<%=orders != null ? orders.size() : 0%>)
             </h3>
-            <table class="admin-table">
+            <table data-admin-datatable class="admin-table">
                 <thead>
                     <tr>
                         <th>Mã Đơn</th>

@@ -241,7 +241,7 @@
         </form>
 
         <div class="report-table-wrap">
-            <table class="revenue-table">
+            <table data-admin-datatable class="revenue-table">
                 <thead>
                 <tr>
                     <th>Mặt hàng</th>

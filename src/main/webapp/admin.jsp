@@ -177,7 +177,7 @@
             </div>
 
             <div class="admin-table-scroll recent-orders-scroll" role="region" aria-labelledby="recent-orders-title" tabindex="0">
-            <table class="admin-table recent-orders-table">
+            <table data-admin-datatable class="admin-table recent-orders-table">
                 <colgroup>
                     <col class="recent-order-id">
                     <col class="recent-order-customer">

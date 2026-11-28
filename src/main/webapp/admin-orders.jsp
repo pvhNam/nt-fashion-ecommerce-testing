@@ -88,7 +88,7 @@
 
         <div class="card-box">
             <div class="admin-table-scroll order-table-scroll" role="region" aria-label="Danh sách đơn hàng" tabindex="0">
-            <table class="admin-table order-table" role="table">
+            <table data-admin-datatable class="admin-table order-table" role="table">
                 <colgroup>
                     <col class="order-col-id">
                     <col class="order-col-customer">

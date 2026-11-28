@@ -246,7 +246,7 @@
             <span>30 phiếu mới nhất</span>
         </div>
         <div class="history-table-wrap">
-            <table class="history-table">
+            <table data-admin-datatable class="history-table">
                 <thead>
                 <tr>
                     <th>Mã phiếu</th>

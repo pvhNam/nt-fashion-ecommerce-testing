@@ -12,10 +12,12 @@ int role = currUser != null ? currUser.getIsAdmin() : 0;
 %>
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/sidebar.css?v=20261125">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/admin-pagination.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/admin/admin-pagination.css?v=20261128">
 <meta name="csrf-token" content="${csrfToken}">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/shared/smooth-navigation.css?v=20261126.2">
 <script src="${pageContext.request.contextPath}/JS/smooth-navigation.js?v=20261126.1" defer></script>
+<script src="${pageContext.request.contextPath}/JS/vendor/datatables-3.1.6/dataTables.min.js" defer></script>
+<script src="${pageContext.request.contextPath}/JS/admin-datatables.js?v=20261128" defer></script>
 
 <div class="sidebar">
 	<div class="sidebar-brand">

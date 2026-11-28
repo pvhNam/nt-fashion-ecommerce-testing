@@ -10,7 +10,8 @@
     color: #475569;
 }
 
-.admin-pagination ul {
+.admin-pagination ul,
+.dt-paging nav {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -20,7 +21,23 @@
     list-style: none;
 }
 
+.dt-paging {
+    max-width: 100%;
+}
+
+.dt-paging nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px;
+}
+
+.dt-paging nav > * {
+    flex-shrink: 0;
+}
+
 .admin-pagination a,
+.dt-paging-button,
+.admin-pagination-jump input[name="page"],
 .admin-pagination [aria-current="page"] {
     display: inline-flex;
     align-items: center;
@@ -37,12 +54,14 @@
     text-decoration: none;
 }
 
-.admin-pagination a:hover {
+.admin-pagination a:hover,
+.dt-paging-button:not(:disabled):hover,
+.admin-pagination-jump input[name="page"]:hover {
     border-color: #64748b;
     background: #f1f5f9;
 }
 
-.admin-pagination a:focus-visible {
+.admin-pagination :is(a, button, input):focus-visible {
     outline: 2px solid #4338ca;
     outline-offset: 2px;
 }
@@ -51,4 +70,32 @@
     border-color: #334155;
     background: #334155;
     color: #fff;
+}
+
+.dt-paging-button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.dt-paging-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.admin-pagination-jump {
+    margin: 0;
+}
+
+.admin-pagination-jump input[name="page"] {
+    width: 3.25rem;
+    padding-inline: 4px;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: center;
+}
+
+.admin-pagination-jump input[name="page"]::placeholder {
+    color: #475569;
+    opacity: 1;
 }

@@ -35,7 +35,7 @@
         <% } %>
 
         <div class="card-box admin-table-scroll" role="region" aria-label="Danh sách bài viết" tabindex="0">
-            <table class="admin-table">
+            <table data-admin-datatable class="admin-table">
                 <thead>
                     <tr>
                         <th style="width: 80px;">ID</th>

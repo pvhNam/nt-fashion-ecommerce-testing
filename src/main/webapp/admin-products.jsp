@@ -74,7 +74,7 @@
 
     <div class="card-box">
         <div class="admin-table-scroll product-table-scroll" role="region" aria-label="Danh sách sản phẩm" tabindex="0">
-        <table class="admin-table product-table">
+        <table data-admin-datatable class="admin-table product-table">
             <thead>
             <tr>
                 <th scope="col" class="product-col-id">Mã SP</th>

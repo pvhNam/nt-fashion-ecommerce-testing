@@ -1,0 +1,9 @@
+<%@ page pageEncoding="UTF-8" %>
+<form class="admin-pagination-jump" action="<c:out value='${jumpPageUrl}' />" method="get">
+    <c:forEach var="filter" items="${adminPageFilters}">
+        <input type="hidden" name="<c:out value='${filter.key}' />" value="<c:out value='${filter.value}' />">
+    </c:forEach>
+    <input type="text" name="page" inputmode="numeric" pattern="[1-9][0-9]*" maxlength="9"
+           placeholder="…" aria-label="Đến trang" title="Nhập số trang rồi nhấn Enter"
+           enterkeyhint="go" autocomplete="off" required>
+</form>

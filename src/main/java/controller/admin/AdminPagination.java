@@ -36,6 +36,7 @@ final class AdminPagination {
         }
 
         request.setAttribute("adminPage", page);
+        request.setAttribute("adminPageSize", PAGE_SIZE);
         request.setAttribute("adminPageCount", pageCount);
         request.setAttribute("adminTotalRows", total);
         request.setAttribute("adminFirstRow", total == 0 ? 0 : from + 1);
